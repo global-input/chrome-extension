@@ -1,4 +1,4 @@
-# global input chrome extension
+# Global input chrome extension
 
 
 This is for enabling chrome to support the Global Input software so that you can use your mobile to login instead of typing on the computer screen. Since your mobile will remember your password and auto-fill the form, you can speed up the login process. For example, when you go to confluence page, it will display a QR code,  so that you can connect with the Global Input mobile app (available in [iOS](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4) and [Android](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4)) to your the confluence just by poing the phone camera to the QR code.

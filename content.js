@@ -58,7 +58,7 @@
              element:document.getElementById("login-form-submit"),
              label:"Log In"
         },
-       id:  "ydgs@confluence"+window.location.host,
+       id:  "ydgs@jira"+window.location.host,
        title: "Sign In on "+window.location.host,
        isValid:function(){
             return this.loginContainer.element && this.username.element && this.password.element;
@@ -82,12 +82,69 @@
   };
 
 
+  var getGitlab=function(){
+
+    var loginform=document.getElementById("login-pane");
+
+    if(!loginform){
+      console.log("not gitlab");
+      return null;
+    }
+
+
+    var gitlab={
+       loginContainer:{element:loginform},
+       username:{
+                    element:document.getElementById("user_login"),
+                    label:"Username"
+           },
+       password:{
+            element:document.getElementById("user_password"),
+            label:"Password"
+       },
+       loginButton:{
+             label:"Log In"
+        },
+       id:  "uid@gitlab"+window.location.host,
+       title: "Sign In on "+window.location.host,
+       isValid:function(){
+            return this.loginContainer.element && this.username.element && this.password.element;
+       }
+    };
+    var inputButtons=document.getElementsByTagName("input");
+    var loginButton=null;
+    for(var x=0;x<inputButtons.length;x++){
+        if(inputButtons[x].value === 'Sign in'){
+            loginButton=inputButtons[x];
+        }
+    }
+    gitlab.loginButton.element=loginButton;
+
+    if(gitlab.isValid()){
+      console.log("is gitlab");
+      return gitlab;
+    }
+    else{
+      console.log("is gitlab jira");
+      return null;
+    }
+
+  };
+
+
+
+
+
   var formSelector=function(){
       var formdata=getConfluence();
       if(formdata){
         return formdata;
       }
       formdata=getJira();
+      if(formdata){
+        return formdata;
+      }
+      formdata=getGitlab();
       if(formdata){
         return formdata;
       }

@@ -1,8 +1,109 @@
 (function(){
 
+  var getConfluence=function(){
+    var confluence={
+       loginContainer:{
+          element:document.getElementById("login-container")
+       },
+       username:{
+                    element:document.getElementById("os_username"),
+                    label:"Username"
+           },
+       password:{
+            element:document.getElementById("os_password"),
+            label:"Password"
+       },
+       loginButton:{
+             element:document.getElementById("loginButton"),
+             label:"Log In"
+        },
+       id:  "xxdi@confluence"+window.location.host,
+       title: "Sign In on "+window.location.host,
+       isValid:function(){
+            return this.loginContainer.element && this.username.element && this.password.element;
+       }
+    };
+    if(confluence.isValid()){
+      console.log("is confluece");
+      return confluence;
+    }
+    else{
+      console.log("not confluece");
+      return null;
+    }
+  };
+  var getJira=function(){
+
+    var loginform=document.getElementById("login-form");
+    if(!loginform){
+      loginform=document.getElementById("loginform");
+    }
+    if(!loginform){
+      console.log("not jira");
+      return null;
+    }
+    var loginContainer=loginform.parentElement.parentElement.parentElement;
+
+    var jira={
+       loginContainer:{element:loginContainer},
+       username:{
+                    element:document.getElementById("login-form-username"),
+                    label:"Username"
+           },
+       password:{
+            element:document.getElementById("login-form-password"),
+            label:"Password"
+       },
+       loginButton:{
+             element:document.getElementById("login-form-submit"),
+             label:"Log In"
+        },
+       id:  "ydgs@confluence"+window.location.host,
+       title: "Sign In on "+window.location.host,
+       isValid:function(){
+            return this.loginContainer.element && this.username.element && this.password.element;
+       }
+    };
+    if(!jira.loginButton.element){
+      jira.loginButton.element=document.getElementById("login");
+    }
+
+    if(jira.isValid()){
+      var h=jira.loginContainer.element.offsetHeight+500;
+      jira.loginContainer.element.style.height=h+'px';
+      console.log("is jira");
+      return jira;
+    }
+    else{
+      console.log("not jira");
+      return null;
+    }
+
+  };
+
+
+  var formSelector=function(){
+      var formdata=getConfluence();
+      if(formdata){
+        return formdata;
+      }
+      formdata=getJira();
+      if(formdata){
+        return formdata;
+      }
+        return null;
+  };
+
   var createQRCodePlaceHolder=function(logincontainer){
     var div = document.createElement('div');
     div.id="qrcode";
+    div.style.display='flex';
+    div.style['display-direction']='row';
+    div.style['justify-content']='center';
+    div.style['z-index']=1000;
+
+
+
     div.textContent = '';
     logincontainer.appendChild(div);
 
@@ -10,80 +111,83 @@
     div.id="globalInputMessage";
     div.textContent = '';
     logincontainer.appendChild(div);
+  };
+  var enableGlobalInput=function(){
+      var formSelected=formSelector();
+      if(!formSelected){
+        console.log("Global Input is disabled for this page");
+        return;
+      }
+     var existingqrcodeelement=document.getElementById("qrcode");
+     if(existingqrcodeelement){
+       console.log("qrcode element exists, Global Input is disabled");
+       return;
+     }
+     createQRCodePlaceHolder(formSelected.loginContainer.element);
+     var globalinput={
+       api:require("global-input-message")
+     };
+     globalinput.config={
+                           onSenderConnected:function(){
+                               document.getElementById("globalInputMessage").innerHTML="Device connected";
+                           },
+                           onSenderDisconnected:function(){
+                               document.getElementById("globalInputMessage").innerHTML="Device disconnected";
+                           },
+                           initData:{
 
-  }
-   var globalinput={
-     api:require("global-input-message")
-   };
-   var loginContainer=document.getElementById("login-container");
-   var os_username=document.getElementById("os_username");
-   var os_password=document.getElementById("os_password");
-   var loginButton=document.getElementById("loginButton");
-   if(loginContainer && os_username && os_password){
-          createQRCodePlaceHolder(loginContainer);
-          globalinput.config={
-                                onSenderConnected:function(){
-                                    document.getElementById("globalInputMessage").innerHTML="Device connected";
-                                },
-                                onSenderDisconnected:function(){
-                                    document.getElementById("globalInputMessage").innerHTML="Device disconnected";
-                                },
-                                initData:{
+                               form:{
+                                 id:  formSelected.id,
+                                 title: formSelected.title,
+                                 fields:[{
+                                           label:formSelected.username.label,
+                                           id:"username",
+                                           operations:{
+                                               onInput:function(username){
+                                                    formSelected.username.element.value=username;
+                                               }
+                                           }
+                                         },{
+                                            label:formSelected.password.label,
+                                            id:"password",
+                                            type:"secret",
+                                            operations:{
+                                              onInput:function(password){
+                                                formSelected.password.element.value=password;
+                                              }
+                                            }
 
-                                    form:{
-                                      id:  "yp6yAPMEUcmtNDi25@"+window.location.host,
-                                      title: "Confluence Sign In",
-                                      fields:[{
-                                                label:"Username",
-                                                id:"username",
-                                                operations:{
-                                                    onInput:function(username){
-                                                         os_username.value=username;
-                                                    }
-                                                }
-
-                                              },{
-                                                 label:"Password",
-                                                 id:"password",
-                                                 type:"secret",
-                                                 operations:{
-                                                   onInput:function(password){
-                                                     os_password.value=password;
-                                                   }
+                                         },{
+                                            label:formSelected.loginButton.label,
+                                            type:"button",
+                                            operations:{
+                                               onInput:function(){
+                                                 if(formSelected.loginButton.element){
+                                                   formSelected.loginButton.element.click();
                                                  }
+                                               }
+                                            }
 
-                                              },{
-                                                 label:"Login",
-                                                 type:"button",
-                                                 operations:{
-                                                    onInput:function(){
-                                                      if(loginButton){
-                                                        loginButton.click();
-                                                      }
-                                                    }
-                                                 }
+                                         }]
+                                     }
+                               }
 
-                                              }]
-                                          }
-                                    }
+                       };
+                       globalinput.connector=globalinput.api.createMessageConnector();
+                       globalinput.connector.connect(globalinput.config);
+                       var codedata=globalinput.connector.buildInputCodeData();
+                       var qrcode = new QRCode(document.getElementById("qrcode"), {
+                         text: codedata,
+                         width:250,
+                         height: 250,
+                         colorDark : "#000000",
+                         colorLight : "#ffffff",
+                         correctLevel : QRCode.CorrectLevel.H
+                       });
 
-                            };
-                            globalinput.connector=globalinput.api.createMessageConnector();
-                            globalinput.connector.connect(globalinput.config);
-                            var codedata=globalinput.connector.buildInputCodeData();
+  };
 
-                          var qrcode = new QRCode(document.getElementById("qrcode"), {
-                            text: codedata,
-                            width: 300,
-                            height: 300,
-                            colorDark : "#000000",
-                            colorLight : "#ffffff",
-                            correctLevel : QRCode.CorrectLevel.H
-                          });
-
-   }
-
-
+  enableGlobalInput();
 
 
 

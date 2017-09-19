@@ -3,6 +3,16 @@
   function findAllInputElements(){
     return document.getElementsByTagName("input");
   }
+
+  function findButtonByTypeNameAndValue(typevalue,namevalue,valuevalue){
+    var buttons=document.getElementsByTagName("button");
+    for(var x=0;x<buttons.length;x++){
+        if(buttons[x].getAttribute('type') === typevalue && buttons[x].getAttribute('name') === namevalue && buttons[x].getAttribute('value') === valuevalue){
+            return buttons[x];
+        }
+    }
+    return null;
+  }
   function findElementByName(inputs, namevalue){
     for(var x=0;x<inputs.length;x++){
         if(inputs[x].getAttribute('name') === namevalue){
@@ -12,27 +22,20 @@
     return null;
   }
   function findElementByNameAndType(inputs, namevalue, typevalue){
-    var foundelement=findElementByName(inputs,namevalue);
-    if(!foundelement){
-      return null;
+
+    for(var x=0;x<inputs.length;x++){
+        if(inputs[x].getAttribute('name') === namevalue && inputs[x].getAttribute('type') === typevalue){
+            return inputs[x];
+        }
     }
-    if(foundelement.getAttribute("type")!==typevalue){
-      return false;
-    }
-    return foundelement;
+    return null
   }
   function findElementByNameAndTypeAndValue(inputs, namevalue, typevalue, valuevalue){
-    var foundelement=findElementByName(inputs,namevalue);
-    if(!foundelement){
-      return null;
+    for(var x=0;x<inputs.length;x++){
+        if(inputs[x].getAttribute('name') === namevalue && inputs[x].getAttribute('type') === typevalue && inputs[x].getAttribute('value') === valuevalue){
+            return inputs[x];
+        }
     }
-    if(foundelement.getAttribute("type")!==typevalue){
-      return false;
-    }
-    if(foundelement.getAttribute("value")!==valuevalue){
-      return false;
-    }
-    return foundelement;
   }
   function findElementByTypeAndValue(inputs, typevalue, valuevalue){
 
@@ -240,6 +243,43 @@
         return true;
   }
 
+
+  function process123RegPage(inputs,config){
+        var usernameelement=findElementByNameAndType(inputs,"username", "text");
+        if(!usernameelement){
+          console.log("not a 123reg: username");
+          return false;
+        }
+        var passwordlement=findElementByNameAndType(inputs,"password", "password");
+        if(!passwordlement){
+          console.log("not a 123reg");
+          return false;
+        }
+        var submitButton=findButtonByTypeNameAndValue("submit","login","Log Me In");
+        if(!submitButton){
+          console.log("not a 123reg:missing submit button");
+          return false;
+        }
+        var parentContainer=findLoginContainerFromInput(usernameelement,3);
+        config.username={
+          element:usernameelement,
+          label:"Username"
+        };
+        config.password={
+          element:passwordlement,
+          label:"Password",
+        };
+        config.loginButton={
+          element:submitButton,
+          label:"Log in"
+        }
+        config.qrCodeContainer={
+          element:parentContainer
+        }
+        config.id="123reg"+config.id;
+        return true;
+  }
+
   function isAlreadyGlobalInputEnable(){
         var existingqrcodeelement=document.getElementById("qrcode");
         return existingqrcodeelement
@@ -279,6 +319,9 @@
          return config;
        }
        if(processLucidchartPage(inputs,config)){
+         return config;
+       }
+       if(process123RegPage(inputs,config)){
          return config;
        }
 

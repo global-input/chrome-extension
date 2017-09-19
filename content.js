@@ -34,6 +34,15 @@
     }
     return foundelement;
   }
+  function findElementByTypeAndValue(inputs, typevalue, valuevalue){
+
+    for(var x=0;x<inputs.length;x++){
+        if(inputs[x].getAttribute('type') === typevalue && inputs[x].getAttribute('value') === valuevalue ){
+            return inputs[x];
+        }
+    }
+    return null;
+  }
   function findLoginContainerFromInput(inputElement, nParent){
     var currentElement=inputElement;
     for(var i=0;i<nParent;i++){
@@ -195,6 +204,42 @@
         return true;
   }
 
+  function processLucidchartPage(inputs,config){
+        var usernameelement=findElementByNameAndType(inputs,"username", "text");
+        if(!usernameelement){
+          console.log("not a Lucidchart: username");
+          return false;
+        }
+        var passwordlement=findElementByNameAndType(inputs,"password", "password");
+        if(!passwordlement){
+          console.log("not a Lucidchart");
+          return false;
+        }
+        var submitButton=findElementByTypeAndValue(inputs,"submit","Log in");
+        if(!submitButton){
+          console.log("not a Lucidchart:missing submit button");
+          return false;
+        }
+        var parentContainer=findLoginContainerFromInput(usernameelement,2);
+        config.username={
+          element:usernameelement,
+          label:"Username"
+        };
+        config.password={
+          element:passwordlement,
+          label:"Password",
+        };
+        config.loginButton={
+          element:submitButton,
+          label:"Log in"
+        }
+        config.qrCodeContainer={
+          element:parentContainer
+        }
+        config.id="Lucidchart"+config.id;
+        return true;
+  }
+
   function isAlreadyGlobalInputEnable(){
         var existingqrcodeelement=document.getElementById("qrcode");
         return existingqrcodeelement
@@ -231,6 +276,9 @@
          return config;
        }
        if(processGithubPage(inputs,config)){
+         return config;
+       }
+       if(processLucidchartPage(inputs,config)){
          return config;
        }
 

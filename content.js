@@ -1,189 +1,212 @@
 (function(){
 
-  var getConfluence=function(){
-    var confluence={
-       loginContainer:{
-          element:document.getElementById("login-container")
-       },
-       username:{
-                    element:document.getElementById("os_username"),
-                    label:"Username"
-           },
-       password:{
-            element:document.getElementById("os_password"),
-            label:"Password"
-       },
-       loginButton:{
-             element:document.getElementById("loginButton"),
-             label:"Log In"
-        },
-       id:  "xxdi@confluence"+window.location.host,
-       title: "Sign In on "+window.location.host,
-       isValid:function(){
-            return this.loginContainer.element && this.username.element && this.password.element;
-       }
-    };
-    if(confluence.isValid()){
-      console.log("is confluece");
-      return confluence;
-    }
-    else{
-      console.log("not confluece");
-      return null;
-    }
-  };
-  var getJira=function(){
-
-    var loginform=document.getElementById("login-form");
-    if(!loginform){
-      loginform=document.getElementById("loginform");
-    }
-    if(!loginform){
-      console.log("not jira");
-      return null;
-    }
-    var loginContainer=loginform.parentElement.parentElement.parentElement;
-
-    var jira={
-       loginContainer:{element:loginContainer},
-       username:{
-                    element:document.getElementById("login-form-username"),
-                    label:"Username"
-           },
-       password:{
-            element:document.getElementById("login-form-password"),
-            label:"Password"
-       },
-       loginButton:{
-             element:document.getElementById("login-form-submit"),
-             label:"Log In"
-        },
-       id:  "ydgs@jira"+window.location.host,
-       title: "Sign In on "+window.location.host,
-       isValid:function(){
-            return this.loginContainer.element && this.username.element && this.password.element;
-       }
-    };
-    if(!jira.loginButton.element){
-      jira.loginButton.element=document.getElementById("login");
-    }
-
-    if(jira.isValid()){
-      var h=jira.loginContainer.element.offsetHeight+500;
-      jira.loginContainer.element.style.height=h+'px';
-      console.log("is jira");
-      return jira;
-    }
-    else{
-      console.log("not jira");
-      return null;
-    }
-
-  };
-
-
-  var getGitlab=function(){
-
-    var loginform=document.getElementById("login-pane");
-
-    if(!loginform){
-      console.log("not gitlab");
-      return null;
-    }
-
-
-    var gitlab={
-       loginContainer:{element:loginform},
-       username:{
-                    element:document.getElementById("user_login"),
-                    label:"Username"
-           },
-       password:{
-            element:document.getElementById("user_password"),
-            label:"Password"
-       },
-       loginButton:{
-             label:"Log In"
-        },
-       id:  "uid@gitlab"+window.location.host,
-       title: "Sign In on "+window.location.host,
-       isValid:function(){
-            return this.loginContainer.element && this.username.element && this.password.element;
-       }
-    };
-    var inputButtons=document.getElementsByTagName("input");
-    var loginButton=null;
-    for(var x=0;x<inputButtons.length;x++){
-        if(inputButtons[x].value === 'Sign in'){
-            loginButton=inputButtons[x];
+  function findAllInputElements(){
+    return document.getElementsByTagName("input");
+  }
+  function findElementByName(inputs, namevalue){
+    for(var x=0;x<inputs.length;x++){
+        if(inputs[x].getAttribute('name') === namevalue){
+            return inputs[x];
         }
     }
-    gitlab.loginButton.element=loginButton;
-
-    if(gitlab.isValid()){
-      console.log("is gitlab");
-      return gitlab;
-    }
-    else{
-      console.log("is gitlab jira");
+    return null;
+  }
+  function findElementByNameAndType(inputs, namevalue, typevalue){
+    var foundelement=findElementByName(inputs,namevalue);
+    if(!foundelement){
       return null;
     }
-
-  };
-
-
-
-
-
-  var formSelector=function(){
-      var formdata=getConfluence();
-      if(formdata){
-        return formdata;
+    if(foundelement.getAttribute("type")!==typevalue){
+      return false;
+    }
+    return foundelement;
+  }
+  function findElementByNameAndTypeAndValue(inputs, namevalue, typevalue, valuevalue){
+    var foundelement=findElementByName(inputs,namevalue);
+    if(!foundelement){
+      return null;
+    }
+    if(foundelement.getAttribute("type")!==typevalue){
+      return false;
+    }
+    if(foundelement.getAttribute("value")!==valuevalue){
+      return false;
+    }
+    return foundelement;
+  }
+  function findLoginContainerFromInput(inputElement, nParent){
+    var currentElement=inputElement;
+    for(var i=0;i<nParent;i++){
+      if(currentElement.parentElement){
+          currentElement=currentElement.parentElement;
       }
-      formdata=getJira();
-      if(formdata){
-        return formdata;
+      else{
+        break;
       }
-      formdata=getGitlab();
-      if(formdata){
-        return formdata;
-      }
-        return null;
-  };
 
-  var createQRCodePlaceHolder=function(logincontainer){
-    var div = document.createElement('div');
-    div.id="qrcode";
-    div.style.display='flex';
-    div.style['display-direction']='row';
-    div.style['justify-content']='center';
-    div.style['z-index']=1000;
+    }
+    return currentElement;
+  }
 
 
 
-    div.textContent = '';
-    logincontainer.appendChild(div);
 
-    div = document.createElement('div');
-    div.id="globalInputMessage";
-    div.textContent = '';
-    logincontainer.appendChild(div);
-  };
-  var enableGlobalInput=function(){
-      var formSelected=formSelector();
-      if(!formSelected){
-        console.log("Global Input is disabled for this page");
-        return;
-      }
-     var existingqrcodeelement=document.getElementById("qrcode");
-     if(existingqrcodeelement){
-       console.log("qrcode element exists, Global Input is disabled");
-       return;
-     }
-     createQRCodePlaceHolder(formSelected.loginContainer.element);
-     var globalinput={
-       api:require("global-input-message")
-     };
+  function processConfluencePage(inputs,config){
+        var usernameelement=findElementByNameAndType(inputs,"os_username", "text");
+        if(!usernameelement){
+          console.log("not a confluence: username");
+          return false;
+        }
+        var passwordlement=findElementByNameAndType(inputs,"os_password", "password");
+        if(!passwordlement){
+          console.log("not a confluence");
+          return false;
+        }
+        var submitButton=findElementByNameAndTypeAndValue(inputs,"login", "submit","Log in");
+        if(!submitButton){
+          console.log("not a confluence:missing submit button");
+          return false;
+        }
+        var parentContainer=findLoginContainerFromInput(usernameelement,4);
+        config.username={
+          element:usernameelement,
+          label:"Username"
+        };
+        config.password={
+          element:passwordlement,
+          label:"Password",
+        };
+        config.loginButton={
+          element:submitButton,
+          label:"Log in"
+        }
+        config.qrCodeContainer={
+          element:parentContainer
+        }
+        config.id="confluence"+config.id;
+        return true;
+  }
+
+  function processJIRAPage(inputs,config){
+        var usernameelement=findElementByNameAndType(inputs,"os_username", "text");
+        if(!usernameelement){
+          console.log("not a JIRA: username");
+          return false;
+        }
+        var passwordlement=findElementByNameAndType(inputs,"os_password", "password");
+        if(!passwordlement){
+          console.log("not a JIRA");
+          return false;
+        }
+        var submitButton=findElementByNameAndTypeAndValue(inputs,"login", "submit","Log In");
+        if(!submitButton){
+          console.log("not a JIRA:missing submit button");
+          return false;
+        }
+        var parentContainer=findLoginContainerFromInput(usernameelement,5);
+        config.username={
+          element:usernameelement,
+          label:"Username"
+        };
+        config.password={
+          element:passwordlement,
+          label:"Password",
+        };
+        config.loginButton={
+          element:submitButton,
+          label:"Log in"
+        }
+        config.qrCodeContainer={
+          element:parentContainer
+        }
+        config.id="jira"+config.id;
+        return true;
+  }
+
+  function processGitLabPage(inputs,config){
+        var usernameelement=findElementByNameAndType(inputs,"user[login]", "text");
+        if(!usernameelement){
+          console.log("not a GitLab: username");
+          return false;
+        }
+        var passwordlement=findElementByNameAndType(inputs,"user[password]", "password");
+        if(!passwordlement){
+          console.log("not a GitLab");
+          return false;
+        }
+        var submitButton=findElementByNameAndTypeAndValue(inputs,"commit", "submit","Sign in");
+        if(!submitButton){
+          console.log("not a GitLab:missing submit button");
+          return false;
+        }
+        var parentContainer=findLoginContainerFromInput(usernameelement,5);
+        config.username={
+          element:usernameelement,
+          label:"Username"
+        };
+        config.password={
+          element:passwordlement,
+          label:"Password",
+        };
+        config.loginButton={
+          element:submitButton,
+          label:"Sign in"
+        }
+        config.qrCodeContainer={
+          element:parentContainer
+        }
+        config.id="GitLab"+config.id;
+        return true;
+  }
+
+
+
+  function isAlreadyGlobalInputEnable(){
+        var existingqrcodeelement=document.getElementById("qrcode");
+        return existingqrcodeelement
+  }
+
+
+  function createQRCodePlaceHolder(qrcodecontainer){
+           var div = document.createElement('div');
+           div.id="qrcode";
+           div.style.display='flex';
+           div.style['display-direction']='row';
+           div.style['justify-content']='center';
+           div.style['z-index']=1000;
+
+           div.textContent = '';
+           qrcodecontainer.appendChild(div);
+
+           div = document.createElement('div');
+           div.id="globalInputMessage";
+           div.textContent = '';
+           qrcodecontainer.appendChild(div);
+   };
+
+   function formSelector(){
+       var config={id:"@"+window.location.host, title: "Sign In on "+window.location.host};
+       var inputs=findAllInputElements();
+       if(processConfluencePage(inputs,config)){
+         return config;
+       }
+       if(processJIRAPage(inputs,config)){
+         return config;
+       }
+       if(processGitLabPage(inputs,config)){
+         return config;
+       }
+
+
+
+       return null;
+   }
+
+
+   function createGlobalInput(formSelected){
+       var globalinput={
+           api:require("global-input-message")
+       };
      globalinput.config={
                            onSenderConnected:function(){
                                document.getElementById("globalInputMessage").innerHTML="Device connected";
@@ -230,20 +253,34 @@
                                }
 
                        };
-                       globalinput.connector=globalinput.api.createMessageConnector();
-                       globalinput.connector.connect(globalinput.config);
-                       var codedata=globalinput.connector.buildInputCodeData();
-                       var qrcode = new QRCode(document.getElementById("qrcode"), {
+           return globalinput;
+   }
+
+  function enableGlobalInput(){
+      if(isAlreadyGlobalInputEnable()){
+        console.log("Global input seems enabled already!");
+        return;
+      }
+      var formSelected=formSelector();
+      if(!formSelected){
+        console.log("Global Input is disabled for this page");
+        return;
+      }
+     createQRCodePlaceHolder(formSelected.qrCodeContainer.element);
+     var globalinput=createGlobalInput(formSelected);
+     globalinput.connector=globalinput.api.createMessageConnector();
+     globalinput.connector.connect(globalinput.config);
+     var codedata=globalinput.connector.buildInputCodeData();
+     var qrcode = new QRCode(document.getElementById("qrcode"), {
                          text: codedata,
                          width:250,
                          height: 250,
                          colorDark : "#000000",
                          colorLight : "#ffffff",
                          correctLevel : QRCode.CorrectLevel.H
-                       });
+     });
 
-  };
-
+  }
   enableGlobalInput();
 
 

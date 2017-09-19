@@ -159,7 +159,41 @@
         return true;
   }
 
-
+  function processGithubPage(inputs,config){
+        var usernameelement=findElementByNameAndType(inputs,"login", "text");
+        if(!usernameelement){
+          console.log("not a Github: username");
+          return false;
+        }
+        var passwordlement=findElementByNameAndType(inputs,"password", "password");
+        if(!passwordlement){
+          console.log("not a Guthub");
+          return false;
+        }
+        var submitButton=findElementByNameAndTypeAndValue(inputs,"commit", "submit","Sign in");
+        if(!submitButton){
+          console.log("not a GitLab:missing submit button");
+          return false;
+        }
+        var parentContainer=findLoginContainerFromInput(usernameelement,2);
+        config.username={
+          element:usernameelement,
+          label:"Username"
+        };
+        config.password={
+          element:passwordlement,
+          label:"Password",
+        };
+        config.loginButton={
+          element:submitButton,
+          label:"Sign in"
+        }
+        config.qrCodeContainer={
+          element:parentContainer
+        }
+        config.id="Github"+config.id;
+        return true;
+  }
 
   function isAlreadyGlobalInputEnable(){
         var existingqrcodeelement=document.getElementById("qrcode");
@@ -196,8 +230,9 @@
        if(processGitLabPage(inputs,config)){
          return config;
        }
-
-
+       if(processGithubPage(inputs,config)){
+         return config;
+       }
 
        return null;
    }

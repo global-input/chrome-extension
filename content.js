@@ -6,6 +6,9 @@
 
   function findButtonByTypeNameAndValue(typevalue,namevalue,valuevalue){
     var buttons=document.getElementsByTagName("button");
+    if(!buttons){
+      return null;
+    }
     for(var x=0;x<buttons.length;x++){
         if(buttons[x].getAttribute('type') === typevalue && buttons[x].getAttribute('name') === namevalue && buttons[x].getAttribute('value') === valuevalue){
             return buttons[x];
@@ -14,6 +17,9 @@
     return null;
   }
   function findElementByName(inputs, namevalue){
+    if(!inputs){
+      return null;
+    }
     for(var x=0;x<inputs.length;x++){
         if(inputs[x].getAttribute('name') === namevalue){
             return inputs[x];
@@ -22,7 +28,9 @@
     return null;
   }
   function findElementByNameAndType(inputs, namevalue, typevalue){
-
+    if(!inputs){
+      return null;
+    }
     for(var x=0;x<inputs.length;x++){
         if(inputs[x].getAttribute('name') === namevalue && inputs[x].getAttribute('type') === typevalue){
             return inputs[x];
@@ -31,6 +39,9 @@
     return null
   }
   function findElementByNameAndTypeAndValue(inputs, namevalue, typevalue, valuevalue){
+    if(!inputs){
+      return null;
+    }
     for(var x=0;x<inputs.length;x++){
         if(inputs[x].getAttribute('name') === namevalue && inputs[x].getAttribute('type') === typevalue && inputs[x].getAttribute('value') === valuevalue){
             return inputs[x];
@@ -38,7 +49,9 @@
     }
   }
   function findElementByTypeAndValue(inputs, typevalue, valuevalue){
-
+    if(!inputs){
+      return null;
+    }
     for(var x=0;x<inputs.length;x++){
         if(inputs[x].getAttribute('type') === typevalue && inputs[x].getAttribute('value') === valuevalue ){
             return inputs[x];
@@ -72,6 +85,9 @@ build:function(){
                            label:"Username",
                            container:function(inputs){
                               var usernameelement=this.find(inputs);
+                              if(!usernameelement){
+                                return null;
+                              }
                               return findLoginContainerFromInput(usernameelement,4);
                            }
                },
@@ -101,6 +117,9 @@ build:function(){
                            label:"Username",
                            container:function(inputs){
                               var usernameelement=this.find(inputs);
+                              if(!usernameelement){
+                                return null;
+                              }
                               return findLoginContainerFromInput(usernameelement,5);
                            }
                },
@@ -128,7 +147,10 @@ build:function(){
                            },
                            label:"Username",
                            container:function(inputs){
-                              var usernameelement=this.find();
+                              var usernameelement=this.find(inputs);
+                              if(!usernameelement){
+                                return null;
+                              }
                               return findLoginContainerFromInput(usernameelement,5);
                            }
                },
@@ -158,6 +180,9 @@ build:function(){
                            label:"Username",
                            container:function(inputs){
                               var usernameelement=this.find(inputs);
+                              if(!usernameelement){
+                                return null;
+                              }
                               return findLoginContainerFromInput(usernameelement,2);
                            }
                },
@@ -188,6 +213,9 @@ build:function(){
                            label:"Username",
                            container:function(inputs){
                               var usernameelement=this.find(inputs);
+                              if(!usernameelement){
+                                return null;
+                              }
                               return findLoginContainerFromInput(usernameelement,2);
                            }
                },
@@ -216,6 +244,9 @@ build:function(){
                            label:"Username",
                            container:function(inputs){
                               var usernameelement=this.find(inputs);
+                              if(!usernameelement){
+                                return null;
+                              }
                               return findLoginContainerFromInput(usernameelement,3);
                            }
                },
@@ -353,7 +384,12 @@ build:function(){
         console.log("Globa Input disabled for this page: no input");
         return;
       }
-     createQRCodePlaceHolder(formData.username.container(inputs));
+      var containerElement=formData.username.container(inputs);
+      if(!containerElement){
+        console.log("Global Input container element not found, so not enabling globalinput");
+        return;
+      }
+     createQRCodePlaceHolder(containerElement);
      var globalinput=createGlobalInput(formData);
      globalinput.connector=globalinput.api.createMessageConnector();
      globalinput.connector.connect(globalinput.config);

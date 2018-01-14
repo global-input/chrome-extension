@@ -128,7 +128,7 @@ build:function(){
                            },
                            label:"Username",
                            container:function(inputs){
-                              var usernameelement=this.find(inputs);
+                              var usernameelement=this.find();
                               return findLoginContainerFromInput(usernameelement,5);
                            }
                },
@@ -297,8 +297,8 @@ build:function(){
                            initData:{
 
                                form:{
-                                 id:  formData.id+"@"+window.location.host,
-                                 title: "Sign In on "+window.location.host,
+                                 id:    "###username###"+"@"+window.location.host+"_"+formData.id,
+                                 title: "Sign In",
                                  fields:[{
                                            label:formData.username.label,
                                            id:"username",

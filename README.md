@@ -9,7 +9,7 @@ At the moment it supports confluence, JIRA and gitlab, github and Lucidchart, 12
 
 download the files in this repository into a folder:
 
- ```git clone git@github.com:global-input/chrome-extension.git```
+ ```git clone https://github.com/global-input/chrome-extension.git```
 
 
 And then click on the "tools" (three dots on the right hand side of the chrome) to open the tools menu and and select ```More Tools``` and then ```extensions```, and then click on ```Load unpacked extensions...``` button to open the file section menu, select the folder that you have download the chrome extension into, and then click on ```select``` button.

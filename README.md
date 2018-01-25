@@ -12,8 +12,9 @@ download the files in this repository into a folder:
  ```git clone https://github.com/global-input/chrome-extension.git```
 
 
-And then click on the "tools" (three dots on the right hand side of the chrome) to open the tools menu and and select ```More Tools``` and then ```extensions```, and then click on ```Load unpacked extensions...``` button to open the file section menu, select the folder that you have download the chrome extension into, and then click on ```select``` button.
+And then click on the "Window" menu of your chrome browser, you will find "Extensions" menu item there.
+Clicking on the "Extensions" menu item will lead you the Extensions page.  
+And then, when you click on the ```Load unpacked extensions...``` button, a file section window will appear. If you  select the folder that you have download the chrome extension into, and then click on ```select``` button. You will see that the Global Input extension is added to the "Extensions" list.  
 
 ### Test
-
-You can visit any confluence page, for example [our confluence](https://iterativesolution.co.uk/confluence), you should see a QR code. When you scan it with Global Input App, you should see a login form on your mobile as well.
+Now when you go to the applications like Confluence, Jira, Lucidchart etc, you will see a QR code displayed, when you scan it with the Global Input App, you will be able to Sign In using your mobile. If you have issue, please contact us on dilshat@iterativesolution.co.uk

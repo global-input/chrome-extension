@@ -64,14 +64,14 @@
 
 
             for(var i=0;i<possibleSignInFeatures.length;i++){
-                  //Finding the sign in form elements by name attributes.
+                  //Finding the sign in form elements
                   signInForm=this.findSignInElements(possibleSignInFeatures[i],allInputElements, allButtonElements);
                   if(signInForm){//found the Sign In Form Elements
                         break;
                   }
             }
            if(!signInForm){
-               //this means we did not find the sign in form
+               //this means we did not find the sign in form elements
                console.log("globalinput is skipped:sign in form missing");
                return;
            }
@@ -142,11 +142,11 @@
              qrCodeContainer.style['z-index']=1000;
              qrCodeContainer.textContent = '';
 
-      signInForm.container.appendChild(qrCodeContainer);
+      signInForm.container.appendChild(qrCodeContainer); //signInForm.container is the container of the sign in form, so we can insert the qrcode container into the container.
              var messageContainer = document.createElement('div');
              messageContainer.id="globalInputMessage";
              messageContainer.textContent = '';
-      signInForm.container.appendChild(messageContainer);
+      signInForm.container.appendChild(messageContainer);//we  also insert the message container that displays the connected message when the global input app is connected.
 
       //Now we can create and display a QR Code inside the element qrCodeContainer with the value specified in qrCodedata
       var qrcode = new QRCode(qrCodeContainer, {
@@ -164,7 +164,12 @@
 
 
 
+    /**
+       find the sign in form from allInputElements and allButtonElements.
+       allInputElements is an array that contains all the input elements in the page.
+       allButtonElements is an array that contains all the button elements in the page.
 
+    **/
 
     findSignInElements:function(possibleSignInFeature,allInputElements, allButtonElements){
       var signInElements={};
@@ -184,6 +189,16 @@
       signInElements.container=this.findParentElement(signInElements.usernameElement,possibleSignInFeature.container.parentDepth);
       return signInElements;
     },
+
+
+    /**
+       find the submit button from allInputElements and allButtonElements.
+       allInputElements is an array that contains all the input elements in the page.
+       allButtonElements is an array that contains all the button elements in the page.
+
+    **/
+
+
     findSubmitElement:function(allInputElements,allButtonElements,possibleSignInFeature){
           var submitElement=null;
           if(possibleSignInFeature.signIn.id){
@@ -203,6 +218,11 @@
           }
           return   submitElement;
     },
+
+    /**
+       looking for element from allInputElements, the element should satisfy the condition: the value of attributename equals to attributevalue
+    **/
+
     findElementsByAttribute:function(allInputElements, attributename, attributevalue){
         for(var x=0;x<allInputElements.length;x++){
             if(allInputElements[x].getAttribute(attributename) === attributevalue){
@@ -211,6 +231,11 @@
         }
         return null;
    },
+
+   /**
+      looking for element from allInputElements, the element should satisfy the condition: the value of attributename1 equals to attributevalue1, and value of  attributename2 equals to attributevalue2
+   **/
+
    findElementsByTwoAttribute:function(allInputElements, attributename1, attributevalue1,attributename2, attributevalue2){
        for(var x=0;x<allInputElements.length;x++){
            if(allInputElements[x].getAttribute(attributename1) === attributevalue1 && allInputElements[x].getAttribute(attributename2) === attributevalue2){
@@ -219,6 +244,10 @@
        }
        return null;
   },
+
+  /**
+  find the parent element by travelling upwards nParent times
+  **/
   findParentElement:function(currentElement, nParent){
       for(var i=0;i<nParent;i++){
             if(currentElement.parentElement){

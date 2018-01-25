@@ -13,66 +13,68 @@
               return;
            }
            var allInputElements=document.getElementsByTagName("input"); //Collecting all the input elements
+
            if(allInputElements.length<2){
                //We assume that the sign In page should hage at least two input elements.
               console.log("globalinput is skipped:input element missing");
               return;
            }
+
+           var allButtonElements=document.getElementsByTagName("button"); //Collecting all the input elements
+
+
            var possibleSignInFeatures=[
              //This array is a collections of all possible names of Sign In form elements.
              //You can add more to support more software and websites.
                    {
-                         username:"os_username",
-                         password:"os_password",
-                         signIn:"login",
-                         parentDepth:5
+                         username:{name:"os_username"},
+                         password:{name:"os_password"},
+                         signIn:  {name:"login"},
+                         container:{parentDepth:5}
                    },{
-                         username:"user[login]",
-                         password:"user[password]",
-                         signIn:  "commit",
-                         parentDepth:5
+                         username:{name:"user[login]"},
+                         password:{name:"user[password]"},
+                         signIn:  {name:"commit"},
+                         container:{parentDepth:5}
                    },{
-                         username:"login",
-                         password:"password",
-                         signIn:  "commit",
-                         parentDepth:2
+                         username:{name:"login"},
+                         password:{name:"password"},
+                         signIn:  {name:"commit"},
+                         container:{parentDepth:2}
                    },{
-                         username:"username",
-                         password:"password",
-                         signIn:  "submit",
-                         parentDepth:2
+                         username:{name:"username"},
+                         password:{name:"password"},
+                         signIn:  {name:"submit"},
+                         container:{parentDepth:2}
                    },{
-                         username:"username",
-                         password:"password",
-                         signIn:  "login",
-                         parentDepth:3
+                         username:{name:"username"},
+                         password:{name:"password"},
+                         signIn:  {name:"login"},
+                         container:{parentDepth:3}
+                   },{
+                         username:{name:"username"},
+                         password:{name:"password"},
+                         signIn:  {id:"signin"},
+                         container:{parentDepth:2}
                    }
+
             ];
             var signInForm=null;
-            var signInFormParentDepth=1;
+
 
 
             for(var i=0;i<possibleSignInFeatures.length;i++){
-
                   //Finding the sign in form elements by name attributes.
-                  signInForm=this.findSignInElementsByNames(possibleSignInFeatures[i].username,
-                                                 possibleSignInFeatures[i].password,
-                                                 possibleSignInFeatures[i].signIn,
-                                                 allInputElements);
-                  if(signInForm){
-                        //found the Sign In Form Elements, parentDepth specifies the parent element where we can place the QR code.
-                        //For example if the value is, it will travel up one parent to get the container for qr code.
-                        signInFormParentDepth=possibleSignInFeatures[i].parentDepth;
+                  signInForm=this.findSignInElements(possibleSignInFeatures[i],allInputElements, allButtonElements);
+                  if(signInForm){//found the Sign In Form Elements
                         break;
                   }
             }
-
            if(!signInForm){
+               //this means we did not find the sign in form
                console.log("globalinput is skipped:sign in form missing");
                return;
            }
-
-
            var globalinputConfig={
                                  onSenderConnected:function(){
                                      //It comes here when the Global Input App has Connected.
@@ -127,8 +129,8 @@
       var globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
       globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
       var qrCodedata=globalInputConnector.buildInputCodeData(); //Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
+      console.log("code data:[["+qrCodedata+"]]");
 
-      var parentElement=this.findParentElement(signInForm.usernameElement,signInFormParentDepth); //Container for placing the QR Code
              var qrCodeContainer = document.createElement('div');
              qrCodeContainer.id="qrcode"; //this is where the QR code will be generated
 
@@ -140,11 +142,11 @@
              qrCodeContainer.style['z-index']=1000;
              qrCodeContainer.textContent = '';
 
-      parentElement.appendChild(qrCodeContainer);
+      signInForm.container.appendChild(qrCodeContainer);
              var messageContainer = document.createElement('div');
              messageContainer.id="globalInputMessage";
              messageContainer.textContent = '';
-      parentElement.appendChild(messageContainer);
+      signInForm.container.appendChild(messageContainer);
 
       //Now we can create and display a QR Code inside the element qrCodeContainer with the value specified in qrCodedata
       var qrcode = new QRCode(qrCodeContainer, {
@@ -164,21 +166,42 @@
 
 
 
-    findSignInElementsByNames:function(nameValueForUsername, nameValueForPassword, nameValueForSubmit,allInputElements){
+    findSignInElements:function(possibleSignInFeature,allInputElements, allButtonElements){
       var signInElements={};
-      signInElements.usernameElement=this.findElementsByAttribute(allInputElements,"name",nameValueForUsername);
+      signInElements.usernameElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFeature.username.name);
       if(!signInElements.usernameElement){
         return null;
       }
-      signInElements.passwordElement=this.findElementsByAttribute(allInputElements,"name",nameValueForPassword);
+      signInElements.passwordElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFeature.password.name);
       if(!signInElements.passwordElement){
-        return null;
-      }
-      signInElements.submitElement=this.findElementsByTwoAttribute(allInputElements,"name", nameValueForSubmit, "type", "submit");
-      if(!signInElements.submitElement){
           return null;
       }
+      signInElements.submitElement=this.findSubmitElement(allInputElements,allButtonElements,possibleSignInFeature);
+      if(!signInElements.submitElement){
+              return null;
+       }
+       //Container for placing the QR Code
+      signInElements.container=this.findParentElement(signInElements.usernameElement,possibleSignInFeature.container.parentDepth);
       return signInElements;
+    },
+    findSubmitElement:function(allInputElements,allButtonElements,possibleSignInFeature){
+          var submitElement=null;
+          if(possibleSignInFeature.signIn.id){
+                submitElement=this.findElementsByTwoAttribute(allInputElements,"id", possibleSignInFeature.signIn.id, "type", "submit");
+          }
+          else {
+                submitElement=this.findElementsByTwoAttribute(allInputElements,"name", possibleSignInFeature.signIn.name, "type", "submit");
+          }
+          if(submitElement){
+            return submitElement;
+          }
+          if(possibleSignInFeature.signIn.id){
+                submitElement=this.findElementsByTwoAttribute(allButtonElements,"id", possibleSignInFeature.signIn.id, "type", "submit");
+          }
+          else {
+                submitElement=this.findElementsByTwoAttribute(allButtonElements,"name", possibleSignInFeature.signIn.name, "type", "submit");
+          }
+          return   submitElement;
     },
     findElementsByAttribute:function(allInputElements, attributename, attributevalue){
         for(var x=0;x<allInputElements.length;x++){

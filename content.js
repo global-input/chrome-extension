@@ -8,17 +8,19 @@
 
           if(document.getElementById("qrcode")){ //Dummy way of checking to see whether globalInput is already enabled
               //If there is a element named qrcode, then we assume the software already support Global Input
-              //Atleast we do not want to display another QR code if it is displaying another one
+              //Atleast we do not want to display another QR code if it is displaying one regardless of whether it is GlobalInput or not
               console.log("globalinput is skipped:qrcode");
               return;
            }
            var allInputElements=document.getElementsByTagName("input"); //Collecting all the input elements
            if(allInputElements.length<2){
-               //We assume the sign In page should hage at least two input elenents.
+               //We assume that the sign In page should hage at least two input elements.
               console.log("globalinput is skipped:input element missing");
               return;
            }
-           var possibleSignInFeatures=[ //This array tries to collect all possible names of Sign In form.
+           var possibleSignInFeatures=[
+             //This array is a collections of all possible names of Sign In form elements.
+             //You can add more to support more software and websites.
                    {
                          username:"os_username",
                          password:"os_password",
@@ -52,13 +54,14 @@
 
             for(var i=0;i<possibleSignInFeatures.length;i++){
 
-                  //Trying to find the sign in form elements by name attributes.
+                  //Finding the sign in form elements by name attributes.
                   signInForm=this.findSignInElementsByNames(possibleSignInFeatures[i].username,
                                                  possibleSignInFeatures[i].password,
                                                  possibleSignInFeatures[i].signIn,
                                                  allInputElements);
                   if(signInForm){
-                        //found the Sign In Elements, parentDepth decide the parent element of where the QR code should be placed.
+                        //found the Sign In Form Elements, parentDepth specifies the parent element where we can place the QR code.
+                        //For example if the value is, it will travel up one parent to get the container for qr code.
                         signInFormParentDepth=possibleSignInFeatures[i].parentDepth;
                         break;
                   }

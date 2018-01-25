@@ -1,411 +1,205 @@
 (function(){
 
-  function findAllInputElements(){
-    return document.getElementsByTagName("input");
-  }
 
-  function findButtonByTypeNameAndValue(typevalue,namevalue,valuevalue){
-    var buttons=document.getElementsByTagName("button");
-    if(!buttons){
-      return null;
-    }
-    for(var x=0;x<buttons.length;x++){
-        if(buttons[x].getAttribute('type') === typevalue && buttons[x].getAttribute('name') === namevalue && buttons[x].getAttribute('value') === valuevalue){
-            return buttons[x];
-        }
-    }
-    return null;
-  }
-  function findElementByName(inputs, namevalue){
-    if(!inputs){
-      return null;
-    }
-    for(var x=0;x<inputs.length;x++){
-        if(inputs[x].getAttribute('name') === namevalue){
-            return inputs[x];
-        }
-    }
-    return null;
-  }
-  function findElementByNameAndType(inputs, namevalue, typevalue){
-    if(!inputs){
-      return null;
-    }
-    for(var x=0;x<inputs.length;x++){
-        if(inputs[x].getAttribute('name') === namevalue && inputs[x].getAttribute('type') === typevalue){
-            return inputs[x];
-        }
-    }
-    return null
-  }
-  function findElementByNameAndTypeAndValue(inputs, namevalue, typevalue, valuevalue){
-    if(!inputs){
-      return null;
-    }
-    for(var x=0;x<inputs.length;x++){
-        if(inputs[x].getAttribute('name') === namevalue && inputs[x].getAttribute('type') === typevalue && inputs[x].getAttribute('value') === valuevalue){
-            return inputs[x];
-        }
-    }
-  }
-  function findElementByTypeAndValue(inputs, typevalue, valuevalue){
-    if(!inputs){
-      return null;
-    }
-    for(var x=0;x<inputs.length;x++){
-        if(inputs[x].getAttribute('type') === typevalue && inputs[x].getAttribute('value') === valuevalue ){
-            return inputs[x];
-        }
-    }
-    return null;
-  }
-  function findLoginContainerFromInput(inputElement, nParent){
-    var currentElement=inputElement;
-    for(var i=0;i<nParent;i++){
-      if(currentElement.parentElement){
-          currentElement=currentElement.parentElement;
+
+  var globalInputEnabler={
+
+    enableGlobalInput:function(){
+          if(document.getElementById("qrcode")){
+              //If there is a element named qrcode, then we assume the software already support Global Input
+              console.log("globalinput is skipped:qrcode");
+              return;
+           }
+           var allInputElements=document.getElementsByTagName("input");
+           if(allInputElements.length<2){
+               //We assume the sign In page should hage at least two input elenents.
+              console.log("globalinput is skipped:input element missing");
+              return;
+           }
+           var possibleSignInFeatures=[
+                   {
+                         username:"os_username",
+                         password:"os_password",
+                         signIn:"login",
+                         parentDepth:5
+                   },{
+                         username:"user[login]",
+                         password:"user[password]",
+                         signIn:  "commit",
+                         parentDepth:5
+                   },{
+                         username:"login",
+                         password:"password",
+                         signIn:  "commit",
+                         parentDepth:2
+                   },{
+                         username:"username",
+                         password:"password",
+                         signIn:  "submit",
+                         parentDepth:2
+                   },{
+                         username:"username",
+                         password:"password",
+                         signIn:  "login",
+                         parentDepth:3
+                   }
+            ];
+            var signInForm=null;
+            var signInFormParentDepth=1;
+
+            for(var i=0;i<possibleSignInFeatures.length;i++){
+                  signInForm=this.findSignInElementsByNames(possibleSignInFeatures[i].username,
+                                                 possibleSignInFeatures[i].password,
+                                                 possibleSignInFeatures[i].signIn,
+                                                 allInputElements);
+                  if(signInForm){
+                        signInFormParentDepth=possibleSignInFeatures[i].parentDepth;
+                        break;
+                  }
+            }
+
+
+           if(!signInForm){
+               console.log("globalinput is skipped:sign in form missing");
+               return;
+           }
+
+
+           var globalinputConfig={
+                                 onSenderConnected:function(){
+                                     document.getElementById("globalInputMessage").innerHTML="Device connected";
+                                 },
+                                 onSenderDisconnected:function(){
+                                     document.getElementById("globalInputMessage").innerHTML="Device disconnected";
+                                 },
+                                 initData:{
+                                     form:{
+                                       id:    "###username###"+"@"+window.location.host,
+                                       title: "Sign In",
+                                       fields:[{
+                                                 label:"Username",
+                                                 id:"username",
+                                                 operations:{
+                                                     onInput:function(username){
+                                                          signInForm.usernameElement.value=username;
+                                                     }
+                                                 }
+                                               },{
+                                                  label:"Password",
+                                                  id:"password",
+                                                  type:"secret",
+                                                  operations:{
+                                                    onInput:function(password){
+                                                      signInForm.passwordElement.value=password;
+                                                    }
+                                                  }
+
+                                               },{
+                                                  label:"Login",
+                                                  type:"button",
+                                                  operations:{
+                                                     onInput:function(){
+                                                        signInForm.submitElement.click();
+                                                     }
+                                                  }
+
+                                               }]
+                                           }
+                                     }
+
+                             };
+
+
+      var globalInputApi=require("global-input-message");
+      var globalInputConnector=globalInputApi.createMessageConnector();
+      globalInputConnector.connect(globalinputConfig);
+      var qrCodedata=globalInputConnector.buildInputCodeData();
+
+
+
+      var parentElement=this.findParentElement(signInForm.usernameElement,signInFormParentDepth); //Container for placing the QR Code
+             var qrCodeContainer = document.createElement('div');
+             qrCodeContainer.id="qrcode"; //this is where the QR code will be generated
+
+
+             qrCodeContainer.style.display='flex';
+             qrCodeContainer.style['display-direction']='row';
+             qrCodeContainer.style['justify-content']='center';
+
+             qrCodeContainer.style['z-index']=1000;
+             qrCodeContainer.textContent = '';
+
+      parentElement.appendChild(qrCodeContainer);
+             var messageContainer = document.createElement('div');
+             messageContainer.id="globalInputMessage";
+             messageContainer.textContent = '';
+      parentElement.appendChild(messageContainer);
+
+      var qrcode = new QRCode(qrCodeContainer, {
+                    text: qrCodedata,
+                    width:250,
+                    height: 250,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                 });
+
+    },
+
+
+
+
+
+
+
+    findSignInElementsByNames:function(nameValueForUsername, nameValueForPassword, nameValueForSubmit,allInputElements){
+      var signInElements={};
+      signInElements.usernameElement=this.findElementsByAttribute(allInputElements,"name",nameValueForUsername);
+      if(!signInElements.usernameElement){
+        return null;
       }
-      else{
-        break;
+      signInElements.passwordElement=this.findElementsByAttribute(allInputElements,"name",nameValueForPassword);
+      if(!signInElements.passwordElement){
+        return null;
       }
-
-    }
-    return currentElement;
-  }
-
-var formDataBuilders=[{
-build:function(){
-        return {
-
-               id:    "confluence",
-               username:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"os_username", "text");
-                           },
-                           label:"Username",
-                           container:function(inputs){
-                              var usernameelement=this.find(inputs);
-                              if(!usernameelement){
-                                return null;
-                              }
-                              return findLoginContainerFromInput(usernameelement,4);
-                           }
-               },
-               password:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"os_password", "password");
-                           },
-                           label:"Password"
-               },
-               submit:{
-                           find:function(inputs){
-                                          return findElementByNameAndTypeAndValue(inputs,"login", "submit","Log in");
-                           },
-                           label:"Log in"
-               }
+      signInElements.submitElement=this.findElementsByTwoAttribute(allInputElements,"name", nameValueForSubmit, "type", "submit");
+      if(!signInElements.submitElement){
+          return null;
+      }
+      return signInElements;
+    },
+    findElementsByAttribute:function(allInputElements, attributename, attributevalue){
+        for(var x=0;x<allInputElements.length;x++){
+            if(allInputElements[x].getAttribute(attributename) === attributevalue){
+                return allInputElements[x];
+            }
         }
-    }
-
-  },{
-  build:function(){
-        return {
-               id:    "jira",
-               username:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"os_username", "text");
-                           },
-                           label:"Username",
-                           container:function(inputs){
-                              var usernameelement=this.find(inputs);
-                              if(!usernameelement){
-                                return null;
-                              }
-                              return findLoginContainerFromInput(usernameelement,5);
-                           }
-               },
-               password:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"os_password", "password");
-                           },
-                           label:"Password"
-               },
-               submit:{
-                           find:function(inputs){
-                                          return findElementByNameAndTypeAndValue(inputs,"login", "submit","Log In");
-                           },
-                           label:"Log in"
-               }
-        }
-     }
-  },{
-  build:function(){
-        return {
-               id:    "gitlab",
-               username:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"user[login]", "text");
-                           },
-                           label:"Username",
-                           container:function(inputs){
-                              var usernameelement=this.find(inputs);
-                              if(!usernameelement){
-                                return null;
-                              }
-                              return findLoginContainerFromInput(usernameelement,5);
-                           }
-               },
-               password:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"user[password]", "password");
-                           },
-                           label:"Password"
-               },
-               submit:{
-                           find:function(inputs){
-                                          return findElementByNameAndTypeAndValue(inputs,"commit", "submit","Sign in");
-                           },
-                           label:"Sign in"
-               }
-        }
-     }
-  },{
-
-  build:function(){
-        return {
-               id:    "github",
-               username:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"login", "text");
-                           },
-                           label:"Username",
-                           container:function(inputs){
-                              var usernameelement=this.find(inputs);
-                              if(!usernameelement){
-                                return null;
-                              }
-                              return findLoginContainerFromInput(usernameelement,2);
-                           }
-               },
-               password:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"password", "password");
-                           },
-                           label:"Password"
-               },
-               submit:{
-                           find:function(inputs){
-                                          return findElementByNameAndTypeAndValue(inputs,"commit", "submit","Sign in");
-                           },
-                           label:"Sign in"
-               }
-        }
-     }
-  },{
-
-
-  build:function(){
-        return {
-               id:    "lucidchart",
-               username:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"username", "text");
-                           },
-                           label:"Username",
-                           container:function(inputs){
-                              var usernameelement=this.find(inputs);
-                              if(!usernameelement){
-                                return null;
-                              }
-                              return findLoginContainerFromInput(usernameelement,2);
-                           }
-               },
-               password:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"password", "password");
-                           },
-                           label:"Password"
-               },
-               submit:{
-                           find:function(inputs){
-                                          return findElementByTypeAndValue(inputs,"submit","Log in");
-                           },
-                           label:"Log in"
-               }
-        }
-     }
-  },{
-  build:function(){
-        return {
-               id:    "123reg",
-               username:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"username", "text");
-                           },
-                           label:"Username",
-                           container:function(inputs){
-                              var usernameelement=this.find(inputs);
-                              if(!usernameelement){
-                                return null;
-                              }
-                              return findLoginContainerFromInput(usernameelement,3);
-                           }
-               },
-               password:{
-                           find:function(inputs){
-                                          return findElementByNameAndType(inputs,"password", "password");
-                           },
-                           label:"Password"
-               },
-               submit:{
-                           find:function(inputs){
-                                          return findButtonByTypeNameAndValue("submit","login","Log Me In");
-                           },
-                           label:"Log in"
-               }
-        }
-    }
-
-}];
-
-
-  function isAlreadyGlobalInputEnable(){
-        var existingqrcodeelement=document.getElementById("qrcode");
-        return existingqrcodeelement
-  }
-
-
-  function createQRCodePlaceHolder(qrcodecontainer){
-           var div = document.createElement('div');
-           div.id="qrcode";
-           div.style.display='flex';
-           div.style['display-direction']='row';
-           div.style['justify-content']='center';
-           div.style['z-index']=1000;
-
-           div.textContent = '';
-           qrcodecontainer.appendChild(div);
-
-           div = document.createElement('div');
-           div.id="globalInputMessage";
-           div.textContent = '';
-           qrcodecontainer.appendChild(div);
-   };
-
-   function findFormData(){
-
-       var inputs=findAllInputElements();
-       var selectedFormBuilder=null;
-       for(var i=0;i<formDataBuilders.length;i++){
-         var formData=formDataBuilders[i].build();
-         if(!formData.username.find(inputs)){
-           console.log("no "+formData.id+":username");
-           continue;
-         }
-         if(!formData.password.find(inputs)){
-           console.log("no "+formData.id+":password");
-           continue;
-         }
-         if(!formData.submit.find(inputs)){
-           console.log("no "+formData.id+":submit");
-           continue;
-         }
-         return formData;
+        return null;
+   },
+   findElementsByTwoAttribute:function(allInputElements, attributename1, attributevalue1,attributename2, attributevalue2){
+       for(var x=0;x<allInputElements.length;x++){
+           if(allInputElements[x].getAttribute(attributename1) === attributevalue1 && allInputElements[x].getAttribute(attributename2) === attributevalue2){
+               return allInputElements[x];
+           }
        }
        return null;
-    }
-
-   function createGlobalInput(formData){
-       var globalinput={
-           api:require("global-input-message")
-       };
-     globalinput.config={
-                           onSenderConnected:function(){
-                               document.getElementById("globalInputMessage").innerHTML="Device connected";
-                           },
-                           onSenderDisconnected:function(){
-                               document.getElementById("globalInputMessage").innerHTML="Device disconnected";
-                           },
-                           initData:{
-
-                               form:{
-                                 id:    "###username###"+"@"+window.location.host+"_"+formData.id,
-                                 title: "Sign In",
-                                 fields:[{
-                                           label:formData.username.label,
-                                           id:"username",
-                                           operations:{
-                                               onInput:function(username){
-                                                    var inputs=findAllInputElements();
-                                                    formData.username.find(inputs).value=username;
-                                               }
-                                           }
-                                         },{
-                                            label:formData.password.label,
-                                            id:"password",
-                                            type:"secret",
-                                            operations:{
-                                              onInput:function(password){
-                                                var inputs=findAllInputElements();
-                                                formData.password.find(inputs).value=password;
-                                              }
-                                            }
-
-                                         },{
-                                            label:formData.submit.label,
-                                            type:"button",
-                                            operations:{
-                                               onInput:function(){
-                                                 var inputs=findAllInputElements();
-                                                   formData.submit.find(inputs).click();
-                                               }
-                                            }
-
-                                         }]
-                                     }
-                               }
-
-                       };
-            console.log(""+globalinput.config.initData.form.id);
-           return globalinput;
+  },
+  findParentElement:function(currentElement, nParent){
+      for(var i=0;i<nParent;i++){
+            if(currentElement.parentElement){
+                  currentElement=currentElement.parentElement;
+            }
+            else{
+                break;
+            }
+      }
+      return currentElement;
    }
 
-  function enableGlobalInput(){
-      if(isAlreadyGlobalInputEnable()){
-        console.log("Global input seems enabled already!");
-        return;
-      }
-      var formData=findFormData();
-      if(!formData){
-        console.log("Global Input is disabled for this page");
-        return;
-      }
-      var inputs=findAllInputElements();
-      if(!inputs ||inputs.length==0){
-        console.log("Globa Input disabled for this page: no input");
-        return;
-      }
-      var containerElement=formData.username.container(inputs);
-      if(!containerElement){
-        console.log("Global Input container element not found, so not enabling globalinput");
-        return;
-      }
-     createQRCodePlaceHolder(containerElement);
-     var globalinput=createGlobalInput(formData);
-     globalinput.connector=globalinput.api.createMessageConnector();
-     globalinput.connector.connect(globalinput.config);
-     var codedata=globalinput.connector.buildInputCodeData();
-     var qrcode = new QRCode(document.getElementById("qrcode"), {
-                         text: codedata,
-                         width:250,
-                         height: 250,
-                         colorDark : "#000000",
-                         colorLight : "#ffffff",
-                         correctLevel : QRCode.CorrectLevel.H
-     });
 
-  }
-  enableGlobalInput();
+ };
 
+      globalInputEnabler.enableGlobalInput();
 
 
 })();

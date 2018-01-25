@@ -56,6 +56,21 @@
                          password:{name:"password"},
                          signIn:  {id:"signin"},
                          container:{parentDepth:2}
+                   },{
+                         username:{name:"login_email"},
+                         password:{name:"login_password"},
+                         signIn:  {className:"login-button button-primary"},
+                         container:{parentDepth:3}
+                   },{
+                         username:{id:"user_login"},
+                         password:{id:"user_pass"},
+                         signIn:  {id:"wp-submit"},
+                         container:{parentDepth:3}
+                   },{
+                         username:{id:"input-username"},
+                         password:{id:"input-password"},
+                         signIn:  {type:"button", className:"btn btn-primary"},
+                         container:{parentDepth:3}
                    }
 
             ];
@@ -173,15 +188,15 @@
 
     findSignInElements:function(possibleSignInFeature,allInputElements, allButtonElements){
       var signInElements={};
-      signInElements.usernameElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFeature.username.name);
+      signInElements.usernameElement=this.findUsernameElement(allInputElements,possibleSignInFeature); //find the userame element
       if(!signInElements.usernameElement){
         return null;
       }
-      signInElements.passwordElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFeature.password.name);
+      signInElements.passwordElement=this.findPasswordElement(allInputElements,possibleSignInFeature); //find the password element
       if(!signInElements.passwordElement){
           return null;
       }
-      signInElements.submitElement=this.findSubmitElement(allInputElements,allButtonElements,possibleSignInFeature);
+      signInElements.submitElement=this.findSubmitElement(allInputElements,allButtonElements,possibleSignInFeature); //find the submit element
       if(!signInElements.submitElement){
               return null;
        }
@@ -189,6 +204,43 @@
       signInElements.container=this.findParentElement(signInElements.usernameElement,possibleSignInFeature.container.parentDepth);
       return signInElements;
     },
+
+
+    /**
+       find the Username element from allInputElements.
+       allInputElements is an array that contains all the input elements in the page.
+    **/
+
+    findUsernameElement(allInputElements,possibleSignInFeature){
+      var userNameElement=null;
+      if(possibleSignInFeature.username.id){
+          userNameElement=this.findElementsByAttribute(allInputElements,"id",possibleSignInFeature.username.id);
+      }
+      if(userNameElement){
+        return userNameElement;
+      }
+      userNameElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFeature.username.name);
+      return userNameElement;
+    },
+
+
+    /**
+       find the password element from allInputElements.
+       allInputElements is an array that contains all the input elements in the page.
+    **/
+    findPasswordElement(allInputElements,possibleSignInFeature){
+      var passwordElement=null;
+      if(possibleSignInFeature.password.id){
+          passwordElement=this.findElementsByAttribute(allInputElements,"id",possibleSignInFeature.password.id);
+      }
+      if(passwordElement){
+        return passwordElement;
+      }
+      passwordElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFeature.password.name);
+      return passwordElement;
+    },
+
+
 
 
     /**
@@ -200,22 +252,30 @@
 
 
     findSubmitElement:function(allInputElements,allButtonElements,possibleSignInFeature){
-          var submitElement=null;
-          if(possibleSignInFeature.signIn.id){
-                submitElement=this.findElementsByTwoAttribute(allInputElements,"id", possibleSignInFeature.signIn.id, "type", "submit");
-          }
-          else {
-                submitElement=this.findElementsByTwoAttribute(allInputElements,"name", possibleSignInFeature.signIn.name, "type", "submit");
-          }
-          if(submitElement){
-            return submitElement;
-          }
+      var submitElement=null;
+      if((!possibleSignInFeature.signIn.type) || possibleSignInFeature.signIn.type ==='input'){
+                if(possibleSignInFeature.signIn.id){
+                      submitElement=this.findElementsByTwoAttribute(allInputElements,"id", possibleSignInFeature.signIn.id, "type", "submit");
+                }
+                else {
+                      submitElement=this.findElementsByTwoAttribute(allInputElements,"name", possibleSignInFeature.signIn.name, "type", "submit");
+                }
+                if(submitElement){
+                  return submitElement;
+                }
+      }
+      if((!possibleSignInFeature.signIn.type) || possibleSignInFeature.signIn.type ==='button'){
           if(possibleSignInFeature.signIn.id){
                 submitElement=this.findElementsByTwoAttribute(allButtonElements,"id", possibleSignInFeature.signIn.id, "type", "submit");
+          }
+          else if(possibleSignInFeature.signIn.className){
+                submitElement=this.findElementsByTwoAttribute(allButtonElements,"class", possibleSignInFeature.signIn.className, "type", "submit");
           }
           else {
                 submitElement=this.findElementsByTwoAttribute(allButtonElements,"name", possibleSignInFeature.signIn.name, "type", "submit");
           }
+      }
+
           return   submitElement;
     },
 

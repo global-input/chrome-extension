@@ -22,69 +22,10 @@
 
            var allButtonElements=document.getElementsByTagName("button"); //Collecting all the input elements
 
+           var allAElements=document.getElementsByTagName("a"); //Collecting all the input elements
 
-           var possibleSignInFeatures=[
-             //This array is a collections of all possible names of Sign In form elements.
-             //You can add more to support more software and websites.
-                   {
-                         username:{name:"os_username"},
-                         password:{name:"os_password"},
-                         signIn:  {name:"login"},
-                         container:{parentDepth:5}
-                   },{
-                         username:{name:"user[login]"},
-                         password:{name:"user[password]"},
-                         signIn:  {name:"commit"},
-                         container:{parentDepth:5}
-                   },{
-                         username:{name:"login"},
-                         password:{name:"password"},
-                         signIn:  {name:"commit"},
-                         container:{parentDepth:2}
-                   },{
-                         username:{name:"username"},
-                         password:{name:"password"},
-                         signIn:  {name:"submit"},
-                         container:{parentDepth:2}
-                   },{
-                         username:{name:"username"},
-                         password:{name:"password"},
-                         signIn:  {name:"login"},
-                         container:{parentDepth:3}
-                   },{
-                         username:{name:"username"},
-                         password:{name:"password"},
-                         signIn:  {id:"signin"},
-                         container:{parentDepth:2}
-                   },{
-                         username:{name:"login_email"},
-                         password:{name:"login_password"},
-                         signIn:  {className:"login-button button-primary"},
-                         container:{parentDepth:3}
-                   },{
-                         username:{id:"user_login"},
-                         password:{id:"user_pass"},
-                         signIn:  {id:"wp-submit"},
-                         container:{parentDepth:3}
-                   },{
-                         username:{id:"input-username"},
-                         password:{id:"input-password"},
-                         signIn:  {type:"button", className:"btn btn-primary"},
-                         container:{parentDepth:3}
-                   }
+           var signInForm=this.findSignInElements(allInputElements,allButtonElements,allAElements); //find the sign in form elements
 
-            ];
-            var signInForm=null;
-
-
-
-            for(var i=0;i<possibleSignInFeatures.length;i++){
-                  //Finding the sign in form elements
-                  signInForm=this.findSignInElements(possibleSignInFeatures[i],allInputElements, allButtonElements);
-                  if(signInForm){//found the Sign In Form Elements
-                        break;
-                  }
-            }
            if(!signInForm){
                //this means we did not find the sign in form elements
                console.log("globalinput is skipped:sign in form missing");
@@ -138,7 +79,21 @@
                                      }
 
                              };
+      if(signInForm.accountElement){
 
+        globalinputConfig.initData.form.fields.unshift({
+
+                    label:"Account",
+                    id:"account",
+                    operations:{
+                        onInput:function(account){
+                             //Comes here when you type something on the username field on your mobile
+                             signInForm.accountElement.value=account;
+                        }
+                    }
+
+        });
+      }
 
       var globalInputApi=require("global-input-message"); //get the Global Input Api
       var globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
@@ -186,24 +141,130 @@
 
     **/
 
-    findSignInElements:function(possibleSignInFeature,allInputElements, allButtonElements){
-      var signInElements={};
-      signInElements.usernameElement=this.findUsernameElement(allInputElements,possibleSignInFeature); //find the userame element
-      if(!signInElements.usernameElement){
+    findSignInElements:function(allInputElements, allButtonElements,allAElements){
+
+
+
+      /*This array is a collections of all possible types of Sign In form.
+      Each elements describes the elements contained the sign in form.
+      You can add more to support even more software and websites.*/
+        var possibleSignInFormTypes=[
+              {   //from confluence
+                    username:{name:"os_username"},
+                    password:{name:"os_password"},
+                    signIn:  {element:"input", type:"submit",id:"loginButton"},
+                    container:{parentDepth:5}
+              },{   //from jira
+                    username:{name:"os_username"},
+                    password:{name:"os_password"},
+                    signIn:  {element:"input", type:"submit",id:"login"},
+                    container:{parentDepth:5}
+              },{
+                    //from gitlab
+                    username:{name:"user[login]"},
+                    password:{name:"user[password]"},
+                    signIn:  {element:"input", type:"submit", name:"commit"},
+                    container:{parentDepth:5}
+              },{   //from github
+                    username:{name:"login"},
+                    password:{name:"password"},
+                    signIn:  {element:"input", type:"submit",name:"commit"},
+                    container:{parentDepth:2}
+              },{
+                   //123-reg
+                    username:{name:"username"},
+                    password:{name:"password"},
+                    signIn:  {element:"button", type:"submit", name:"login"},
+                    container:{parentDepth:3}
+              },{
+                   //lona.co.uk
+                    username:{name:"username"},
+                    password:{name:"password"},
+                    signIn:  {element:"button", type:"submit", className:"btn btn-primary"},
+                    container:{parentDepth:3}
+              },{
+                    //lucidchart
+                    username:{name:"username"},
+                    password:{name:"password"},
+                    signIn:  {element:"input", type:"submit", id:"signin"},
+                    container:{parentDepth:2}
+              },{
+                    //dropbox
+                    username:{name:"login_email"},
+                    password:{name:"login_password"},
+                    signIn:  {element:"button", type:"submit",className:"login-button button-primary"},
+                    container:{parentDepth:3}
+              },{
+                    //wordpress
+                    username:{id:"user_login"},
+                    password:{id:"user_pass"},
+                    signIn:  {element:"input", type:"submit",id:"wp-submit"},
+                    container:{parentDepth:3}
+              },{
+                    username:{id:"input-username"},
+                    password:{id:"input-password"},
+                    signIn:  {element:"button", type:"submit", className:"btn btn-primary"},
+                    container:{parentDepth:3}
+              },{
+                    //developer.apple.com
+                    username:{id:"accountname"},
+                    password:{id:"accountpassword"},
+                    signIn:  {element:"button", type:"submit",id:"submitButton2"},
+                    container:{parentDepth:4}
+              },{
+                    //aws
+                    account:{id:"account"},
+                    username:{id:"username"},
+                    password:{id:"password"},
+                    signIn:  {element:"a", id:"signin_button"},
+                    container:{parentDepth:2}
+              }
+
+       ];
+
+       for(var i=0;i<possibleSignInFormTypes.length;i++){
+                    var signInElements={};
+                    signInElements.usernameElement=this.findUsernameElement(allInputElements,possibleSignInFormTypes[i]); //find the userame element
+                    if(!signInElements.usernameElement){
+                        continue; //try the next
+                    }
+                    signInElements.passwordElement=this.findPasswordElement(allInputElements,possibleSignInFormTypes[i]); //find the password element
+                    if(!signInElements.passwordElement){
+                          continue;//try the next
+                    }
+                    signInElements.submitElement=this.findSubmitElement(allInputElements,allButtonElements,allAElements,possibleSignInFormTypes[i]); //find the submit element
+                    if(!signInElements.submitElement){
+                        continue;//try the next
+                    }
+                    signInElements.accountElement=this.findAccountElement(allInputElements,possibleSignInFormTypes[i]); //find the account element, account may require in AWS
+                    //Container for placing the QR Code
+                    signInElements.container=this.findParentElement(signInElements.usernameElement,possibleSignInFormTypes[i].container.parentDepth);
+                    return signInElements;
+       }
+       return null;
+    },
+
+
+    /**
+       find the Account element from allInputElements.
+       allInputElements is an array that contains all the input elements in the page.
+    **/
+
+    findAccountElement(allInputElements,possibleSignInFormType){
+      var accountElement=null;
+      if(!possibleSignInFormType.account){
         return null;
       }
-      signInElements.passwordElement=this.findPasswordElement(allInputElements,possibleSignInFeature); //find the password element
-      if(!signInElements.passwordElement){
-          return null;
+      if(possibleSignInFormType.account.id){
+          accountElement=this.findElementsByAttribute(allInputElements,"id",possibleSignInFormType.account.id);
       }
-      signInElements.submitElement=this.findSubmitElement(allInputElements,allButtonElements,possibleSignInFeature); //find the submit element
-      if(!signInElements.submitElement){
-              return null;
-       }
-       //Container for placing the QR Code
-      signInElements.container=this.findParentElement(signInElements.usernameElement,possibleSignInFeature.container.parentDepth);
-      return signInElements;
+      if(accountElement){
+        return accountElement;
+      }
+      accountElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFormType.account.name);
+      return accountElement;
     },
+
 
 
     /**
@@ -211,32 +272,34 @@
        allInputElements is an array that contains all the input elements in the page.
     **/
 
-    findUsernameElement(allInputElements,possibleSignInFeature){
+    findUsernameElement(allInputElements,possibleSignInFormType){
       var userNameElement=null;
-      if(possibleSignInFeature.username.id){
-          userNameElement=this.findElementsByAttribute(allInputElements,"id",possibleSignInFeature.username.id);
+      if(possibleSignInFormType.username.id){
+          userNameElement=this.findElementsByAttribute(allInputElements,"id",possibleSignInFormType.username.id);
       }
       if(userNameElement){
         return userNameElement;
       }
-      userNameElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFeature.username.name);
+      userNameElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFormType.username.name);
       return userNameElement;
     },
+
+
 
 
     /**
        find the password element from allInputElements.
        allInputElements is an array that contains all the input elements in the page.
     **/
-    findPasswordElement(allInputElements,possibleSignInFeature){
+    findPasswordElement(allInputElements,possibleSignInFormType){
       var passwordElement=null;
-      if(possibleSignInFeature.password.id){
-          passwordElement=this.findElementsByAttribute(allInputElements,"id",possibleSignInFeature.password.id);
+      if(possibleSignInFormType.password.id){
+          passwordElement=this.findElementsByAttribute(allInputElements,"id",possibleSignInFormType.password.id);
       }
       if(passwordElement){
         return passwordElement;
       }
-      passwordElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFeature.password.name);
+      passwordElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFormType.password.name);
       return passwordElement;
     },
 
@@ -251,31 +314,40 @@
     **/
 
 
-    findSubmitElement:function(allInputElements,allButtonElements,possibleSignInFeature){
-      var submitElement=null;
-      if((!possibleSignInFeature.signIn.type) || possibleSignInFeature.signIn.type ==='input'){
-                if(possibleSignInFeature.signIn.id){
-                      submitElement=this.findElementsByTwoAttribute(allInputElements,"id", possibleSignInFeature.signIn.id, "type", "submit");
-                }
-                else {
-                      submitElement=this.findElementsByTwoAttribute(allInputElements,"name", possibleSignInFeature.signIn.name, "type", "submit");
-                }
-                if(submitElement){
-                  return submitElement;
-                }
-      }
-      if((!possibleSignInFeature.signIn.type) || possibleSignInFeature.signIn.type ==='button'){
-          if(possibleSignInFeature.signIn.id){
-                submitElement=this.findElementsByTwoAttribute(allButtonElements,"id", possibleSignInFeature.signIn.id, "type", "submit");
-          }
-          else if(possibleSignInFeature.signIn.className){
-                submitElement=this.findElementsByTwoAttribute(allButtonElements,"class", possibleSignInFeature.signIn.className, "type", "submit");
-          }
-          else {
-                submitElement=this.findElementsByTwoAttribute(allButtonElements,"name", possibleSignInFeature.signIn.name, "type", "submit");
-          }
-      }
+    findSubmitElement:function(allInputElements,allButtonElements,allAElements, possibleSignInFormType){
+          var submitElement=null;
+          var elementsToSearch=null;
 
+          if(possibleSignInFormType.signIn.element ==='input'){
+                elementsToSearch=allInputElements;
+          }
+          else if(possibleSignInFormType.signIn.element ==='button'){
+                elementsToSearch=allButtonElements;
+          }
+          else if(possibleSignInFormType.signIn.element ==='a'){
+                elementsToSearch=allAElements;
+          }
+          else{
+              console.log("sign in element type is not concifgured:"+JSON.stringify(possibleSignInFormType));
+              return null;
+          }
+
+          if(possibleSignInFormType.signIn.id && possibleSignInFormType.signIn.type){
+                submitElement=this.findElementsByTwoAttribute(elementsToSearch,"id", possibleSignInFormType.signIn.id, "type", possibleSignInFormType.signIn.type);
+
+          }
+          else if(possibleSignInFormType.signIn.id){
+                submitElement=this.findElementsByAttribute(elementsToSearch,"id", possibleSignInFormType.signIn.id);
+          }
+          else if(possibleSignInFormType.signIn.name && possibleSignInFormType.signIn.type){
+                submitElement=this.findElementsByTwoAttribute(elementsToSearch,"name", possibleSignInFormType.signIn.name, "type", possibleSignInFormType.signIn.type);
+          }
+          else if(possibleSignInFormType.signIn.name){
+                submitElement=this.findElementsByAttribute(elementsToSearch,"name", possibleSignInFormType.signIn.name);
+          }
+          else if(possibleSignInFormType.signIn.className && possibleSignInFormType.signIn.type){
+                submitElement=this.findElementsByTwoAttribute(elementsToSearch,"class", possibleSignInFormType.signIn.className, "type", possibleSignInFormType.signIn.type);
+          }
           return   submitElement;
     },
 

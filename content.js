@@ -4,7 +4,17 @@
 
   var globalInputEnabler={
 
-    enableGlobalInput:function(){ //This function will do everything.
+    /*
+    This will do the following:
+       1. Find the Sign In Form Elements from the page.
+       2. Display a QR Code beside or below the Sign In Form.
+          The QR Code contains the necessary information for the Global Input App to connect.
+       3. When the Global Input App has connected, the JS library sends the JSON data to the app describing the Sign In UI so that Global Input App can display
+          the corresponding Sign IN form on the mobile screen.
+       4. When the user has interacted with the form, the call back methods will be invoked.
+       5. The callback method can be implemented to set the value in the Sign In Form etc.
+    */
+    enableGlobalInput:function(){
 
           if(document.getElementById("qrcode")){ //Dummy way of checking to see whether globalInput is already enabled
               //If there is a element named qrcode, then we assume the software already support Global Input
@@ -15,85 +25,87 @@
            var allInputElements=document.getElementsByTagName("input"); //Collecting all the input elements
 
            if(allInputElements.length<2){
-               //We assume that the sign In page should hage at least two input elements.
-              console.log("globalinput is skipped:input element missing");
+               //We assume that the sign In page should have at least two input elements.
+              console.log("globalinput is skipped: input elements are missing");
               return;
            }
 
-           var allButtonElements=document.getElementsByTagName("button"); //Collecting all the input elements
+           var allButtonElements=document.getElementsByTagName("button"); //All the button elements
 
-           var allAElements=document.getElementsByTagName("a"); //Collecting all the input elements
+           var allALinkElements=document.getElementsByTagName("a"); //All the a tag elements
 
-           var signInForm=this.findSignInElements(allInputElements,allButtonElements,allAElements); //find the sign in form elements
+           var signInForm=this.findSignInForm(allInputElements,allButtonElements,allALinkElements); //find all the sign in form elements from the page.
 
            if(!signInForm){
-               //this means we did not find the sign in form elements
-               console.log("globalinput is skipped:sign in form missing");
+               //No sign in form elements
+               console.log("globalinput is skipped: sign in form is missing.");
                return;
            }
            var globalinputConfig={
                                  onSenderConnected:function(){
-                                     //It comes here when the Global Input App has Connected.
+                                     //This will be executed when the Global Input App has Connected.
                                      document.getElementById("globalInputMessage").innerHTML="Device connected";
                                  },
                                  onSenderDisconnected:function(){
-                                   //It comes here when the Global Input App has Disconnected.
+                                   //This will be executed when the Global Input App has disconnected.
                                      document.getElementById("globalInputMessage").innerHTML="Device disconnected";
                                  },
                                  initData:{
                                      form:{
-                                       id:    "###username###"+"@"+window.location.host,
-                                       title: "Sign In",
-                                       fields:[{
-                                                 label:"Username",
-                                                 id:"username",
-                                                 operations:{
-                                                     onInput:function(username){
-                                                          //Comes here when you type something on the username field on your mobile
-                                                          signInForm.usernameElement.value=username;
-                                                     }
-                                                 }
-                                               },{
-                                                  label:"Password",
-                                                  id:"password",
-                                                  type:"secret",
-                                                  operations:{
-                                                    onInput:function(password){
-                                                      //Comes here when you type something on the password field on your mobile
-                                                      signInForm.passwordElement.value=password;
-                                                    }
-                                                  }
-
-                                               },{
-                                                  label:"Login",
-                                                  type:"button",
-                                                  operations:{
-                                                     onInput:function(){
-                                                       //Comes here when you click on the "Login" button on your mobile
-                                                        signInForm.submitElement.click();
-                                                     }
-                                                  }
-
-                                               }]
+                                       id:    "###username###"+"@"+window.location.host, // unique id for saving the form content on mobile automating the form-filling process.
+                                       title: "Sign In",  //Title of the form displayed on the mobile
+                                       fields:[]          //Form elements displayed on the mobile, this will be populated in the next step.
                                            }
                                      }
 
-                             };
-      if(signInForm.accountElement){
+          };
+          if(signInForm.accountElement){   //The page has account element, so it should display one as well on the mobile.
+                    globalinputConfig.initData.form.fields.push({
+                                label:"Account", //Label of the text field
+                                id:"account",    //Unique Id for saving the field value.
+                                operations:{
+                                    onInput:function(account){
+                                         //Executes this when you interacted with this form element.
+                                         signInForm.accountElement.value=account;
+                                    }
+                                }
 
-        globalinputConfig.initData.form.fields.unshift({
+                        });
+          }
+          if(signInForm.usernameElement){
+                          globalinputConfig.initData.form.fields.push({
+                                label:"Username",
+                                id:"username",
+                                operations:{
+                                    onInput:function(username){
+                                         //callback same as above.
+                                         signInForm.usernameElement.value=username;
+                                    }
+                                }
+                          });
+          }
+          globalinputConfig.initData.form.fields.push({
+                     label:"Password",
+                     id:"password",
+                     type:"secret",
+                     operations:{
+                       onInput:function(password){
+                         //Comes here when you type something on the password field on your mobile
+                         signInForm.passwordElement.value=password;
+                       }
+                     }
+            });
+            globalinputConfig.initData.form.fields.push({
+                       label:"Login",
+                       type:"button",
+                       operations:{
+                          onInput:function(){
+                            //Comes here when you have clicked on the "Login" button on your mobile
+                             signInForm.submitElement.click();
+                          }
+                       }
 
-                    label:"Account",
-                    id:"account",
-                    operations:{
-                        onInput:function(account){
-                             //Comes here when you type something on the username field on your mobile
-                             signInForm.accountElement.value=account;
-                        }
-                    }
-
-        });
-      }
+            });
 
       var globalInputApi=require("global-input-message"); //get the Global Input Api
       var globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
@@ -135,29 +147,23 @@
 
 
     /**
-       find the sign in form from allInputElements and allButtonElements.
-       allInputElements is an array that contains all the input elements in the page.
-       allButtonElements is an array that contains all the button elements in the page.
-
+       find the sign in text fields from the allInputElements, allButtonElements and allALinkElements.
     **/
 
-    findSignInElements:function(allInputElements, allButtonElements,allAElements){
-
-
-
-      /*This array is a collections of all possible types of Sign In form.
-      Each elements describes the elements contained the sign in form.
-      You can add more to support even more software and websites.*/
-        var possibleSignInFormTypes=[
+    findSignInForm:function(allInputElements, allButtonElements,allALinkElements){
+        /*Matching Rules for finding the the Sign In Form.
+        Each entry is a rule for matching the Sign In elements contained the sign in form.
+        You can easily modify to support more websites/web applications.*/
+        var signInFormMatchingRules=[
               {   //from confluence
                     username:{name:"os_username"},
                     password:{name:"os_password"},
-                    signIn:  {element:"input", type:"submit",id:"loginButton"},
+                    signIn:  {element:"input", id:"loginButton"},
                     container:{parentDepth:5}
               },{   //from jira
                     username:{name:"os_username"},
                     password:{name:"os_password"},
-                    signIn:  {element:"input", type:"submit",id:"login"},
+                    signIn:  {element:"input", id:"login"},
                     container:{parentDepth:5}
               },{
                     //from gitlab
@@ -186,19 +192,19 @@
                     //lucidchart
                     username:{name:"username"},
                     password:{name:"password"},
-                    signIn:  {element:"input", type:"submit", id:"signin"},
+                    signIn:  {element:"input", id:"signin"},
                     container:{parentDepth:2}
               },{
                     //dropbox
                     username:{name:"login_email"},
                     password:{name:"login_password"},
-                    signIn:  {element:"button", type:"submit",className:"login-button button-primary"},
+                    signIn:  {element:"button", type:"submit", className:"login-button button-primary"},
                     container:{parentDepth:3}
               },{
                     //wordpress
                     username:{id:"user_login"},
                     password:{id:"user_pass"},
-                    signIn:  {element:"input", type:"submit",id:"wp-submit"},
+                    signIn:  {element:"input", id:"wp-submit"},
                     container:{parentDepth:3}
               },{
                     username:{id:"input-username"},
@@ -209,7 +215,7 @@
                     //developer.apple.com
                     username:{id:"accountname"},
                     password:{id:"accountpassword"},
-                    signIn:  {element:"button", type:"submit",id:"submitButton2"},
+                    signIn:  {element:"button", id:"submitButton2"},
                     container:{parentDepth:4}
               },{
                     //aws
@@ -218,138 +224,86 @@
                     password:{id:"password"},
                     signIn:  {element:"a", id:"signin_button"},
                     container:{parentDepth:2}
+              },{
+                    //aws
+                    password:{id:"ap_password"},
+                    signIn: {element:"input", id:"signInSubmit-input"},
+                    container:{parentDepth:3}
               }
 
        ];
 
-       for(var i=0;i<possibleSignInFormTypes.length;i++){
-                    var signInElements={};
-                    signInElements.usernameElement=this.findUsernameElement(allInputElements,possibleSignInFormTypes[i]); //find the userame element
-                    if(!signInElements.usernameElement){
+       for(var i=0;i<signInFormMatchingRules.length;i++){
+             var matchingRule=signInFormMatchingRules[i];
+             var signInElements={};
+             signInElements.passwordElement=this.findSignInElement(allInputElements,matchingRule.password); //find the password element
+             if(!signInElements.passwordElement){
+                  continue;//try the next matching rule, for the password element could not be found with the current rule.
+             }
+             if(matchingRule.username){
+                  signInElements.usernameElement=this.findSignInElement(allInputElements,matchingRule.username); //find the userame element
+                  if(!signInElements.usernameElement){
+                              continue; //try the next rule
+                  }
+             }
+            if(matchingRule.account){
+                 signInElements.accountElement=this.findSignInElement(allInputElements,matchingRule.account); //find the account element, i.e. aws uses this
+                 if(!signInElements.accountElement){
+                              continue; //try the next
+                 }
+            }
+            if(matchingRule.signIn.element==="input"){
+                 signInElements.submitElement=this.findSignInElement(allInputElements,matchingRule.signIn); //find the submit element from the input tags
+                 if(!signInElements.submitElement){
+                      continue; //try the next
+                }
+
+            }
+            else if(matchingRule.signIn.element==="button"){
+                signInElements.submitElement=this.findSignInElement(allButtonElements,matchingRule.signIn); //find the submit element from the button tags
+                if(!signInElements.submitElement){
                         continue; //try the next
-                    }
-                    signInElements.passwordElement=this.findPasswordElement(allInputElements,possibleSignInFormTypes[i]); //find the password element
-                    if(!signInElements.passwordElement){
-                          continue;//try the next
-                    }
-                    signInElements.submitElement=this.findSubmitElement(allInputElements,allButtonElements,allAElements,possibleSignInFormTypes[i]); //find the submit element
-                    if(!signInElements.submitElement){
-                        continue;//try the next
-                    }
-                    signInElements.accountElement=this.findAccountElement(allInputElements,possibleSignInFormTypes[i]); //find the account element, account may require in AWS
-                    //Container for placing the QR Code
-                    signInElements.container=this.findParentElement(signInElements.usernameElement,possibleSignInFormTypes[i].container.parentDepth);
-                    return signInElements;
+                }
+            }
+            else if(matchingRule.signIn.element==="a"){
+                signInElements.submitElement=this.findSignInElement(allALinkElements,matchingRule.signIn); //find the submit element from the a tags
+                if(!signInElements.submitElement){
+                    continue; //try the next
+                }
+            }
+            //Container for placing the QR Code
+            signInElements.container=this.findParentElement(signInElements.passwordElement,matchingRule.container.parentDepth);
+            return signInElements;
        }
        return null;
     },
 
 
     /**
-       find the Account element from allInputElements.
+       find the form element from allInputElements.
        allInputElements is an array that contains all the input elements in the page.
+       matchCriteria specifies the criteria for example id, name attribute of the input element.
     **/
 
-    findAccountElement(allInputElements,possibleSignInFormType){
-      var accountElement=null;
-      if(!possibleSignInFormType.account){
-        return null;
-      }
-      if(possibleSignInFormType.account.id){
-          accountElement=this.findElementsByAttribute(allInputElements,"id",possibleSignInFormType.account.id);
-      }
-      if(accountElement){
-        return accountElement;
-      }
-      accountElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFormType.account.name);
-      return accountElement;
-    },
-
-
-
-    /**
-       find the Username element from allInputElements.
-       allInputElements is an array that contains all the input elements in the page.
-    **/
-
-    findUsernameElement(allInputElements,possibleSignInFormType){
-      var userNameElement=null;
-      if(possibleSignInFormType.username.id){
-          userNameElement=this.findElementsByAttribute(allInputElements,"id",possibleSignInFormType.username.id);
-      }
-      if(userNameElement){
-        return userNameElement;
-      }
-      userNameElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFormType.username.name);
-      return userNameElement;
-    },
-
-
-
-
-    /**
-       find the password element from allInputElements.
-       allInputElements is an array that contains all the input elements in the page.
-    **/
-    findPasswordElement(allInputElements,possibleSignInFormType){
-      var passwordElement=null;
-      if(possibleSignInFormType.password.id){
-          passwordElement=this.findElementsByAttribute(allInputElements,"id",possibleSignInFormType.password.id);
-      }
-      if(passwordElement){
-        return passwordElement;
-      }
-      passwordElement=this.findElementsByAttribute(allInputElements,"name",possibleSignInFormType.password.name);
-      return passwordElement;
-    },
-
-
-
-
-    /**
-       find the submit button from allInputElements and allButtonElements.
-       allInputElements is an array that contains all the input elements in the page.
-       allButtonElements is an array that contains all the button elements in the page.
-
-    **/
-
-
-    findSubmitElement:function(allInputElements,allButtonElements,allAElements, possibleSignInFormType){
-          var submitElement=null;
-          var elementsToSearch=null;
-
-          if(possibleSignInFormType.signIn.element ==='input'){
-                elementsToSearch=allInputElements;
-          }
-          else if(possibleSignInFormType.signIn.element ==='button'){
-                elementsToSearch=allButtonElements;
-          }
-          else if(possibleSignInFormType.signIn.element ==='a'){
-                elementsToSearch=allAElements;
-          }
-          else{
-              console.log("sign in element type is not concifgured:"+JSON.stringify(possibleSignInFormType));
+    findSignInElement(allElements,matchCriteria){
+        if(matchCriteria.id){ //find element by id
+              return this.findElementsByAttribute(allElements,"id",matchCriteria.id);
+        }
+        else if(matchCriteria.type && matchCriteria.name){//find element by type and name attributes
+              submitElement=this.findElementsByTwoAttribute(allElements,"type", matchCriteria.type, "name", matchCriteria.name);
+        }
+        else if(matchCriteria.name){ //find element by type and name attribute
+              return this.findElementsByAttribute(allElements,"name",matchCriteria.name);
+         }
+        else if(matchCriteria.className && matchCriteria.type){ //find element by class and type attribute
+              submitElement=this.findElementsByTwoAttribute(allElements,"class", matchCriteria.className, "type", matchCriteria.type);
+        }
+         else{
               return null;
-          }
-
-          if(possibleSignInFormType.signIn.id && possibleSignInFormType.signIn.type){
-                submitElement=this.findElementsByTwoAttribute(elementsToSearch,"id", possibleSignInFormType.signIn.id, "type", possibleSignInFormType.signIn.type);
-
-          }
-          else if(possibleSignInFormType.signIn.id){
-                submitElement=this.findElementsByAttribute(elementsToSearch,"id", possibleSignInFormType.signIn.id);
-          }
-          else if(possibleSignInFormType.signIn.name && possibleSignInFormType.signIn.type){
-                submitElement=this.findElementsByTwoAttribute(elementsToSearch,"name", possibleSignInFormType.signIn.name, "type", possibleSignInFormType.signIn.type);
-          }
-          else if(possibleSignInFormType.signIn.name){
-                submitElement=this.findElementsByAttribute(elementsToSearch,"name", possibleSignInFormType.signIn.name);
-          }
-          else if(possibleSignInFormType.signIn.className && possibleSignInFormType.signIn.type){
-                submitElement=this.findElementsByTwoAttribute(elementsToSearch,"class", possibleSignInFormType.signIn.className, "type", possibleSignInFormType.signIn.type);
-          }
-          return   submitElement;
+         }
     },
+
+
 
     /**
        looking for element from allInputElements, the element should satisfy the condition: the value of attributename equals to attributevalue

@@ -154,8 +154,13 @@
         /*Matching Rules for finding the the Sign In Form.
         Each entry is a rule for matching the Sign In elements contained the sign in form.
         You can easily modify to support more websites/web applications.*/
-        var signInFormMatchingRules=[
-              {   //from confluence
+        var signInFormMatchingRules=[{
+                //from github
+                username:{id:"login_field"},
+                password:{id:"password"},
+                signIn:  {element:"input", type:"submit",name:"commit"},
+                container:{parentDepth:2}
+              },{   //from confluence
                     username:{name:"os_username"},
                     password:{name:"os_password"},
                     signIn:  {element:"input", id:"loginButton"},
@@ -171,11 +176,6 @@
                     password:{name:"user[password]"},
                     signIn:  {element:"input", type:"submit", name:"commit"},
                     container:{parentDepth:5}
-              },{   //from github
-                    username:{name:"login"},
-                    password:{name:"password"},
-                    signIn:  {element:"input", type:"submit",name:"commit"},
-                    container:{parentDepth:2}
               },{
                    //123-reg
                     username:{name:"username"},
@@ -229,9 +229,13 @@
                     password:{id:"ap_password"},
                     signIn: {element:"input", id:"signInSubmit-input"},
                     container:{parentDepth:3}
-              }
-
-       ];
+              },{
+                    //wisepay
+                    username:{id:"inputEmail3"},
+                    password:{id:"inputPassword3"},
+                    signIn:  {element:"button", type:"submit", className:"btn btn-primary bodytext"},
+                    container:{parentDepth:3}
+              }];
 
        for(var i=0;i<signInFormMatchingRules.length;i++){
              var matchingRule=signInFormMatchingRules[i];
@@ -271,6 +275,9 @@
                     continue; //try the next
                 }
             }
+            else{
+                signInElements.submitElement=this.findSignInElementByTagname(matchingRule.signIn.element,matchingRule.signIn); //find the submit element from the any tags
+            }
             //Container for placing the QR Code
             signInElements.container=this.findParentElement(signInElements.passwordElement,matchingRule.container.parentDepth);
             return signInElements;
@@ -290,14 +297,37 @@
               return this.findElementsByAttribute(allElements,"id",matchCriteria.id);
         }
         else if(matchCriteria.type && matchCriteria.name){//find element by type and name attributes
-              submitElement=this.findElementsByTwoAttribute(allElements,"type", matchCriteria.type, "name", matchCriteria.name);
+              return this.findElementsByTwoAttribute(allElements,"type", matchCriteria.type, "name", matchCriteria.name);
         }
         else if(matchCriteria.name){ //find element by type and name attribute
               return this.findElementsByAttribute(allElements,"name",matchCriteria.name);
          }
         else if(matchCriteria.className && matchCriteria.type){ //find element by class and type attribute
-              submitElement=this.findElementsByTwoAttribute(allElements,"class", matchCriteria.className, "type", matchCriteria.type);
+              return this.findElementsByTwoAttribute(allElements,"class", matchCriteria.className, "type", matchCriteria.type);
         }
+
+         else{
+              return null;
+         }
+    },
+    findSignInElementByTagname(tagName,matchCriteria){
+        var allElements=document.getElementsByTagName(tagName); //Collecting all the elements
+        if((!allElements) || (!allElements.length)){
+              return null;
+        }
+        if(matchCriteria.id){ //find element by id
+              return this.findElementsByAttribute(allElements,"id",matchCriteria.id);
+        }
+        else if(matchCriteria.type && matchCriteria.name){//find element by type and name attributes
+              return this.findElementsByTwoAttribute(allElements,"type", matchCriteria.type, "name", matchCriteria.name);
+        }
+        else if(matchCriteria.name){ //find element by type and name attribute
+              return this.findElementsByAttribute(allElements,"name",matchCriteria.name);
+         }
+        else if(matchCriteria.className && matchCriteria.type){ //find element by class and type attribute
+              return this.findElementsByTwoAttribute(allElements,"class", matchCriteria.className, "type", matchCriteria.type);
+        }
+
          else{
               return null;
          }

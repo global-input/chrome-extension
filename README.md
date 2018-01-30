@@ -25,9 +25,7 @@ And then, if you click on the ```Load unpacked extensions...``` button, a file s
 
 After the installation, you should be able to see a Global Input Icon at the right hand side of the address bar of your browser.
 
-Now after fully loading your favourite web applications such as Confluence, Jira, Lucidchart, AWS console, Dropbox etc, you can click on
-
-the "Global Input App" icon that you can find on the right hand side of the address bar of your browser. Clicking on the icon should pop up a small window. The window contains a title with "Global Input App" and a button named "Enable For This Page". Clicking on the button should make the current page display a QR Code alongside the Sign In form in the page.
+Now having loaded fully your favourite web applications such as Confluence, Jira, Lucidchart, AWS console, Dropbox etc in Chrome browser, you can click on the "Global Input App" icon,  which you can find on the right hand side of the address bar of your browser. Clicking on the icon should pop up a small window. The window contains a title "Global Input App" and a button "Enable For This Page". Clicking on the button should make the current page display a QR Code alongside the Sign In form in the page.
 
 You can scan the QR code on the Global Input App (available in [iOS](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4) and [Android](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4)) with your mobile.
 

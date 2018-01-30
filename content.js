@@ -155,6 +155,12 @@
         Each entry is a rule for matching the Sign In elements contained the sign in form.
         You can easily modify to support more websites/web applications.*/
         var signInFormMatchingRules=[{
+              //itunesconnect.apple.com
+              username:{id:"appleId"},
+              password:{id:"pwd"},
+              signIn:  {element:"button", id:"sign-in"},
+              container:{parentDepth:4}
+        },{
                 //from github
                 username:{id:"login_field"},
                 password:{id:"password"},
@@ -205,11 +211,6 @@
                     username:{id:"user_login"},
                     password:{id:"user_pass"},
                     signIn:  {element:"input", id:"wp-submit"},
-                    container:{parentDepth:3}
-              },{
-                    username:{id:"input-username"},
-                    password:{id:"input-password"},
-                    signIn:  {element:"button", type:"submit", className:"btn btn-primary"},
                     container:{parentDepth:3}
               },{
                     //developer.apple.com

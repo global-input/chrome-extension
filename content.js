@@ -15,31 +15,45 @@
        5. The callback method can be implemented to set the value in the Sign In Form etc.
     */
     enableGlobalInput:function(){
-
-          if(document.getElementById("qrcode")){ //Dummy way of checking to see whether globalInput is already enabled
+           if(document.getElementById("qrcode")){ //Dummy way of checking to see whether globalInput is already enabled
               //If there is a element named qrcode, then we assume the software already support Global Input
               //Atleast we do not want to display another QR code if it is displaying one regardless of whether it is GlobalInput or not
-              console.log("globalinput is skipped:qrcode");
-              return;
+
+              return {
+                  error:"The page already has QR Code."
+              };
            }
-           var allInputElements=document.getElementsByTagName("input"); //Collecting all the input elements
+           var doc=document;
+           var allInputElements=null;
+           var allButtonElements=null;
+           var allALinkElements=null;
 
-           if(allInputElements.length<2){
-               //We assume that the sign In page should have at least two input elements.
-              console.log("globalinput is skipped: input elements are missing");
-              return;
+           var appleidframe=document.getElementById("aid-auth-widget-iFrame");
+           if(appleidframe){
+             return {
+                  error:"iframe is not supported yet"
+             };
            }
 
-           var allButtonElements=document.getElementsByTagName("button"); //All the button elements
 
-           var allALinkElements=document.getElementsByTagName("a"); //All the a tag elements
+           var allInputElements=doc.getElementsByTagName("input"); //Collecting all the input elements
+           var allButtonElements=doc.getElementsByTagName("button"); //All the button elements
+           var allALinkElements=doc.getElementsByTagName("a"); //All the a tag elements
+
+           if(allInputElements.length<1 && allButtonElements.length<1 && allALinkElements.length<1){
+             return {
+                  error:"no active elements found in the page"
+             };
+
+           }
 
            var signInForm=this.findSignInForm(allInputElements,allButtonElements,allALinkElements); //find all the sign in form elements from the page.
 
            if(!signInForm){
                //No sign in form elements
-               console.log("globalinput is skipped: sign in form is missing.");
-               return;
+               return {
+                    error:"Failed to find a Sign In form on the page"
+               };
            }
            var globalinputConfig={
                                  onSenderConnected:function(){
@@ -139,7 +153,7 @@
                     colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.H
                  });
-
+        return {qrCodedata:qrCodedata};
     },
 
 
@@ -155,18 +169,7 @@
         Each entry is a rule for matching the Sign In elements contained the sign in form.
         You can easily modify to support more websites/web applications.*/
         var signInFormMatchingRules=[{
-              //itunesconnect.apple.com
-              username:{id:"appleId"},
-              password:{id:"pwd"},
-              signIn:  {element:"button", id:"sign-in"},
-              container:{parentDepth:4}
-        },{
-                //from github
-                username:{id:"login_field"},
-                password:{id:"password"},
-                signIn:  {element:"input", type:"submit",name:"commit"},
-                container:{parentDepth:2}
-              },{   //from confluence
+               //from confluence
                     username:{name:"os_username"},
                     password:{name:"os_password"},
                     signIn:  {element:"input", id:"loginButton"},
@@ -182,6 +185,12 @@
                     password:{name:"user[password]"},
                     signIn:  {element:"input", type:"submit", name:"commit"},
                     container:{parentDepth:5}
+              },{
+                      //from github
+                      username:{id:"login_field"},
+                      password:{id:"password"},
+                      signIn:  {element:"input", type:"submit",name:"commit"},
+                      container:{parentDepth:2}
               },{
                    //123-reg
                     username:{name:"username"},
@@ -219,6 +228,18 @@
                     signIn:  {element:"button", id:"submitButton2"},
                     container:{parentDepth:4}
               },{
+                    //itunesconnect.apple.com
+                    username:{id:"appleId"},
+                    password:{id:"pwd"},
+                    signIn:  {element:"button", id:"sign-in"},
+                    container:{parentDepth:4}
+              },{
+                    //wisepay
+                    username:{id:"inputEmail3"},
+                    password:{id:"inputPassword3"},
+                    signIn:  {element:"button", type:"submit", className:"btn btn-primary bodytext"},
+                    container:{parentDepth:3}
+              },{
                     //aws
                     account:{id:"account"},
                     username:{id:"username"},
@@ -231,11 +252,10 @@
                     signIn: {element:"input", id:"signInSubmit-input"},
                     container:{parentDepth:3}
               },{
-                    //wisepay
-                    username:{id:"inputEmail3"},
-                    password:{id:"inputPassword3"},
-                    signIn:  {element:"button", type:"submit", className:"btn btn-primary bodytext"},
-                    container:{parentDepth:3}
+                    //gmail
+                    password:{element:"input", name:"password", type:"password"},
+                    signIn: {element:"div", id:"#passwordNext"},
+                    container:{parentDepth:8}
               }];
 
        for(var i=0;i<signInFormMatchingRules.length;i++){
@@ -380,7 +400,21 @@
 
  };
 
-      globalInputEnabler.enableGlobalInput(); //This is the entry point for the chrome extension
+   chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
+      var data = request.data || {};
+      var result=globalInputEnabler.enableGlobalInput(); //Enable Global Input and display a QR Code
+      if(result.error){
+            result.success=false;
+      }
+      else{
+          result.success=true;
+      }
+      sendResponse(result);
+  });
+
+
+
+
 
 
 })();

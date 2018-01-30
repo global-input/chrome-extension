@@ -10,9 +10,12 @@
             "32":"images/globalInput32.png",
             "24":"images/globalInput24.png",
             "16":"images/globalInput16.png"
-        }
+        },
+        "default_popup": "popup.html"
   },
-
+  "permissions": [
+      "activeTab"
+  ],
   "content_scripts": [
         {
           "matches": [
@@ -24,4 +27,5 @@
         }
 
  ]
+
 }

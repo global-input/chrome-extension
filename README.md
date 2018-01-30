@@ -23,9 +23,13 @@ And then, if you click on the ```Load unpacked extensions...``` button, a file s
 
 ### How To Use
 
-After the installation, if you load your favourite web applications such as Confluence, Jira, Lucidchart, AWS console, Dropbox etc, you will see a QR code displayed alongside the Sign In form.
+After the installation, you should be able to see a Global Input Icon at the right hand side of the address bar of your browser.
 
-Now run the Global Input App (available in [iOS](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4) and [Android](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4)) on your mobile.
+Now after fully loading your favourite web applications such as Confluence, Jira, Lucidchart, AWS console, Dropbox etc, you can click on
+
+the "Global Input App" icon that you can find on the right hand side of the address bar of your browser. Clicking on the icon should pop up a small window. The window contains a title with "Global Input App" and a button named "Enable For This Page". Clicking on the button should make the current page display a QR Code alongside the Sign In form in the page.
+
+You can scan the QR code on the Global Input App (available in [iOS](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4) and [Android](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4)) with your mobile.
 
 When you scan the QR Code with the Global Input App, a Sign In Form will be displayed on your mobile screen. You can type your credentials on your mobile, and they are transferred in-time to the UI of the application running on your computer. After finished filling the form, you can save the form content in your phone so you can automate the process next time.
 

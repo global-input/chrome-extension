@@ -2,13 +2,21 @@ html, body {
   width: 600px;
   height: 100px;
 }
+#header {
+  width:100%;
+  background-color: #153E85;
+  display:flex;
+  flex-direction: center;
+  justify-content: center;
+}
 #title{
   font-family: "Avenir";
   font-size: 20px;
   font-weight: 100;
-  color: #333333;
+  color: #FFFFFF;
   line-height: 2.75rem;
 }
+
 #enableGlobalInput{
    background-color: blue;
    color:white;
@@ -27,4 +35,8 @@ html, body {
   font-family: "Avenir";
   font-size: 12px;
   color: #333333;
+}
+
+#qrcode{
+  margin-top: 25px;
 }

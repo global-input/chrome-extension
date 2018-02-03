@@ -32,8 +32,9 @@ var globalInput={
             messageContainer.innerHTML="Global Input is now enabled! The page should be displaying a QR Code. Now you can scan it with the Global Input App on your mobile to connect to the page";
         },
         onTabGlobalInputFailed:function(response){
+             console.log(response.error);
              this.contentContainer.innerHTML="";
-             var messageElement=this.createMessageElement(response.error+". You can modify the script to add the support to the Sign In form if you are familiar with JavaScript or we can add it if you can contact me on dilshat@iterativesolution.co.uk. Or you can scan the following the QR code with the Global Input app on your mobile to transfer the content to here first and then do copy and paste operations. ");
+             var messageElement=this.createMessageElement("No Form is not spotted in the page, the footprint of a new form can be added easily by modifying the scrupt. If you need help, please send a message to dilshat@iterativesolution.co.uk. For the time being you can scan the following the QR code with the Global Input app on your mobile to transfer the content to here first and then do copy and paste to copy the content to the form in the page.");
              this.contentContainer.appendChild(messageElement);
 
              this.globalInputConnector=this.createGlobalInputConnector();
@@ -41,7 +42,7 @@ var globalInput={
              console.log("code data:[["+codeData+"]]");
              var qrCodeContainerElement=this.createQRCode(codeData);
              this.contentContainer.appendChild(qrCodeContainerElement);
-             document.body.style.height="600px";
+             document.body.style.height="500px";
 
         },
 
@@ -114,6 +115,10 @@ var globalInput={
         createInputForm:function(){
               var formContainer = document.createElement('div');
               formContainer.id="form";
+                  var messageElement = document.createElement('div');
+                  messageElement.id="message";
+                  messageElement.innerHTML="";
+              formContainer.appendChild(messageElement);
 
                   var inputContainer=document.createElement('div');
                   inputContainer.className = "field";
@@ -129,24 +134,23 @@ var globalInput={
 
 
                        var copyButtonElement = document.createElement('button');
-                       var messageElement = document.createElement('div');
+
 
                        copyButtonElement.id="copyusername";
-                       messageElement.id="usernamemessage";
+
 
                        copyButtonElement.innerHTML="Copy to Clipboard";
-                       messageElement.innerHTML="";
+
                        var that=this;
                        copyButtonElement.onclick=function(){
                               that.usernameElement.select();
                               document.execCommand("Copy");
-                              messageElement.innerHTML="Username value is copied to clipboard";
+                              messageElement.innerHTML="The username is copied into the clipboard";
                        };
                     inputContainer.appendChild(copyButtonElement);
-                    inputContainer.appendChild(messageElement);
-
 
              formContainer.appendChild(inputContainer);
+
                    var inputContainer=document.createElement('div');
                    inputContainer.className = "field";
                        var labelElement = document.createElement('label');
@@ -161,18 +165,18 @@ var globalInput={
 
 
                     var copyButtonElement = document.createElement('button');
-                    var messageElement = document.createElement('div');
+
 
                     copyButtonElement.id="copypassword";
-                    messageElement.id="passwordmessage";
+
 
                     copyButtonElement.innerHTML="Copy to Clipboard";
-                    messageElement.innerHTML="";
+
                     var that=this;
                     copyButtonElement.onclick=function(){
                            that.passwordElement.select();
                            document.execCommand("Copy");
-                           messageElement.innerHTML="Password value is copied to clipboard";
+                           messageElement.innerHTML="The password is copied into the clipboard";
                     };
                  inputContainer.appendChild(copyButtonElement);
                  inputContainer.appendChild(messageElement);

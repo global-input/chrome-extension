@@ -252,6 +252,12 @@
                     signIn: {element:"input", id:"signInSubmit-input"},
                     container:{parentDepth:3}
               },{
+                    //jira on atlassian.com
+                    username:{id:"username"},
+                    password:{id:"password"},
+                    signIn: {element:"button", id:"login-submit"},
+                    container:{parentDepth:12}
+              },{
                     //gmail
                     password:{element:"input", name:"password", type:"password"},
                     signIn: {element:"div", id:"#passwordNext"},
@@ -409,6 +415,7 @@
       else{
           result.success=true;
       }
+      result.hostname=window.location.host
       sendResponse(result);
   });
 

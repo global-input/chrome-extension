@@ -34,7 +34,7 @@ var globalInput={
         onTabGlobalInputFailed:function(response){
              console.log(response.error);
              this.contentContainer.innerHTML="";
-             var messageElement=this.createMessageElement("No form identifiable is spotted in this page. For the time being you can scan the following QR code with the Global Input app on your mobile to transfer the content to this popup window first and then copy and paste the content into the form in the page. If you would like to interact with the page directly with your mobile, the footprint of this page needs to be added to the script. This can be done easily with a little bit of Javascript knowledge. If you need help on this, please send a message to dilshat@iterativesolution.co.uk.");
+             var messageElement=this.createMessageElement("No form is identified in this page. For the time being, you can scan the following QR code with the Global Input app on your mobile to transfer the content to this popup window first and then copy and paste the content into the form in the page. If you would like to interact with the page directly with your mobile, the footprint of this page needs to be added to the script. This can be done easily with a little bit of Javascript knowledge. If you need help on this, please send a message to dilshat@iterativesolution.co.uk.");
              this.contentContainer.appendChild(messageElement);
 
              this.globalInputConnector=this.createGlobalInputConnector();

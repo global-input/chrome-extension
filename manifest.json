@@ -16,13 +16,17 @@
   "permissions": [
       "activeTab"
   ],
+  "background": {
+    "scripts": ["eventPage.js"],
+    "persistent": false
+  },
   "content_scripts": [
         {
           "matches": [
             "<all_urls>"
           ],
-          "js": ["qrcode.min.js",
-                 "global-input-message.min.js",
+          "js": ["qrcode.js",
+                 "global-input-message.js",
                  "content.js"]
         }
 

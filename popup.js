@@ -205,6 +205,6 @@ var globalInput={
               this.passwordElement.value=password;
           }
         }
-
+        
 };
 document.addEventListener('DOMContentLoaded',  globalInput.onDocumentLoaded.bind(globalInput));

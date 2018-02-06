@@ -1,8 +1,6 @@
 (function(){
 
-
-
-  var globalInputEnabler={
+  var globalInputManager={
 
     /*
     This will do the following:
@@ -15,39 +13,8 @@
        5. The callback method can be implemented to set the value in the Sign In Form etc.
     */
     enableGlobalInput:function(){
-           if(document.getElementById("qrcode")){ //Dummy way of checking to see whether globalInput is already enabled
-              //If there is a element named qrcode, then we assume the software already support Global Input
-              //Atleast we do not want to display another QR code if it is displaying one regardless of whether it is GlobalInput or not
 
-              return {
-                  error:"The page already has QR Code."
-              };
-           }
-           var doc=document;
-           var allInputElements=null;
-           var allButtonElements=null;
-           var allALinkElements=null;
-
-           var appleidframe=document.getElementById("aid-auth-widget-iFrame");
-           if(appleidframe){
-             return {
-                  error:"iframe is not supported yet"
-             };
-           }
-
-
-           var allInputElements=doc.getElementsByTagName("input"); //Collecting all the input elements
-           var allButtonElements=doc.getElementsByTagName("button"); //All the button elements
-           var allALinkElements=doc.getElementsByTagName("a"); //All the a tag elements
-
-           if(allInputElements.length<1 && allButtonElements.length<1 && allALinkElements.length<1){
-             return {
-                  error:"no active elements found in the page"
-             };
-
-           }
-
-           var signInForm=this.findSignInForm(allInputElements,allButtonElements,allALinkElements); //find all the sign in form elements from the page.
+           var signInForm=this.findSignInForm(); //find all the sign in form elements from the page.
 
            if(!signInForm){
                //No sign in form elements
@@ -161,10 +128,18 @@
 
 
     /**
-       find the sign in text fields from the allInputElements, allButtonElements and allALinkElements.
+       find the sign in text fields from the page.
     **/
 
-    findSignInForm:function(allInputElements, allButtonElements,allALinkElements){
+    findSignInForm:function(){
+      var allInputElements=document.getElementsByTagName("input"); //Collecting all the input elements
+      var allButtonElements=document.getElementsByTagName("button"); //All the button elements
+      var allALinkElements=document.getElementsByTagName("a"); //All the a tag elements
+      if(allInputElements.length<1 && allButtonElements.length<1 && allALinkElements.length<1){
+        return null;
+      }
+
+
         /*Matching Rules for finding the the Sign In Form.
         Each entry is a rule for matching the Sign In elements contained the sign in form.
         You can easily modify to support more websites/web applications.*/
@@ -401,23 +376,32 @@
             }
       }
       return currentElement;
+   },
+
+
+   init:function(){
+          var that=this;
+          var
+
+           chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+              var data = request.data || {};
+              var result=that.enableGlobalInput(); //Enable Global Input and display a QR Code
+              if(result.error){
+                    result.success=false;
+              }
+              else{
+                  result.success=true;
+              }
+              result.hostname=window.location.host
+              sendResponse(result);
+          });
    }
 
 
  };
 
-   chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
-      var data = request.data || {};
-      var result=globalInputEnabler.enableGlobalInput(); //Enable Global Input and display a QR Code
-      if(result.error){
-            result.success=false;
-      }
-      else{
-          result.success=true;
-      }
-      result.hostname=window.location.host
-      sendResponse(result);
-  });
+globalInputManager.init();
+
 
 
 

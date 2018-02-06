@@ -391,6 +391,20 @@ findSignInForm:function(){
    onSenderDisconnectedForPageControl:function(sender, senders){
           this.sendMessageToExtension({action: "senderDisconnectedForPageControl",senders:senders});
    },
+   onPopWindowOpenned:function(message){
+        if(this.globalInputConnector){
+              if(this.globalInputConnector.connectedSenders && this.globalInputConnector.connectedSenders.length>0){
+                  return {action: "senderConnectedForPageControl",senders:this.globalInputConnector.connectedSenders};
+              }
+              else{
+                  var qrcodedata=this.globalInputConnector.buildInputCodeData(); //Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
+                  return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host};
+              }
+        }
+        else {
+            return {action:"notConnected"};
+        }
+   },
 
    requestOperateOnThisPage:function(message){
        var signInForm=this.findSignInForm(); //find all the sign in form elements from the page.
@@ -478,6 +492,10 @@ findSignInForm:function(){
         }
         else if(request.action==='operateOnThisPage'){
             var response=this.requestOperateOnThisPage(request);
+            sendResponse(response);
+        }
+        else if(request.action==='onPopWindowOpenned'){
+            var response=this.onPopWindowOpenned(request);
             sendResponse(response);
         }
         else{

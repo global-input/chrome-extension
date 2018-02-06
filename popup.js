@@ -10,7 +10,7 @@ var globalInput={
                           that.processMessageResponse(request);
                           sendResponse({action: "delivered"});
                     });
-
+              this.sendMessageToContentScript({action:"onPopWindowOpenned"})
 
         },
         onOperateOnThisPageButtonCicked:function(){
@@ -42,6 +42,7 @@ var globalInput={
             else if(response.action==='senderDisconnectedForPageControl'){
                   this.onSenderDisconnectedForPageControl(response.senders);
             }
+
         },
         onSenderConnectedForPageControl:function(senders){
              this.contentContainer.innerHTML="";

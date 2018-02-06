@@ -3,13 +3,13 @@
   <head>
     <title>Global Input App</title>
     <link href="styles/main.css" rel="stylesheet" type="text/css"/>
-    <script src="qrcode.min.js"></script>
-    <script src="global-input-message.min.js"></script>
+    <script src="qrcode.js"></script>
+    <script src="global-input-message.js"></script>
     <script src="popup.js"></script>
   </head>
   <body>
     <div id="header">
-      <div id="title">Global Input App</div>
+      <div id="title">Global Input App <span id="hostname"></span></div>
     </div>
     <div id="content">
       <div id="content">
@@ -17,7 +17,8 @@
                     <button id="operateOnThisPage">Enable Global Input for This Page</button>
                 </div>
                 <div id="message">
-                          Clicking on the above button should make the current page display a QR Code that you can scan with the Global Input App on your mobile
+                  Clicking on the button above should display a QR Code that you can scan with the Global Input App () on your mobile
+      to operate with your mobile.
                 </div>
           </div>
 

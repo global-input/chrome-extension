@@ -3,11 +3,49 @@ var globalInput={
         onDocumentLoaded:function(){
               this.contentContainer=document.getElementById('content');
               var operateOnThisPageButton = document.getElementById('operateOnThisPage');
-              globalInputButton.addEventListener("click", this.onEnableButtonClicked.bind(this));
+              operateOnThisPageButton.addEventListener("click", this.onOperateOnThisPageButtonCicked.bind(this));
         },
-        onEnableButtonClicked:function(){
-            chrome.tabs.query({active: true, currentWindow: true}, this.enableGlobalInputOnTab.bind(this));
+        onOperateOnThisPageButtonCicked:function(){
+              this.sendMessageToContentScript({action:"operateOnThisPage"})
         },
+        sendMessageToContentScript:function(message){
+            var that=this;
+            chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+                chrome.tabs.sendMessage(tabs[0].id, message, that.processMessageResponse.bind(that));
+            });
+        },
+        processMessageResponse:function(response){
+            if(!response){
+                 this.contentContainer.innerHTML="Unable to communicate with the page content, please reload/refresh the page and try again.";
+            }
+            else if(response.action==='missingForm'){
+                  this.displayMessage("This page is not added to the supported list yet, please contact dilshat@iterativesolution.co.uk if you would like to add it to the supported list, or if you can add it yourself if you have a little bit of javascript knowledge.");
+            }
+            else if(response.action==='displayMessage'){
+                  this.displayMessage(response.messageToDisplay);
+            }
+            else if(response.action==='displayQRCode'){
+                  this.displayPageQRCode(response.qrcodedata);
+            }
+        },
+       displayMessage:function(message){
+          var messageContainer = document.getElementById('message');
+          if(messageContainer){
+                messageContainer.innerText=message;
+          }
+          else{
+            console.error("failed to display the error message:"+message);
+          }
+      },
+      displayPageQRCode:function(codeData){
+            this.contentContainer.innerHTML="";
+            var messageElement=this.createMessageElement("Global Input is now enabled! Please scan the following QR code with the Global Input App on your mobile to connect to the page, so you can operate on the page with your mobile.");
+            this.contentContainer.appendChild(messageElement);
+            var qrCodeContainerElement=this.createQRCode(codeData);
+            this.contentContainer.appendChild(qrCodeContainerElement);
+            document.body.style.height="500px";
+       },
+
         enableGlobalInputOnTab:function(tabs){
             chrome.tabs.sendMessage(tabs[0].id, {action: "enable"}, this.processEnableGlobalInputOnTabResponse.bind(this));
         },

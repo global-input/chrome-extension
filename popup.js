@@ -2,7 +2,7 @@
 var globalInput={
         onDocumentLoaded:function(){
               this.contentContainer=document.getElementById('content');
-              var globalInputButton = document.getElementById('enableGlobalInput');
+              var operateOnThisPageButton = document.getElementById('operateOnThisPage');
               globalInputButton.addEventListener("click", this.onEnableButtonClicked.bind(this));
         },
         onEnableButtonClicked:function(){
@@ -205,6 +205,6 @@ var globalInput={
               this.passwordElement.value=password;
           }
         }
-        
+
 };
 document.addEventListener('DOMContentLoaded',  globalInput.onDocumentLoaded.bind(globalInput));

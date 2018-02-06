@@ -4,6 +4,14 @@ var globalInput={
               this.contentContainer=document.getElementById('content');
               var operateOnThisPageButton = document.getElementById('operateOnThisPage');
               operateOnThisPageButton.addEventListener("click", this.onOperateOnThisPageButtonCicked.bind(this));
+              var that=this;
+              chrome.runtime.onMessage.addListener(
+                    function(request, sender, sendResponse) {
+                          that.processMessageResponse(request);
+                          sendResponse({action: "delivered"});
+                    });
+
+
         },
         onOperateOnThisPageButtonCicked:function(){
               this.sendMessageToContentScript({action:"operateOnThisPage"})
@@ -25,9 +33,41 @@ var globalInput={
                   this.displayMessage(response.messageToDisplay);
             }
             else if(response.action==='displayQRCode'){
+                  this.displayHostName(response);
                   this.displayPageQRCode(response.qrcodedata);
             }
+            else if(response.action==='senderConnectedForPageControl'){
+                  this.onSenderConnectedForPageControl(response.senders);
+            }
+            else if(response.action==='senderDisconnectedForPageControl'){
+                  this.onSenderDisconnectedForPageControl(response.senders);
+            }
         },
+        onSenderConnectedForPageControl:function(senders){
+             this.contentContainer.innerHTML="";
+             var message="Sender Connected ("+senders.length+"):";
+             message+=senders[0].client;
+             if(senders.length>1){
+               for(var i=1;i<senders.length;i++){
+                   message+", ";
+                   message+=senders[i].client;
+               }
+             }
+             var messageElement=this.createMessageElement(message);
+             this.contentContainer.appendChild(messageElement);
+             document.body.style.height="50px";
+       },
+       onSenderDisconnectedForPageControl:function(senders){
+               var message="Sender Disconnected ("+senders.length+"):";
+               message+=senders[0].client;
+               if(senders.length>1){
+                 for(var i=1;i<senders.length;i++){
+                     message+", ";
+                     message+=senders[i].client;
+                 }
+               }
+               this.displayMessage(message);
+       },
        displayMessage:function(message){
           var messageContainer = document.getElementById('message');
           if(messageContainer){
@@ -37,6 +77,12 @@ var globalInput={
             console.error("failed to display the error message:"+message);
           }
       },
+      displayHostName:function(response){
+          var hostnameContainer=document.getElementById('hostname');
+          if(hostnameContainer){
+              hostnameContainer.innerText="("+response.hostname+")";
+          }
+       },
       displayPageQRCode:function(codeData){
             this.contentContainer.innerHTML="";
             var messageElement=this.createMessageElement("Global Input is now enabled! Please scan the following QR code with the Global Input App on your mobile to connect to the page, so you can operate on the page with your mobile.");
@@ -44,6 +90,25 @@ var globalInput={
             var qrCodeContainerElement=this.createQRCode(codeData);
             this.contentContainer.appendChild(qrCodeContainerElement);
             document.body.style.height="500px";
+       },
+       createQRCode:function(qrCodedata){
+           var qrCodeContainer = document.createElement('div');
+           qrCodeContainer.id="qrcode"; //this is where the QR code will be generated
+           qrCodeContainer.style.display='flex';
+           qrCodeContainer.style['display-direction']='row';
+           qrCodeContainer.style['justify-content']='center';
+           qrCodeContainer.style['z-index']=1000;
+           qrCodeContainer.textContent = '';
+           var qrcode = new QRCode(qrCodeContainer, {
+                         text: qrCodedata,
+                         width:300,
+                         height: 300,
+                         colorDark : "#000000",
+                         colorLight : "#ffffff",
+                         correctLevel : QRCode.CorrectLevel.H
+                      });
+
+           return qrCodeContainer;
        },
 
         enableGlobalInputOnTab:function(tabs){
@@ -92,26 +157,7 @@ var globalInput={
               return messageContainer;
         },
 
-        createQRCode:function(qrCodedata){
 
-            var qrCodeContainer = document.createElement('div');
-            qrCodeContainer.id="qrcode"; //this is where the QR code will be generated
-            qrCodeContainer.style.display='flex';
-            qrCodeContainer.style['display-direction']='row';
-            qrCodeContainer.style['justify-content']='center';
-            qrCodeContainer.style['z-index']=1000;
-            qrCodeContainer.textContent = '';
-            var qrcode = new QRCode(qrCodeContainer, {
-                          text: qrCodedata,
-                          width:300,
-                          height: 300,
-                          colorDark : "#000000",
-                          colorLight : "#ffffff",
-                          correctLevel : QRCode.CorrectLevel.H
-                       });
-
-            return qrCodeContainer;
-        },
         createGlobalInputConnector:function(){
                   var globalInputConfig=this.buildGlobalInputConfig();
 

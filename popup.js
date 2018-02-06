@@ -14,7 +14,7 @@ var globalInput={
 
         },
         onOperateOnThisPageButtonCicked:function(){
-              this.sendMessageToContentScript({action:"operateOnThisPage"})
+              this.sendMessageToContentScript({action:"connect"})
         },
         sendMessageToContentScript:function(message){
             var that=this;

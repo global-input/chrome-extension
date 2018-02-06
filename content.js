@@ -405,93 +405,98 @@ findSignInForm:function(){
             return {action:"notConnected"};
         }
    },
-
-   requestOperateOnThisPage:function(message){
-       var signInForm=this.findSignInForm(); //find all the sign in form elements from the page.
-       if(!signInForm){
-           //No sign in form elements
-            return {action:"missingForm"};
-       }
-       var globalinputConfig={
-                        onSenderConnected:this.onSenderConnectedForPageControl.bind(this),
-                        onSenderDisconnected:this.onSenderDisconnectedForPageControl.bind(this),
-                        initData:{
-                            form:{
-                              id:    "###username###"+"@"+window.location.host, // unique id for saving the form content on mobile automating the form-filling process.
-                              title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
-                              fields:[]          //Form elements displayed on the mobile, this will be populated in the next step.
+   buildGlobalInputForOperateOnThisPage:function(message){
+             var signInForm=this.findSignInForm(); //find all the sign in form elements from the page.
+             if(!signInForm){
+                 //No sign in form elements
+                  return null;
+             }
+             var globalinputConfig={
+                              onSenderConnected:this.onSenderConnectedForPageControl.bind(this),
+                              onSenderDisconnected:this.onSenderDisconnectedForPageControl.bind(this),
+                              initData:{
+                                  form:{
+                                    id:    "###username###"+"@"+window.location.host, // unique id for saving the form content on mobile automating the form-filling process.
+                                    title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
+                                    fields:[]          //Form elements displayed on the mobile, this will be populated in the next step.
+                                        }
                                   }
-                            }
 
-     };
-     if(signInForm.accountElement){   //The page has account element, so it should display one as well on the mobile.
-           globalinputConfig.initData.form.fields.push({
-                       label:"Account", //Label of the text field
-                       id:"account",    //Unique Id for saving the field value.
-                       operations:{
-                           onInput:function(account){
-                                //Executes this when you interacted with this form element.
-                                signInForm.accountElement.value=account;
-                           }
-                       }
-
-               });
-    }
-    if(signInForm.usernameElement){
+           };
+           if(signInForm.accountElement){   //The page has account element, so it should display one as well on the mobile.
                  globalinputConfig.initData.form.fields.push({
-                       label:"Username",
-                       id:"username",
-                       operations:{
-                           onInput:function(username){
-                                //callback same as above.
-                                signInForm.usernameElement.value=username;
-                           }
+                             label:"Account", //Label of the text field
+                             id:"account",    //Unique Id for saving the field value.
+                             operations:{
+                                 onInput:function(account){
+                                      //Executes this when you interacted with this form element.
+                                      signInForm.accountElement.value=account;
+                                 }
+                             }
+
+                     });
+          }
+          if(signInForm.usernameElement){
+                       globalinputConfig.initData.form.fields.push({
+                             label:"Username",
+                             id:"username",
+                             operations:{
+                                 onInput:function(username){
+                                      //callback same as above.
+                                      signInForm.usernameElement.value=username;
+                                 }
+                             }
+                       });
+          }
+          globalinputConfig.initData.form.fields.push({
+                  label:"Password",
+                  id:"password",
+                  type:"secret",
+                  operations:{
+                    onInput:function(password){
+                      //Comes here when you type something on the password field on your mobile
+                      signInForm.passwordElement.value=password;
+                    }
+                  }
+           });
+           globalinputConfig.initData.form.fields.push({
+                    label:"Login",
+                    type:"button",
+                    operations:{
+                       onInput:function(){
+                         //Comes here when you have clicked on the "Login" button on your mobile
+                          signInForm.submitElement.click();
                        }
-                 });
-    }
-    globalinputConfig.initData.form.fields.push({
-            label:"Password",
-            id:"password",
-            type:"secret",
-            operations:{
-              onInput:function(password){
-                //Comes here when you type something on the password field on your mobile
-                signInForm.passwordElement.value=password;
-              }
-            }
-     });
-     globalinputConfig.initData.form.fields.push({
-              label:"Login",
-              type:"button",
-              operations:{
-                 onInput:function(){
-                   //Comes here when you have clicked on the "Login" button on your mobile
-                    signInForm.submitElement.click();
-                 }
-              }
+                    }
 
-   });
-   var globalInputApi=require("global-input-message"); //get the Global Input Api
+         });
+         return globalinputConfig;
+   },
 
-   if(this.globalInputConnector){
-         this.globalInputConnector.disconnect();
-         this.globalInputConnector=null;
-   }
+   requestConnect:function(message){
+       var globalinputConfig=this.buildGlobalInputForOperateOnThisPage();
+       if(globalinputConfig==null){
+         return {action:"missingForm"};
+       }
+       var globalInputApi=require("global-input-message"); //get the Global Input Api
+       if(this.globalInputConnector){
+          this.globalInputConnector.disconnect();
+          this.globalInputConnector=null;
+        }
+        this.globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
 
-   this.globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
-
-   this.globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
-   var qrcodedata=this.globalInputConnector.buildInputCodeData(); //Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
-   this.connectionType="operateOnThisPage";
-   console.log("code data:[["+qrcodedata+"]]");
-   return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host};
+        this.globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
+        var qrcodedata=this.globalInputConnector.buildInputCodeData(); //Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
+        this.connectionType="operateOnThisPage";
+        console.log("code data:[["+qrcodedata+"]]");
+        return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host};
   },
   processRequest:function(request,sendResponse){
         if(!request){
           console.error("empty request is received");
         }
-        else if(request.action==='operateOnThisPage'){
-            var response=this.requestOperateOnThisPage(request);
+        else if(request.action==='connect'){
+            var response=this.requestConnect(request);
             sendResponse(response);
         }
         else if(request.action==='onPopWindowOpenned'){

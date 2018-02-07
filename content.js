@@ -3,7 +3,69 @@
   var globalInputManager={
 
     /**
-        find the sign in text fields elements and submit button element so that the events received from the Global Input app running on mobile
+        only this method should be called from the content script to start listenning messages.
+        The message will be coming from the extension script (popup.js)
+    **/
+     init:function(){
+            var that=this;
+            chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+                      if(!request){
+                            console.error("empty request is received");
+                      }
+                      else if(request.action==='connect'){
+                          //When the user clicked on the button in the popup window,
+                          //extension script sends the 'connect' message.
+                          //Here we have received this message, so we will do globalInput connect and send back the QR code data to the extension script
+                          var response=that.requestConnect(request);
+                          sendResponse(response);
+                      }
+                      else if(request.action==='onPopWindowOpenned'){
+                          //When the popwindow openned, the extension script will send the 'onPopWindowOpenned' message.
+                          //Here will try to send back the status back to extension script, because extension script does not preserve status after it is closed.
+                          var response=that.onPopWindowOpenned(request);
+                          sendResponse(response);
+                      }
+                      else{
+                            //Unrecognized message
+                            console.error("unrecognized request:"+JSON.stringify(request));
+                      }
+           });
+      },
+
+      /*
+          first try to get the controllable elements from the page and configure the globalInput accordingly.
+          If the controllable elements are not found, will configure the globalInput with custom form that is to be displayed in popup window
+      */
+      requestConnect:function(message){
+             var onSenderConnected=null;
+             var onSenderDisconnected=null;
+             var signInForm=this.buildSignInFormFromPage(); //find the sign form from the page.
+             if(!signInForm){
+                   signInForm=this.buildCustomSignInForm();//If it cound't find any sign in form, then create a custom form that is to be displayed in the popup window
+             }
+             var globalinputConfig={
+                            onSenderConnected:signInForm.onSenderConnected,
+                            onSenderDisconnected:signInForm.onSenderDisconnected,
+                            initData:{
+                                form:signInForm.form
+                            }
+             };
+           var globalInputApi=require("global-input-message"); //get the Global Input Api
+           if(this.globalInputConnector){
+               this.globalInputConnector.disconnect();
+               this.globalInputConnector=null;
+           }
+           this.globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
+           this.globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
+           var qrcodedata=this.globalInputConnector.buildInputCodeData(); //Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
+           console.log("code data:[["+qrcodedata+"]]");
+           this.globalInputConnector.signInForm=signInForm;
+           return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host, formType:signInForm.type};
+      },
+
+
+    /**
+        find the sign in form element so that the events received from the Global Input app running on mobile
         can be routed to the corresponding elements.
         **/
     buildSignInFormFromPage:function(){
@@ -225,108 +287,44 @@
              return null;
      },
 
-    /**
-       find the form element from allInputElements.
-       allInputElements is an array that contains all the input elements in the page.
-       matchCriteria specifies the criteria for example id, name attribute of the input element.
-    **/
-
-    findSignInElement(allElements,matchCriteria){
-        if(matchCriteria.id){ //find element by id
-              return this.findElementsByAttribute(allElements,"id",matchCriteria.id);
-        }
-        else if(matchCriteria.type && matchCriteria.name){//find element by type and name attributes
-              return this.findElementsByTwoAttribute(allElements,"type", matchCriteria.type, "name", matchCriteria.name);
-        }
-        else if(matchCriteria.name){ //find element by type and name attribute
-              return this.findElementsByAttribute(allElements,"name",matchCriteria.name);
-         }
-        else if(matchCriteria.className && matchCriteria.type){ //find element by class and type attribute
-              return this.findElementsByTwoAttribute(allElements,"class", matchCriteria.className, "type", matchCriteria.type);
-        }
-
-         else{
-              return null;
-         }
-    },
-    findSignInElementByTagname(tagName,matchCriteria){
-        var allElements=document.getElementsByTagName(tagName); //Collecting all the elements
-        if((!allElements) || (!allElements.length)){
-              return null;
-        }
-        if(matchCriteria.id){ //find element by id
-              return this.findElementsByAttribute(allElements,"id",matchCriteria.id);
-        }
-        else if(matchCriteria.type && matchCriteria.name){//find element by type and name attributes
-              return this.findElementsByTwoAttribute(allElements,"type", matchCriteria.type, "name", matchCriteria.name);
-        }
-        else if(matchCriteria.name){ //find element by type and name attribute
-              return this.findElementsByAttribute(allElements,"name",matchCriteria.name);
-         }
-        else if(matchCriteria.className && matchCriteria.type){ //find element by class and type attribute
-              return this.findElementsByTwoAttribute(allElements,"class", matchCriteria.className, "type", matchCriteria.type);
-        }
-
-         else{
-              return null;
-         }
-    },
-
-
-
-    /**
-       looking for element from allInputElements, the element should satisfy the condition: the value of attributename equals to attributevalue
-    **/
-
-    findElementsByAttribute:function(allInputElements, attributename, attributevalue){
-        for(var x=0;x<allInputElements.length;x++){
-            if(allInputElements[x].getAttribute(attributename) === attributevalue){
-                return allInputElements[x];
-            }
-        }
-        return null;
-   },
-
-   /**
-      looking for element from allInputElements, the element should satisfy the condition: the value of attributename1 equals to attributevalue1, and value of  attributename2 equals to attributevalue2
-   **/
-
-   findElementsByTwoAttribute:function(allInputElements, attributename1, attributevalue1,attributename2, attributevalue2){
-       for(var x=0;x<allInputElements.length;x++){
-           if(allInputElements[x].getAttribute(attributename1) === attributevalue1 && allInputElements[x].getAttribute(attributename2) === attributevalue2){
-               return allInputElements[x];
-           }
-       }
-       return null;
-  },
-
-
+  /*
+    send message to the extension script
+  */
    sendMessageToExtension:function(message){
         chrome.runtime.sendMessage(message, function(response) {
             console.log("message sent to extension");
         });
    },
 
+   /*
+   Called when the popup window is openned
+   */
    onPopWindowOpenned:function(message){
         if(this.globalInputConnector){
               if(this.globalInputConnector.connectedSenders && this.globalInputConnector.connectedSenders.length>0){
+                  //mobile is already connected
                   return {action: "senderConnected",senders:this.globalInputConnector.connectedSenders, formType:this.globalInputConnector.signInForm.type,data:this.globalInputConnector.signInForm.data};
               }
               else{
+                 //No mobile is connected, but the globalInput is already initialized.
                   var qrcodedata=this.globalInputConnector.buildInputCodeData(); //Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
                   return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host, formType:this.globalInputConnector.signInForm.type,data:this.globalInputConnector.signInForm.data};
               }
         }
         else {
+             //globalInput is not initialized.
             return {action:"notConnected"};
         }
    },
 
+  /*
+  Sign In Form initization for the form to be displayed in the popup window.
+  */
    buildCustomSignInForm:function(){
      var that=this;
      var signInForm = {
          type:"usernamepassword",
-         data:{username:"",password:""},
+         data:{username:"",password:""}, //this is the storage to be send to the popwimdow, if it reopenned after closed.
          form:{
                  id:    "###username###"+"@"+window.location.host, // unique id for saving the form content on mobile automating the form-filling process.
                  title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
@@ -335,7 +333,7 @@
                        id:"username",
                        operations:{
                              onInput:function(username){
-                               signInForm.data.username=username;
+                               signInForm.data.username=username; 
                                that.sendMessageToExtension({action: "setformvalue",fieldname:"username", fieldvalue:username});
                              }
                        }
@@ -359,56 +357,93 @@
         };
         return signInForm;
    },
-   requestConnect:function(message){
-          var onSenderConnected=null;
-          var onSenderDisconnected=null;
-          var signInForm=this.buildSignInFormFromPage(); //find all the sign in form elements from the page.
-          if(!signInForm){
-                signInForm=this.buildCustomSignInForm();
-          }
-          var globalinputConfig={
-                         onSenderConnected:signInForm.onSenderConnected,
-                         onSenderDisconnected:signInForm.onSenderDisconnected,
-                         initData:{
-                             form:signInForm.form
-                         }
-          };
-        var globalInputApi=require("global-input-message"); //get the Global Input Api
-        if(this.globalInputConnector){
-            this.globalInputConnector.disconnect();
-            this.globalInputConnector=null;
+
+
+
+
+
+
+
+
+   /**
+      find the form element from allInputElements.
+      allInputElements is an array that contains all the input elements in the page.
+      matchCriteria specifies the criteria for example id, name attribute of the input element.
+   **/
+
+   findSignInElement(allElements,matchCriteria){
+       if(matchCriteria.id){ //find element by id
+             return this.findElementsByAttribute(allElements,"id",matchCriteria.id);
+       }
+       else if(matchCriteria.type && matchCriteria.name){//find element by type and name attributes
+             return this.findElementsByTwoAttribute(allElements,"type", matchCriteria.type, "name", matchCriteria.name);
+       }
+       else if(matchCriteria.name){ //find element by type and name attribute
+             return this.findElementsByAttribute(allElements,"name",matchCriteria.name);
         }
-        this.globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
-        this.globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
-        var qrcodedata=this.globalInputConnector.buildInputCodeData(); //Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
-        console.log("code data:[["+qrcodedata+"]]");
-        this.globalInputConnector.signInForm=signInForm;
-        return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host, formType:signInForm.type};
-  },
-  processRequest:function(request,sendResponse){
-        if(!request){
-          console.error("empty request is received");
-        }
-        else if(request.action==='connect'){
-            var response=this.requestConnect(request);
-            sendResponse(response);
-        }
-        else if(request.action==='onPopWindowOpenned'){
-            var response=this.onPopWindowOpenned(request);
-            sendResponse(response);
-        }
+       else if(matchCriteria.className && matchCriteria.type){ //find element by class and type attribute
+             return this.findElementsByTwoAttribute(allElements,"class", matchCriteria.className, "type", matchCriteria.type);
+       }
+
         else{
-          console.error("unrecognized request:"+JSON.stringify(request));
+             return null;
         }
-  },
+   },
+   /**
+     find the sign in element by tag name from the document, instead from the list of elements that are already collected
+   **/
+   findSignInElementByTagname(tagName,matchCriteria){
+       var allElements=document.getElementsByTagName(tagName); //Collecting all the elements
+       if((!allElements) || (!allElements.length)){
+             return null;
+       }
+       if(matchCriteria.id){ //find element by id
+             return this.findElementsByAttribute(allElements,"id",matchCriteria.id);
+       }
+       else if(matchCriteria.type && matchCriteria.name){//find element by type and name attributes
+             return this.findElementsByTwoAttribute(allElements,"type", matchCriteria.type, "name", matchCriteria.name);
+       }
+       else if(matchCriteria.name){ //find element by type and name attribute
+             return this.findElementsByAttribute(allElements,"name",matchCriteria.name);
+        }
+       else if(matchCriteria.className && matchCriteria.type){ //find element by class and type attribute
+             return this.findElementsByTwoAttribute(allElements,"class", matchCriteria.className, "type", matchCriteria.type);
+       }
+
+        else{
+             return null;
+        }
+   },
 
 
-   init:function(){
-           var that=this;
-           chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-              that.processRequest(request,sendResponse);
-          });
+
+   /**
+      looking for element from allInputElements, the element should satisfy the condition: the value of attributename equals to attributevalue
+   **/
+
+   findElementsByAttribute:function(allInputElements, attributename, attributevalue){
+       for(var x=0;x<allInputElements.length;x++){
+           if(allInputElements[x].getAttribute(attributename) === attributevalue){
+               return allInputElements[x];
+           }
+       }
+       return null;
+   },
+
+   /**
+     looking for element from allInputElements, the element should satisfy the condition: the value of attributename1 equals to attributevalue1, and value of  attributename2 equals to attributevalue2
+   **/
+
+   findElementsByTwoAttribute:function(allInputElements, attributename1, attributevalue1,attributename2, attributevalue2){
+      for(var x=0;x<allInputElements.length;x++){
+          if(allInputElements[x].getAttribute(attributename1) === attributevalue1 && allInputElements[x].getAttribute(attributename2) === attributevalue2){
+              return allInputElements[x];
+          }
+      }
+      return null;
    }
+
+
 
 
  };

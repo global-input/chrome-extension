@@ -24,17 +24,11 @@ var globalInput={
         },
         processMessageResponse:function(response){
             if(!response){
-                 this.contentContainer.innerHTML="Unable to communicate with the page content, please reload/refresh the page and try again.";
-            }
-            else if(response.action==='missingForm'){
-                  this.displayMessage("This page is not added to the supported list yet, please contact dilshat@iterativesolution.co.uk if you would like to add it to the supported list, or if you can add it yourself if you have a little bit of javascript knowledge.");
-            }
-            else if(response.action==='displayMessage'){
-                  this.displayMessage(response.messageToDisplay);
+                 this.contentContainer.innerText="Unable to communicate with the page content, please reload/refresh the page and try again.";
             }
             else if(response.action==='displayQRCode'){
                   this.displayHostName(response);
-                  this.displayPageQRCode(response.qrcodedata);
+                  this.displayPageQRCode(response.qrcodedata,response.formType);
             }
             else if(response.action==='senderConnected'){
                   this.onSenderConnected(response.senders,response.formType,response.data);
@@ -70,8 +64,7 @@ var globalInput={
                    message+=senders[i].client;
                }
              }
-             var messageElement=this.createMessageElement(message);
-             this.contentContainer.appendChild(messageElement);
+
              if(formType==='usernamepassword'){
                   var signInFormElement=this.createInputForm();
                   this.contentContainer.appendChild(signInFormElement);
@@ -84,7 +77,8 @@ var globalInput={
              else{
                 document.body.style.height="50px";
               }
-
+              var messageElement=this.createMessageElement(message);
+              this.contentContainer.appendChild(messageElement);
        },
        onSenderDisconnected:function(senders){
                var message="Sender Disconnected ("+senders.length+"):";
@@ -114,9 +108,14 @@ var globalInput={
               hostnameContainer.innerText="("+response.hostname+")";
           }
        },
-      displayPageQRCode:function(codeData){
+      displayPageQRCode:function(codeData, formType){
             this.contentContainer.innerHTML="";
-            var messageElement=this.createMessageElement("Global Input is now enabled! Please scan the following QR code with the Global Input App on your mobile to connect to the page, so you can operate on the page with your mobile.");
+            var message="Global Input is now enabled! Please scan the following QR code with the Global Input App on your mobile to connect to the page, so you can operate on the page with your mobile.";
+            if(formType!=='pageControl'){
+              message="The elements in the page are not identified. You can still scan the following QR code with the Global Input app on your mobile and transfer the content to this popup window first and then do copy and paste operations. If you would like to interact with the page directly with your mobile, the footprint of this page needs to be added to the script. This can be done easily with a little bit of Javascript knowledge. If you need help on this, please send a message to dilshat@iterativesolution.co.uk."
+            }
+
+            var messageElement=this.createMessageElement(message);
             this.contentContainer.appendChild(messageElement);
             var qrCodeContainerElement=this.createQRCode(codeData);
             this.contentContainer.appendChild(qrCodeContainerElement);
@@ -142,49 +141,12 @@ var globalInput={
            return qrCodeContainer;
        },
 
-        enableGlobalInputOnTab:function(tabs){
-            chrome.tabs.sendMessage(tabs[0].id, {action: "enable"}, this.processEnableGlobalInputOnTabResponse.bind(this));
-        },
-        processEnableGlobalInputOnTabResponse:function(response){
-              if(!response){
-                      this.onTabConnectionFailed();
-              }
-              else if(response.success){
-                      this.hostname=response.hostname;
-                      this.onTabGlobalInputEnabled();
-              }
-              else{
-                      this.hostname=response.hostname;
-                      this.onTabGlobalInputFailed(response);
-              }
-        },
-        onTabConnectionFailed:function(){
-            this.contentContainer.innerHTML="Unable to communicate with the page content, please reload/refresh the page and try again.";
-        },
-        onTabGlobalInputEnabled:function(response){
-            var messageContainer=document.getElementById('message');
-            messageContainer.innerHTML="Global Input is now enabled! The page should be displaying a QR Code. Now you can scan it with the Global Input App on your mobile to connect to the page";
-        },
-        onTabGlobalInputFailed:function(response){
-             console.log(response.error);
-             this.contentContainer.innerHTML="";
-             var messageElement=this.createMessageElement("No form is identified in this page. For the time being, you can scan the following QR code with the Global Input app on your mobile to transfer the content to this popup window first and then copy and paste the content into the form in the page. If you would like to interact with the page directly with your mobile, the footprint of this page needs to be added to the script. This can be done easily with a little bit of Javascript knowledge. If you need help on this, please send a message to dilshat@iterativesolution.co.uk.");
-             this.contentContainer.appendChild(messageElement);
-
-             this.globalInputConnector=this.createGlobalInputConnector();
-             var codeData=this.globalInputConnector.buildInputCodeData();//Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
-             console.log("code data:[["+codeData+"]]");
-             var qrCodeContainerElement=this.createQRCode(codeData);
-             this.contentContainer.appendChild(qrCodeContainerElement);
-             document.body.style.height="500px";
-
-        },
 
 
         createMessageElement:function(message){
               var messageContainer = document.createElement('div');
               messageContainer.id="message";
-              messageContainer.innerHTML=message;
+              messageContainer.innerText=message;
               return messageContainer;
         },
 
@@ -195,15 +157,15 @@ var globalInput={
         createInputForm:function(){
               var formContainer = document.createElement('div');
               formContainer.id="form";
-                  var messageElement = document.createElement('div');
-                  messageElement.id="message";
-                  messageElement.innerHTML="";
-              formContainer.appendChild(messageElement);
+
+
+              var messageElement = document.createElement('div');
+
 
                   var inputContainer=document.createElement('div');
                   inputContainer.className = "field";
                       var labelElement = document.createElement('label');
-                      labelElement.innerHTML="<b>Username</b>";
+                      labelElement.innerText="Username";
                   inputContainer.appendChild(labelElement);
                       this.usernameElement = document.createElement('input');
                       this.usernameElement.id="username";
@@ -219,13 +181,13 @@ var globalInput={
                        copyButtonElement.id="copyusername";
 
 
-                       copyButtonElement.innerHTML="Copy to Clipboard";
+                       copyButtonElement.innerText="Copy to Clipboard";
 
                        var that=this;
                        copyButtonElement.onclick=function(){
                               that.usernameElement.select();
                               document.execCommand("Copy");
-                              messageElement.innerHTML="The username is copied into the clipboard";
+                              messageElement.innerText="The username is copied into the clipboard";
                        };
                     inputContainer.appendChild(copyButtonElement);
 
@@ -234,7 +196,7 @@ var globalInput={
                    var inputContainer=document.createElement('div');
                    inputContainer.className = "field";
                        var labelElement = document.createElement('label');
-                       labelElement.innerHTML="<b>Password</b>";
+                       labelElement.innerText="Password";
                    inputContainer.appendChild(labelElement);
                        this.passwordElement = document.createElement('input');
                        this.passwordElement.id="password";
@@ -250,18 +212,18 @@ var globalInput={
                     copyButtonElement.id="copypassword";
 
 
-                    copyButtonElement.innerHTML="Copy to Clipboard";
+                    copyButtonElement.innerText="Copy to Clipboard";
 
                     var that=this;
                     copyButtonElement.onclick=function(){
                            that.passwordElement.select();
                            document.execCommand("Copy");
-                           messageElement.innerHTML="The password is copied into the clipboard";
+                           messageElement.innerText="The password is copied into the clipboard";
                     };
-                 inputContainer.appendChild(copyButtonElement);
-                 inputContainer.appendChild(messageElement);
+              inputContainer.appendChild(copyButtonElement);
 
               formContainer.appendChild(inputContainer);
+              formContainer.appendChild(messageElement);
               return formContainer;
         },
 

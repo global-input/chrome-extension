@@ -2,8 +2,8 @@
 var globalInput={
         onDocumentLoaded:function(){
               this.contentContainer=document.getElementById('content');
-              var operateOnThisPageButton = document.getElementById('operateOnThisPage');
-              operateOnThisPageButton.addEventListener("click", this.onOperateOnThisPageButtonCicked.bind(this));
+              var connectButton = document.getElementById('operateOnThisPage');
+              connectButton.addEventListener("click", this.connectToGlobalInput.bind(this));
               var that=this;
               chrome.runtime.onMessage.addListener(
                     function(request, sender, sendResponse) {
@@ -13,7 +13,7 @@ var globalInput={
               this.sendMessageToContentScript({action:"onPopWindowOpenned"})
 
         },
-        onOperateOnThisPageButtonCicked:function(){
+        connectToGlobalInput:function(){
               this.sendMessageToContentScript({action:"connect"})
         },
         sendMessageToContentScript:function(message){
@@ -52,6 +52,16 @@ var globalInput={
                           this.passwordElement.value=fieldvalue;
                       }
                 }
+                else if(fieldname==='account'){
+                      if(this.accountElement){
+                          this.accountElement.value=fieldvalue;
+                      }
+                }
+                else if(fieldname==='note'){
+                      if(this.noteElement){
+                          this.noteElement.value=fieldvalue;
+                      }
+                }
         },
 
         onSenderConnected:function(senders,formType,data){
@@ -71,6 +81,8 @@ var globalInput={
                   if(data){
                       this.onSetFormValues("username",data.username);
                       this.onSetFormValues("password",data.password);
+                      this.onSetFormValues("account",data.account);
+                      this.onSetFormValues("note",data.note);
                   }
                   document.body.style.height="100px";
              }
@@ -81,15 +93,21 @@ var globalInput={
               this.contentContainer.appendChild(messageElement);
        },
        onSenderDisconnected:function(senders){
-               var message="Sender Disconnected ("+senders.length+"):";
-               message+=senders[0].client;
-               if(senders.length>1){
-                 for(var i=1;i<senders.length;i++){
-                     message+", ";
-                     message+=senders[i].client;
-                 }
+               if((!senders) || (!senders.length)){
+                    this.displayMessage("Clients disconnected");
                }
-               this.displayMessage(message);
+               else{
+                 var message="Sender Disconnected ("+senders.length+"):";
+                 message+=senders[0].client;
+                 if(senders.length>1){
+                   for(var i=1;i<senders.length;i++){
+                       message+", ";
+                       message+=senders[i].client;
+                   }
+                 }
+                 this.displayMessage(message);
+               }
+
        },
 
 
@@ -153,7 +171,33 @@ var globalInput={
 
 
 
+        createOneInputField:function(opts){
+              var inputContainer=document.createElement('div');
+              inputContainer.className = "field";
+                  var labelElement = document.createElement('label');
+                  labelElement.innerText=opts.label;
+              inputContainer.appendChild(labelElement);
 
+              opts.element = document.createElement('input');
+              opts.element.id=opts.id;
+              opts.element.type=opts.type;
+              opts.element.value = '';
+              opts.element.placeholder = opts.placeholder;
+           inputContainer.appendChild(opts.element);
+
+               var copyButtonElement = document.createElement('button');
+               copyButtonElement.className="copybutton";
+               copyButtonElement.innerText="Copy to Clipboard";
+               copyButtonElement.onclick=function(){
+                      opts.element.type='text';
+                      opts.element.select();
+                      document.execCommand("Copy");
+                      opts.element.type=opts.type;
+                      opts.messageElement.innerText="The "+opts.id+" is copied into the clipboard";
+               };
+            inputContainer.appendChild(copyButtonElement);
+            return inputContainer;
+        },
         createInputForm:function(){
               var formContainer = document.createElement('div');
               formContainer.id="form";
@@ -161,68 +205,51 @@ var globalInput={
 
               var messageElement = document.createElement('div');
 
-
-                  var inputContainer=document.createElement('div');
-                  inputContainer.className = "field";
-                      var labelElement = document.createElement('label');
-                      labelElement.innerText="Username";
-                  inputContainer.appendChild(labelElement);
-                      this.usernameElement = document.createElement('input');
-                      this.usernameElement.id="username";
-                      this.usernameElement.type="text";
-                      this.usernameElement.value = '';
-                      this.usernameElement.placeholder = 'Enter Username';
-                   inputContainer.appendChild(this.usernameElement);
-
-
-                       var copyButtonElement = document.createElement('button');
-
-
-                       copyButtonElement.id="copyusername";
-
-
-                       copyButtonElement.innerText="Copy to Clipboard";
-
-                       var that=this;
-                       copyButtonElement.onclick=function(){
-                              that.usernameElement.select();
-                              document.execCommand("Copy");
-                              messageElement.innerText="The username is copied into the clipboard";
-                       };
-                    inputContainer.appendChild(copyButtonElement);
-
-             formContainer.appendChild(inputContainer);
-
-                   var inputContainer=document.createElement('div');
-                   inputContainer.className = "field";
-                       var labelElement = document.createElement('label');
-                       labelElement.innerText="Password";
-                   inputContainer.appendChild(labelElement);
-                       this.passwordElement = document.createElement('input');
-                       this.passwordElement.id="password";
-                       this.passwordElement.type="password";
-                       this.passwordElement.value = '';
-                       this.passwordElement.placeholder = 'Enter Password';
-                    inputContainer.appendChild(this.passwordElement);
-
-
-                    var copyButtonElement = document.createElement('button');
-
-
-                    copyButtonElement.id="copypassword";
-
-
-                    copyButtonElement.innerText="Copy to Clipboard";
-
-                    var that=this;
-                    copyButtonElement.onclick=function(){
-                           that.passwordElement.select();
-                           document.execCommand("Copy");
-                           messageElement.innerText="The password is copied into the clipboard";
-                    };
-              inputContainer.appendChild(copyButtonElement);
-
+              var opts={
+                    messageElement:messageElement,
+                    label:"Username",
+                    id:"username",
+                    type:"text",
+                    placeholder:'Enter Username'
+              }
+              var inputContainer=this.createOneInputField(opts);
+              this.usernameElement=opts.element;
               formContainer.appendChild(inputContainer);
+
+              opts={
+                    messageElement:messageElement,
+                    label:"Password",
+                    id:"password",
+                    type:"password",
+                    placeholder:'Enter Password'
+              }
+              var inputContainer=this.createOneInputField(opts);
+              this.passwordElement=opts.element;
+              formContainer.appendChild(inputContainer);
+
+
+              opts={
+                    messageElement:messageElement,
+                    label:"Account",
+                    id:"account",
+                    type:"text",
+                    placeholder:'Enter Account Number if any'
+              }
+              var inputContainer=this.createOneInputField(opts);
+              this.accountElement=opts.element;
+              formContainer.appendChild(inputContainer);
+
+              opts={
+                    messageElement:messageElement,
+                    label:"Note",
+                    id:"note",
+                    type:"text",
+                    placeholder:'Enter Optional Note'
+              }
+              var inputContainer=this.createOneInputField(opts);
+              this.noteElement=opts.element;
+              formContainer.appendChild(inputContainer);
+
               formContainer.appendChild(messageElement);
               return formContainer;
         },

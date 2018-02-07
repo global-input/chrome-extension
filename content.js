@@ -146,10 +146,6 @@
                           username:{id:"username"},
                           password:{id:"password"},
                           signIn: {element:"button", id:"login-submit"}
-                    },{
-                          //gmail
-                          password:{element:"input", name:"password", type:"password"},
-                          signIn: {element:"div", id:"#passwordNext"}
                     }];
 
 
@@ -324,7 +320,7 @@
      var that=this;
      var signInForm = {
          type:"usernamepassword",
-         data:{username:"",password:""}, //this is the storage to be send to the popwimdow, if it reopenned after closed.
+         data:{username:"",password:"", account:"", note:""}, //this is the storage to be send to the popwimdow, if it reopenned after closed.
          form:{
                  id:    "###username###"+"@"+window.location.host, // unique id for saving the form content on mobile automating the form-filling process.
                  title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
@@ -333,7 +329,7 @@
                        id:"username",
                        operations:{
                              onInput:function(username){
-                               signInForm.data.username=username; 
+                               signInForm.data.username=username;
                                that.sendMessageToExtension({action: "setformvalue",fieldname:"username", fieldvalue:username});
                              }
                        }
@@ -346,7 +342,25 @@
                                 that.sendMessageToExtension({action: "setformvalue",fieldname:"password", fieldvalue:password});
                              }
                        }
-               }]
+               },{
+                    label:"Account",
+                    id:"account",
+                    operations:{
+                          onInput:function(account){
+                             signInForm.data.account=account;
+                             that.sendMessageToExtension({action: "setformvalue",fieldname:"account", fieldvalue:account});
+                          }
+                    }
+                },{
+                     label:"Note",
+                     id:"note",
+                     operations:{
+                           onInput:function(note){
+                              signInForm.data.note=note;
+                              that.sendMessageToExtension({action: "setformvalue",fieldname:"note", fieldvalue:note});
+                           }
+                     }
+                 }]
            },
            onSenderConnected:function(sender, senders){
                  that.sendMessageToExtension({action: "senderConnected",senders:senders,formType:signInForm.type,data:signInForm.data});

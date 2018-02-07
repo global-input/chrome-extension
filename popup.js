@@ -77,7 +77,7 @@ var globalInput={
                   this.contentContainer.appendChild(signInFormElement);
                   if(data){
                       this.onSetFormValues("username",data.username);
-                      this.onSetFormValues("password",data.password);  
+                      this.onSetFormValues("password",data.password);
                   }
                   document.body.style.height="100px";
              }
@@ -189,40 +189,7 @@ var globalInput={
         },
 
 
-        createGlobalInputConnector:function(){
-                  var globalInputConfig=this.buildGlobalInputConfig();
 
-                  var globalInputApi=require("global-input-message"); //get the Global Input Api
-                  var globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
-                  globalInputConnector.connect(globalInputConfig);  //connect to the proxy.
-                  return globalInputConnector;
-        },
-        buildGlobalInputConfig:function(){
-              var globalinputConfig={
-                                onSenderConnected:this.onSenderConnected.bind(this),
-                                onSenderDisconnected:this.onSenderDisconnected.bind(this),
-                                initData:{
-                                      form:{
-                                              id:    "###username###"+"@"+this.hostname, // unique id for saving the form content on mobile automating the form-filling process.
-                                              title: "Sign In on "+this.hostname,  //Title of the form displayed on the mobile
-                                              fields:[{
-                                                  label:"Username",
-                                                  id:"username",
-                                                  operations:{
-                                                        onInput:this.onInputUsername.bind(this)
-                                                   }
-                                              },{
-                                                  label:"Password",
-                                                  id:"password",
-                                                  operations:{
-                                                        onInput:this.onInputPassword.bind(this)
-                                                  }
-                                              }]
-                                          }
-                                    }
-               };
-               return globalinputConfig;
-        },
 
 
         createInputForm:function(){

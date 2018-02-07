@@ -75,6 +75,10 @@ var globalInput={
              if(formType==='usernamepassword'){
                   var signInFormElement=this.createInputForm();
                   this.contentContainer.appendChild(signInFormElement);
+                  if(data){
+                      this.onSetFormValues("username",data.username);
+                      this.onSetFormValues("password",data.password);  
+                  }
                   document.body.style.height="100px";
              }
              else{

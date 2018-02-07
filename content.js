@@ -2,14 +2,11 @@
 
   var globalInputManager={
 
-
-
     /**
-   find the sign in text fields elements and submit button element so that the events received from the Global Input app running on mobile
-   can be routed to the corresponding elements.
-**/
-
-buildSignInFormFromPage:function(){
+        find the sign in text fields elements and submit button element so that the events received from the Global Input app running on mobile
+        can be routed to the corresponding elements.
+        **/
+    buildSignInFormFromPage:function(){
               /*Matching Rules for finding the the Sign In Form.
               Each entry is a rule for matching the Sign In elements contained the sign in form.
               You can easily modify to support more websites/web applications.*/
@@ -143,7 +140,7 @@ buildSignInFormFromPage:function(){
                         }
                    }
                    //coming here means that a sign in form is found, so trying to buld signInForm object.
-
+                   var that=this;
                   var signInForm={
                       type:"pageControl",
                       usernameElement:usernameElement,
@@ -166,6 +163,12 @@ buildSignInFormFromPage:function(){
                             id:"###username###"+"@"+window.location.host, // unique id for saving the form content in mobile automating the form-filling process.
                             title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
                             fields:[]  //the fields to be displayed on the mobile screen, this will be populated in the next step
+                      },
+                      onSenderConnected:function(sender, senders){
+                            that.sendMessageToExtension({action: "senderConnectedForPageControl",senders:senders});
+                      },
+                      onSenderDisconnected:function(sender, senders){
+                            that.sendMessageToExtension({action: "senderDisconnectedForPageControl",senders:senders});
                       }
                   };
 
@@ -318,180 +321,64 @@ buildSignInFormFromPage:function(){
             return {action:"notConnected"};
         }
    },
-   buildGlobalInputConfigFromSignInForm:function(signInForm){
-             var that=this;
-             var globalinputConfig={
-                              onSenderConnected:function(sender, senders){
-                                    /*This will be executed when the Global Input App has Connected.*/
-                                    that.sendMessageToExtension({action: "senderConnectedForPageControl",senders:senders});
-                              },
-                              onSenderDisconnected:function(sender, senders){
-                                     that.sendMessageToExtension({action: "senderDisconnectedForPageControl",senders:senders});
-                              },
-                              initData:{
-                                  form:{
-                                    id:    "###username###"+"@"+window.location.host, // unique id for saving the form content on mobile automating the form-filling process.
-                                    title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
-                                    fields:[]          //Form elements displayed on the mobile, this will be populated in the next step.
-                                        }
-                                  }
 
-           };
-           if(signInForm.accountElement){   //The page has account element, so it should display one as well on the mobile.
-                 globalinputConfig.initData.form.fields.push({
-                             label:"Account", //Label of the text field
-                             id:"account",    //Unique Id for saving the field value.
-                             operations:{
-                                 onInput:function(account){
-                                      //Executes this when you interacted with this form element.
-                                      signInForm.accountElement.value=account;
-                                 }
+   buildCustomeSignInForm:function(){
+     var that=this;
+     return {
+         type:"usernamepassword",
+         form:{
+                 id:    "###username###"+"@"+window.location.host, // unique id for saving the form content on mobile automating the form-filling process.
+                 title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
+                 fields:[{
+                       label:"Username",
+                       id:"username",
+                       operations:{
+                             onInput:function(username){
+                             that.sendMessageToExtension({action: "setformvalue",fieldname:"username", fieldvalue:username});
                              }
-
-                     });
-          }
-          if(signInForm.usernameElement){
-                       globalinputConfig.initData.form.fields.push({
-                             label:"Username",
-                             id:"username",
-                             operations:{
-                                 onInput:function(username){
-                                      //callback same as above.
-                                      signInForm.usernameElement.value=username;
-                                 }
-                             }
-                       });
-          }
-          globalinputConfig.initData.form.fields.push({
-                  label:"Password",
-                  id:"password",
-                  type:"secret",
-                  operations:{
-                    onInput:function(password){
-                      //Comes here when you type something on the password field on your mobile
-                      signInForm.passwordElement.value=password;
-                    }
-                  }
-           });
-           globalinputConfig.initData.form.fields.push({
-                    label:"Login",
-                    type:"button",
-                    operations:{
-                       onInput:function(){
-                         //Comes here when you have clicked on the "Login" button on your mobile
-                          signInForm.submitElement.click();
                        }
-                    }
-
-         });
-         return globalinputConfig;
+                  },{
+                       label:"Password",
+                       id:"password",
+                       operations:{
+                             onInput:function(password){
+                             that.sendMessageToExtension({action: "setformvalue",fieldname:"password", fieldvalue:password});
+                             }
+                       }
+               }]
+           },
+           onSenderConnected:function(sender, senders){
+                 that.sendMessageToExtension({action: "senderConnectedForPageControl",senders:senders});
+           },
+           onSenderDisconnected:function(sender, senders){
+                 that.sendMessageToExtension({action: "senderDisconnectedForPageControl",senders:senders});
+           }
+        };
    },
-   buildGlobalInputForCustomForm:function(signInForm){
-          var that=this;
-
-          var globalinputConfig={
-                      onSenderConnected:function(sender, senders){
-                            /*This will be executed when the Global Input App has Connected.*/
-                            that.sendMessageToExtension({action: "senderConnectedForPageControl",senders:senders});
-                      },
-                      onSenderDisconnected:function(sender, senders){
-                            that.sendMessageToExtension({action: "senderDisconnectedForPageControl",senders:senders});
-                      },
-                      initData:{
-                          form:{
-                            id:    "###username###"+"@"+window.location.host, // unique id for saving the form content on mobile automating the form-filling process.
-                            title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
-                            fields:[{
-                                      label:"Username",
-                                      id:"username",
-
-                                      operations:{
-                                            onInput:function(username){
-                                                  that.sendMessageToExtension({action: "setformvalue",fieldname:"username", fieldvalue:username});
-                                            }
-                                       }
-                                  },{
-                                      label:"Password",
-                                      id:"password",
-                                      operations:{
-                                            onInput:function(password){
-                                                  that.sendMessageToExtension({action: "setformvalue",fieldname:"password", fieldvalue:password});
-                                            }
-                                      }
-                                  }]          //Form elements displayed on the mobile.
-                          }
-                      }
-
-          };
-          return globalinputConfig;
-   },
-
-
-
    requestConnect:function(message){
-          var that=this;
+          var onSenderConnected=null;
+          var onSenderDisconnected=null;
           var signInForm=this.buildSignInFormFromPage(); //find all the sign in form elements from the page.
-          globalinputConfig=null;
-
-          if(signInForm){
-               globalinputConfig={
-                         onSenderConnected:function(sender, senders){
-                                that.sendMessageToExtension({action: "senderConnectedForPageControl",senders:senders});
-                         },
-                         onSenderDisconnected:function(sender, senders){
-                                that.sendMessageToExtension({action: "senderDisconnectedForPageControl",senders:senders});
-                         },
+          if(!signInForm){
+                signInForm=this.buildCustomeSignInForm();
+          }
+          var globalinputConfig={
+                         onSenderConnected:signInForm.onSenderConnected,
+                         onSenderDisconnected:signInForm.onSenderDisconnected,
                          initData:{
                              form:signInForm.form
-                        }
-              };
-          }
-          else{
-
-              globalinputConfig={
-                        onSenderConnected:function(sender, senders){
-                                  that.sendMessageToExtension({action: "senderConnectedForPageControl",senders:senders});
-                        },
-                        onSenderDisconnected:function(sender, senders){
-                                  that.sendMessageToExtension({action: "senderDisconnectedForPageControl",senders:senders});
-                       },
-                       initData:{
-                                form:{
-                                        id:    "###username###"+"@"+window.location.host, // unique id for saving the form content on mobile automating the form-filling process.
-                                        title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
-                                        fields:[{
-                                              label:"Username",
-                                              id:"username",
-                                              operations:{
-                                                    onInput:function(username){
-                                                    that.sendMessageToExtension({action: "setformvalue",fieldname:"username", fieldvalue:username});
-                                                    }
-                                              }
-                                         },{
-                                              label:"Password",
-                                              id:"password",
-                                              operations:{
-                                                    onInput:function(password){
-                                                    that.sendMessageToExtension({action: "setformvalue",fieldname:"password", fieldvalue:password});
-                                                    }
-                                              }
-                                      }]
                          }
-                     }
-            };
-       }
-
-       var globalInputApi=require("global-input-message"); //get the Global Input Api
-       if(this.globalInputConnector){
-          this.globalInputConnector.disconnect();
-          this.globalInputConnector=null;
+          };
+        var globalInputApi=require("global-input-message"); //get the Global Input Api
+        if(this.globalInputConnector){
+            this.globalInputConnector.disconnect();
+            this.globalInputConnector=null;
         }
         this.globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
-
         this.globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
         var qrcodedata=this.globalInputConnector.buildInputCodeData(); //Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
-
         console.log("code data:[["+qrcodedata+"]]");
+        this.globalInputConnector.signInForm=signInForm;
         return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host};
   },
   processRequest:function(request,sendResponse){

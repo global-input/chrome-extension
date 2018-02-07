@@ -42,6 +42,9 @@ var globalInput={
             else if(response.action==='senderDisconnectedForPageControl'){
                   this.onSenderDisconnectedForPageControl(response.senders);
             }
+            else if(response.action==='setformvalue'){
+                  console.log("***fieldname:"+response.fieldname+" value:"+response.fieldvalue);
+            }
 
         },
         onSenderConnectedForPageControl:function(senders){

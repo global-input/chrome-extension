@@ -43,10 +43,23 @@ var globalInput={
                   this.onSenderDisconnected(response.senders,response.formType,response.data);
             }
             else if(response.action==='setformvalue'){
-                  console.log("***fieldname:"+response.fieldname+" value:"+response.fieldvalue);
+                  this.onSetFormValues(response.fieldname,response.fieldvalue);
             }
 
         },
+        onSetFormValues:function(fieldname,fieldvalue){
+                if(fieldname==='username'){
+                      if(this.usernameElement){
+                          this.usernameElement.value=fieldvalue;
+                      }
+                }
+                else if(fieldname==='password'){
+                      if(this.passwordElement){
+                          this.passwordElement.value=fieldvalue;
+                      }
+                }
+        },
+
         onSenderConnected:function(senders,formType,data){
              this.contentContainer.innerHTML="";
              var message="Sender Connected ("+senders.length+"):";
@@ -81,7 +94,7 @@ var globalInput={
                this.displayMessage(message);
        },
 
-       
+
        displayMessage:function(message){
           var messageContainer = document.getElementById('message');
           if(messageContainer){
@@ -282,17 +295,6 @@ var globalInput={
         },
 
 
-        onInputUsername:function(username){
-          if(this.usernameElement){
-              this.usernameElement.value=username;
-          }
-
-        },
-        onInputPassword:function(password){
-          if(this.passwordElement){
-              this.passwordElement.value=password;
-          }
-        }
 
 };
 document.addEventListener('DOMContentLoaded',  globalInput.onDocumentLoaded.bind(globalInput));

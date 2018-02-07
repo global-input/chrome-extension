@@ -151,7 +151,7 @@
                               this.usernameElement.value=username; //pass the username value received from mobile to the username element
                       },
                       onPasswordChanged:function(password){
-                              this.passwordElement.value=username; //pass the password value received from mobile to the username element
+                              this.passwordElement.value=password; //pass the password value received from mobile to the username element
                       },
                       onAccountChanged:function(account){
                               this.accountElement.value=account; //pass the account value received from mobile to the username element
@@ -165,10 +165,10 @@
                             fields:[]  //the fields to be displayed on the mobile screen, this will be populated in the next step
                       },
                       onSenderConnected:function(sender, senders){
-                            that.sendMessageToExtension({action: "senderConnectedForPageControl",senders:senders});
+                            that.sendMessageToExtension({action: "senderConnected",senders:senders,formType:signInForm.type});
                       },
                       onSenderDisconnected:function(sender, senders){
-                            that.sendMessageToExtension({action: "senderDisconnectedForPageControl",senders:senders});
+                            that.sendMessageToExtension({action: "senderDisconnected",senders:senders,formType:signInForm.type});
                       }
                   };
 
@@ -310,11 +310,11 @@
    onPopWindowOpenned:function(message){
         if(this.globalInputConnector){
               if(this.globalInputConnector.connectedSenders && this.globalInputConnector.connectedSenders.length>0){
-                  return {action: "senderConnectedForPageControl",senders:this.globalInputConnector.connectedSenders};
+                  return {action: "senderConnected",senders:this.globalInputConnector.connectedSenders, formType:this.globalInputConnector.signInForm.type,data:this.globalInputConnector.signInForm.data};
               }
               else{
                   var qrcodedata=this.globalInputConnector.buildInputCodeData(); //Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
-                  return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host};
+                  return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host, formType:this.globalInputConnector.signInForm.type,data:this.globalInputConnector.signInForm.data};
               }
         }
         else {
@@ -322,10 +322,11 @@
         }
    },
 
-   buildCustomeSignInForm:function(){
+   buildCustomSignInForm:function(){
      var that=this;
-     return {
+     var signInForm = {
          type:"usernamepassword",
+         data:{username:"",password:""},
          form:{
                  id:    "###username###"+"@"+window.location.host, // unique id for saving the form content on mobile automating the form-filling process.
                  title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
@@ -334,7 +335,8 @@
                        id:"username",
                        operations:{
                              onInput:function(username){
-                             that.sendMessageToExtension({action: "setformvalue",fieldname:"username", fieldvalue:username});
+                               signInForm.data.username=username;
+                               that.sendMessageToExtension({action: "setformvalue",fieldname:"username", fieldvalue:username});
                              }
                        }
                   },{
@@ -342,25 +344,27 @@
                        id:"password",
                        operations:{
                              onInput:function(password){
-                             that.sendMessageToExtension({action: "setformvalue",fieldname:"password", fieldvalue:password});
+                                signInForm.data.password=password;
+                                that.sendMessageToExtension({action: "setformvalue",fieldname:"password", fieldvalue:password});
                              }
                        }
                }]
            },
            onSenderConnected:function(sender, senders){
-                 that.sendMessageToExtension({action: "senderConnectedForPageControl",senders:senders});
+                 that.sendMessageToExtension({action: "senderConnected",senders:senders,formType:signInForm.type,data:signInForm.data});
            },
            onSenderDisconnected:function(sender, senders){
-                 that.sendMessageToExtension({action: "senderDisconnectedForPageControl",senders:senders});
+                 that.sendMessageToExtension({action: "senderDisconnected",senders:senders,formType:signInForm.type,data:signInForm.data});
            }
         };
+        return signInForm;
    },
    requestConnect:function(message){
           var onSenderConnected=null;
           var onSenderDisconnected=null;
           var signInForm=this.buildSignInFormFromPage(); //find all the sign in form elements from the page.
           if(!signInForm){
-                signInForm=this.buildCustomeSignInForm();
+                signInForm=this.buildCustomSignInForm();
           }
           var globalinputConfig={
                          onSenderConnected:signInForm.onSenderConnected,
@@ -379,7 +383,7 @@
         var qrcodedata=this.globalInputConnector.buildInputCodeData(); //Get the QR Code value generated that includes the end-to-end encryption key and the other information necessary for the app to establish the communication
         console.log("code data:[["+qrcodedata+"]]");
         this.globalInputConnector.signInForm=signInForm;
-        return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host};
+        return {qrcodedata:qrcodedata,action:"displayQRCode",hostname:window.location.host, formType:signInForm.type};
   },
   processRequest:function(request,sendResponse){
         if(!request){

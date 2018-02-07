@@ -36,18 +36,18 @@ var globalInput={
                   this.displayHostName(response);
                   this.displayPageQRCode(response.qrcodedata);
             }
-            else if(response.action==='senderConnectedForPageControl'){
-                  this.onSenderConnectedForPageControl(response.senders);
+            else if(response.action==='senderConnected'){
+                  this.onSenderConnected(response.senders,response.formType,response.data);
             }
-            else if(response.action==='senderDisconnectedForPageControl'){
-                  this.onSenderDisconnectedForPageControl(response.senders);
+            else if(response.action==='senderDisconnected'){
+                  this.onSenderDisconnected(response.senders,response.formType,response.data);
             }
             else if(response.action==='setformvalue'){
                   console.log("***fieldname:"+response.fieldname+" value:"+response.fieldvalue);
             }
 
         },
-        onSenderConnectedForPageControl:function(senders){
+        onSenderConnected:function(senders,formType,data){
              this.contentContainer.innerHTML="";
              var message="Sender Connected ("+senders.length+"):";
              message+=senders[0].client;
@@ -59,9 +59,17 @@ var globalInput={
              }
              var messageElement=this.createMessageElement(message);
              this.contentContainer.appendChild(messageElement);
-             document.body.style.height="50px";
+             if(formType==='usernamepassword'){
+                  var signInFormElement=this.createInputForm();
+                  this.contentContainer.appendChild(signInFormElement);
+                  document.body.style.height="100px";
+             }
+             else{
+                document.body.style.height="50px";
+              }
+
        },
-       onSenderDisconnectedForPageControl:function(senders){
+       onSenderDisconnected:function(senders){
                var message="Sender Disconnected ("+senders.length+"):";
                message+=senders[0].client;
                if(senders.length>1){
@@ -72,6 +80,8 @@ var globalInput={
                }
                this.displayMessage(message);
        },
+
+       
        displayMessage:function(message){
           var messageContainer = document.getElementById('message');
           if(messageContainer){
@@ -197,9 +207,7 @@ var globalInput={
                return globalinputConfig;
         },
 
-        onSenderConnected:function(){
-              this.createInputForm();
-        },
+
         createInputForm:function(){
               var formContainer = document.createElement('div');
               formContainer.id="form";
@@ -273,15 +281,7 @@ var globalInput={
               return formContainer;
         },
 
-        onSenderConnected:function(){
-            this.contentContainer.innerHTML="";
-            var inputForm=this.createInputForm();
-            this.contentContainer.appendChild(inputForm);
-            document.body.style.height="100px";
-        },
-        onSenderDisconnected:function(){
 
-        },
         onInputUsername:function(username){
           if(this.usernameElement){
               this.usernameElement.value=username;

@@ -327,6 +327,7 @@
                  fields:[{
                        label:"Username",
                        id:"username",
+                       type:"text",
                        operations:{
                              onInput:function(username){
                                signInForm.data.username=username;
@@ -336,6 +337,7 @@
                   },{
                        label:"Password",
                        id:"password",
+                       type:"secret",
                        operations:{
                              onInput:function(password){
                                 signInForm.data.password=password;
@@ -345,6 +347,7 @@
                },{
                     label:"Account",
                     id:"account",
+                    type:"text",
                     operations:{
                           onInput:function(account){
                              signInForm.data.account=account;
@@ -354,6 +357,7 @@
                 },{
                      label:"Note",
                      id:"note",
+                     type:"text",
                      operations:{
                            onInput:function(note){
                               signInForm.data.note=note;

@@ -1,9 +1,9 @@
 
 {
-  "name": "Global Input",
-  "version": "0.0.2",
+  "name": "Global Input App",
+  "version": "1.0.0",
   "manifest_version": 2,
-  "description": "Global Input",
+  "description": "This extension enables you to use your Global Input app (available in iOS and Android) on your mobile to sign in to the web applications on laptop and computers.  You can store your credentials exclusively in your mobile device, and use it as a sign in device. The Global Input App is not only a powerful Password Manager that stores everything on your device encrypted (nothing stored on servers), it is also a generic Form Content Management app that allows you to operate on the various applications running on computers and other devices using your mobile. For more info, please visit https://globalinput.co.uk/.",
   "homepage_url": "https://globalinput.co.uk/",
   "browser_action":{
         "default_icon":{

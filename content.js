@@ -25,6 +25,13 @@
                           var response=that.onPopWindowOpenned(request);
                           sendResponse(response);
                       }
+                      else if(request.action==='sendInputMessage'){
+                         var value=request.value;
+                         var index=request.index;
+                         if(this.globalInputConnector){
+                              this.globalInputConnector.sendInputMessage(value,index);
+                         }
+                      }
                       else{
                             //Unrecognized message
                             console.error("unrecognized request:"+JSON.stringify(request));

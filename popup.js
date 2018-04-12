@@ -16,6 +16,9 @@ var globalInput={
         connectToGlobalInput:function(){
               this.sendMessageToContentScript({action:"connect"})
         },
+        sendInputMessage:function(value,index){
+          this.sendMessageToContentScript({action:"sendInputMessage",value:value,index:index});
+        },
         sendMessageToContentScript:function(message){
             var that=this;
             chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
@@ -95,6 +98,7 @@ var globalInput={
        onSenderDisconnected:function(senders){
                if((!senders) || (!senders.length)){
                     this.displayMessage("Clients disconnected");
+                    this.clearAllCustomeFields();
                }
                else{
                  var message="Sender Disconnected ("+senders.length+"):";
@@ -251,8 +255,16 @@ var globalInput={
               formContainer.appendChild(inputContainer);
 
               formContainer.appendChild(messageElement);
+
+
               return formContainer;
         },
+        clearAllCustomeFields:function(){
+          this.onSetFormValues("username", "");
+          this.onSetFormValues("password", "");
+          this.onSetFormValues("account", "");
+          this.onSetFormValues("note", "");
+        }
 
 
 

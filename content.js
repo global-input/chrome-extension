@@ -139,6 +139,11 @@
                           password:{id:"inputPassword3"},
                           signIn:  {element:"button", type:"submit", className:"btn btn-primary bodytext"}
                     },{
+                          //paparjohns
+                          username:{id:"ctl00__objHeader_txtEmail1"},
+                          password:{id:"ctl00__objHeader_txtPassword"},
+                          signIn:  {element:"a", id:"ctl00__objHeader_lbSignIn"}
+                    },{
                           //aws
                           account:{id:"account"},
                           username:{id:"username"},

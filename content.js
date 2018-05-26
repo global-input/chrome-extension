@@ -54,7 +54,9 @@
                             onSenderConnected:signInForm.onSenderConnected,
                             onSenderDisconnected:signInForm.onSenderDisconnected,
                             initData:{
-                                form:signInForm.form
+                                form:signInForm.form,
+                                action:"input",
+                                dataType:"form",
                             }
              };
            var globalInputApi=require("global-input-message"); //get the Global Input Api

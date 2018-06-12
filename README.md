@@ -1,17 +1,20 @@
 # Global Input Chrome Extension
 
 
-This is a Chrome browser extension package. It enables popular web applications such as Confluence, JRA, GitHub, GitLab, AWS console, Dropbox, Wordpress websites etc to display a QR Code alongside the Sign In Form. This allows you to use Global Input App (available in [iOS](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4) and [Android](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4)) on your mobile to carry out automatic Sign In activity using your mobile. The Global Input App is not only a powerful Password Manager that stores everything on your device encrypted (nothing stored on servers), it is also a generic Form Content Management app that allows you to operate on the various service applications running on computers and devices using your mobile. For more info, please visit [here](https://globalinput.co.uk)
+This is a Chrome browser extension package. It enables popular web applications such as Confluence, JRA, GitHub, GitLab, AWS console, Dropbox, Wordpress websites etc to display a QR Code alongside the Sign In Form. This allows you to use Global Input App (available in [iOS](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4) and [Android](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4)) on your mobile to carry out automatic Sign In activity using your mobile.
 
+This is also an example application of how to use the [global-input-message] (https://github.com/global-input/global-input-message) JavaScript library to extend an application into the mobile environment.
 
 ### Installation
-You can do one-click install from the link below:
+You can do one-click install from  
  [Global Input from Chrome Store](https://chrome.google.com/webstore/detail/global-input-app/hcklienddlealndjnakkagefaelhnjkp)
 
-Or you can download the source friom this repository,  and then do the manual install:
-Download the [zip file](https://github.com/global-input/chrome-extension/archive/master.zip) and extract it into a folder.  Or if you have git installed on your computer, you can clone the git repository into a folder on your computer. Then, click on the "Window" menu of your Chrome Browser. Look for the "Extensions" menu item from the menu items listed. Clicking on the "Extensions" menu item will lead you to the Chrome Extensions list.  If you click on the ```Load unpacked extensions...``` button on the top, a file selection window will appear. Please  select the folder, to which you have downloaded the chrome extension. And then click on the ```select``` button in the File Selection Dialog window. This adds the Global Input to the "Extensions" list.  
+Or you can download the source from this repository,  and then do the manual install:
+Download the [zip file](https://github.com/global-input/chrome-extension/archive/master.zip) and extract it into a folder.  If you have git installed on your computer, you can clone the git repository into a folder on your computer. Then, click on the "Window" menu of your Chrome Browser. Look for the "Extensions" menu item from the menu items listed. Clicking on the "Extensions" menu item will lead you to the Chrome Extensions list.  If you click on the ```Load unpacked extensions...``` button on the top, a file selection window will appear. Please  select the folder, to which you have downloaded the chrome extension. And then click on the ```select``` button in the File Selection Dialog window. This adds the Global Input to the "Extensions" list.  
 
 After the installation, you should be able to see a Global Input Icon at the right hand side of the address bar of your Chrome browser. Please click on it to confirm that it is installed.
+
+
 
 
 ### How To Use

@@ -3,7 +3,7 @@
 
 This is a Chrome browser extension package. It enables popular web applications such as Confluence, JRA, GitHub, GitLab, AWS console, Dropbox, Wordpress websites etc to display a QR Code alongside the Sign In Form. This allows you to use Global Input App (available in [iOS](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4) and [Android](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4)) on your mobile to carry out automatic Sign In activity using your mobile.
 
-This is also an example application of how to use the [global-input-message](https://github.com/global-input/global-input-message) JavaScript library to extend an application support the Global Input App so that the application can be operated on using an mobile.
+This is also an example application of how to use the [global-input-message](https://github.com/global-input/global-input-message) JavaScript library to extend an application to support the Global Input App, so that the application can be operated using an mobile.
 
 ### Installation
 You can do one-click install from  

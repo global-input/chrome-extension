@@ -1,0 +1,27 @@
+{
+  "name": "global-input-app",
+  "version": "1.0.0",
+  "description": "Global Input extension to support the Global Input App ",
+  "main": "content.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/global-input/chrome-extension.git"
+  },
+  "keywords": [
+    "chrome",
+    "globalinput",
+    "extension"
+  ],
+  "author": "Dilshat Hewzulla",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/global-input/chrome-extension/issues"
+  },
+  "homepage": "https://globalinput.co.uk",
+  "dependencies": {
+    "global-input-message": "^1.5.5"
+  }
+}

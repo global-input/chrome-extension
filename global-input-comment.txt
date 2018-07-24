@@ -1,0 +1,14 @@
+/**
+ * @fileoverview
+ * - 'global-input-message.js is a Javascript library used for making a generic javascript application support the Global Input app so that the application can be controlled via mobile'
+ *
+ * -  please visit for more info: https://github.com/global-input/global-input-message
+
+ *
+ * @author dilshat hewzulla
+ * @see <a href="https://globalinput.co.uk/" target="_blank">https://globalinput.co.uk/</a>
+ * @see <a href="https://github.com/global-input" target="_blank">https://github.com/global-input</a>
+ */
+
+
+ 

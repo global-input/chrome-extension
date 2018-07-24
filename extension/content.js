@@ -96,6 +96,11 @@
                           password:{name:"user[password]"},
                           signIn:  {element:"input", type:"submit", name:"commit"}
                     },{
+                          //signup on github
+                          username:{id:"user[login]"},
+                          password:{id:"user[password]"},
+                          signIn:  {element:"button", type:"submit"}
+                    },{
                             //from github
                             username:{id:"login_field"},
                             password:{id:"password"},
@@ -160,8 +165,17 @@
                           username:{id:"username"},
                           password:{id:"password"},
                           signIn: {element:"button", id:"login-submit"}
+                    },{
+                          //jira on atlassian.com
+                          username:{id:"login-form-username"},
+                          password:{id:"login-form-password"},
+                          signIn: {element:"input", id:"login-form-submit"}
+                    },{
+                          //binance
+                          username:{id:"email"},
+                          password:{id:"pwd"},
+                          signIn: {element:"input", type:"submit",id:"login-btn"}
                     }];
-
 
                     var allInputElements=document.getElementsByTagName("input"); //Collecting all the input elements
                     var allButtonElements=document.getElementsByTagName("button"); //All the button elements
@@ -403,23 +417,47 @@
       matchCriteria specifies the criteria for example id, name attribute of the input element.
    **/
 
-   findSignInElement(allElements,matchCriteria){
-       if(matchCriteria.id){ //find element by id
-             return this.findElementsByAttribute(allElements,"id",matchCriteria.id);
-       }
-       else if(matchCriteria.type && matchCriteria.name){//find element by type and name attributes
-             return this.findElementsByTwoAttribute(allElements,"type", matchCriteria.type, "name", matchCriteria.name);
-       }
-       else if(matchCriteria.name){ //find element by type and name attribute
-             return this.findElementsByAttribute(allElements,"name",matchCriteria.name);
+   findSignInElement(elementsToSearch,matchCriteria){
+            for(var x=0;x<elementsToSearch.length;x++){
+                  var currentElement=elementsToSearch[x];
+                  var matched=false;
+                  if(currentElement.id){
+                        if(currentElement.getAttribute("id") === matchCriteria.id){
+                              matched=true;
+                        }
+                        else{
+                            continue;
+                        }
+                  }
+                  if(matchCriteria.name){
+                        if(currentElement.getAttribute("name") === matchCriteria.name){
+                              matched=true;
+                        }
+                        else{
+                            continue;
+                        }
+                  }
+                  if(matchCriteria.type){
+                        if(currentElement.getAttribute("type") === matchCriteria.type){
+                              matched=true;
+                        }
+                        else{
+                            continue;
+                        }
+                  }
+                  if(matchCriteria.className){
+                        if(currentElement.getAttribute("class") === matchCriteria.className){
+                              matched=true;
+                        }
+                        else{
+                            continue;
+                        }
+                  }
+                  if(matched){
+                      return currentElement;
+                  }
         }
-       else if(matchCriteria.className && matchCriteria.type){ //find element by class and type attribute
-             return this.findElementsByTwoAttribute(allElements,"class", matchCriteria.className, "type", matchCriteria.type);
-       }
-
-        else{
-             return null;
-        }
+        return null;
    },
    /**
      find the sign in element by tag name from the document, instead from the list of elements that are already collected

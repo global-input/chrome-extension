@@ -160,7 +160,7 @@
                           //binance
                           username:{id:"email"},
                           password:{id:"pwd"},
-                          signIn: {element:"input", type:"submit",id:"login-btn"}
+                          signIn: {element:"input", type:"submit",id:"login-btn",enableButton:true}
                     },{
                           //https://www.okex.com/account/login
                           username:{name:"username",type:"email", rel:"account"},
@@ -202,9 +202,6 @@
                       username:{id:"email"},
                       password:{id:"pass"},
                       signIn: {element:"input", value:"Log In", type:"submit"}
-
-
-
                     }];
 
                     var data={

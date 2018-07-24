@@ -82,14 +82,15 @@
               Each entry is a rule for matching the Sign In elements contained the sign in form.
               You can easily modify to support more websites/web applications.*/
               var signInFormMatchingRules=[{
-                     //from confluence
-                          username:{name:"os_username"},
-                          password:{name:"os_password"},
-                          signIn:  {element:"input", id:"loginButton"}
-                    },{   //from jira
-                          username:{name:"os_username"},
-                          password:{name:"os_password"},
-                          signIn:  {element:"input", id:"login"}
+                     //from confluence || jira
+                          username:{id:["os_username","login-form-username"]},
+                          password:{id:["os_password","login-form-password"]},
+                          signIn:  {element:"input", id:["loginButton","login","login-form-submit"]}
+                    },{
+                          //jira on atlassian.com
+                          username:{id:"username"},
+                          password:{id:"password"},
+                          signIn: {element:"button", id:"login-submit"}
                     },{
                           //from gitlab
                           username:{name:"user[login]"},
@@ -132,14 +133,9 @@
                           signIn:  {element:"input", id:"wp-submit"}
                     },{
                           //developer.apple.com
-                          username:{id:"accountname"},
-                          password:{id:"accountpassword"},
-                          signIn:  {element:"button", id:"submitButton2"}
-                    },{
-                          //itunesconnect.apple.com
-                          username:{id:"appleId"},
-                          password:{id:"pwd"},
-                          signIn:  {element:"button", id:"sign-in"}
+                          username:{id:["accountname","appleId"]},
+                          password:{id:["accountpassword","pwd"]},
+                          signIn:  {element:"button", id:["submitButton2","sign-in"]}
                     },{
                           //wisepay
                           username:{id:"inputEmail3"},
@@ -161,69 +157,98 @@
                           password:{id:"ap_password"},
                           signIn: {element:"input", id:"signInSubmit-input"}
                     },{
-                          //jira on atlassian.com
-                          username:{id:"username"},
-                          password:{id:"password"},
-                          signIn: {element:"button", id:"login-submit"}
-                    },{
-                          //jira on atlassian.com
-                          username:{id:"login-form-username"},
-                          password:{id:"login-form-password"},
-                          signIn: {element:"input", id:"login-form-submit"}
-                    },{
                           //binance
                           username:{id:"email"},
                           password:{id:"pwd"},
                           signIn: {element:"input", type:"submit",id:"login-btn"}
+                    },{
+                          //https://www.okex.com/account/login
+                          username:{name:"username",type:"email", rel:"account"},
+                          password:{name:"password", type:"password", rel:"password"},
+                          signIn: {element:"button", className:"login-btn",enableButton:true}
+                    },{
+                        //https://bittrex.com/Account/Login?ReturnUrl=%2fbalance
+                        username:{id:"UserName"},
+                        password:{id:"Password"},
+                        signIn: {element:"button", dataCallback:"OnSubmit"}
+
+                    },{
+                        //https://www.kraken.com/login
+                        username:{name:"username",type:"text"},
+                        password:{name:"password",type:"password"},
+                        twofactor:{name:"otp",type:"password"},
+                        signIn: {element:"button", id:"btn-login"}
+
+                    },{
+                        //https://www.kraken.com/login
+                        username:{name:"username",type:"text"},
+                        password:{name:"password",type:"password"},
+                        twofactor:{name:"otp",type:"password"},
+                        signIn: {element:"button", id:"btn-login"}
+
+                    },{
+                        //https://www.huobi.pro/zh-cn/login/
+                        username:{name:"login_name"},
+                        password:{name:"password",type:"password"},
+                        signIn: {element:"button", type:"submit", className:"btn btn_submit"}
+
+                    },{
+                      //https://www.coinbase.com/signin
+                      username:{id:"email"},
+                      password:{id:"password"},
+                      signIn: {element:"input", id:"signin_button"}
+                    },{
+                      //facebook
+                      username:{id:"email"},
+                      password:{id:"pass"},
+                      signIn: {element:"input", value:"Log In", type:"submit"}
+
+
+
                     }];
 
-                    var allInputElements=document.getElementsByTagName("input"); //Collecting all the input elements
-                    var allButtonElements=document.getElementsByTagName("button"); //All the button elements
-                    var allALinkElements=document.getElementsByTagName("a"); //All the a tag elements
-                    if(allInputElements.length<1 && allButtonElements.length<1 && allALinkElements.length<1){
-                          //if there is no any controllable elements in the page, it will not operate
-                          return null;
-                    }
+                    var data={
+
+                    };
              for(var i=0;i<signInFormMatchingRules.length;i++){
                    var matchingRule=signInFormMatchingRules[i]; //iterate through each rule to find the sign in form
                    var passwordElement=null;
                    var usernameElement=null;
                    var accountElement=null;
+                   var twoFactorElement=null;
+
                    var submitElement=null;
                    if(matchingRule.password){
-                        var passwordElement=this.findSignInElement(allInputElements,matchingRule.password); //find the password element
+                        var passwordElement=this.findSignInElement(data,matchingRule.password); //find the password element
                         if(!passwordElement){
                               continue;//try the next matching rule, for the password element could not be found with the current rule.
                         }
                    }
                    if(matchingRule.username){
-                        usernameElement=this.findSignInElement(allInputElements,matchingRule.username); //find the userame element
+                        usernameElement=this.findSignInElement(data,matchingRule.username); //find the userame element
                         if(!usernameElement){
                                     continue; //try the next rule
                         }
                    }
                   if(matchingRule.account){
-                       accountElement=this.findSignInElement(allInputElements,matchingRule.account); //find the account element, i.e. aws uses this
+                       accountElement=this.findSignInElement(data,matchingRule.account); //find the account element, i.e. aws uses this
                        if(!accountElement){
                                     continue; //try the next
                        }
                   }
+                  if(matchingRule.twofactor){
+                       twoFactorElement=this.findSignInElement(data,matchingRule.twofactor); //find the account element, i.e. aws uses this
+                       if(!twoFactorElement){
+                                    continue; //try the next
+                       }
+                  }
+
                   if(matchingRule.signIn){
-                        if(matchingRule.signIn.element==="input"){
-                             submitElement=this.findSignInElement(allInputElements,matchingRule.signIn); //find the submit element from the input tags
-                        }
-                        else if(matchingRule.signIn.element==="button"){
-                            submitElement=this.findSignInElement(allButtonElements,matchingRule.signIn); //find the submit element from the button tags
-                        }
-                        else if(matchingRule.signIn.element==="a"){
-                            submitElement=this.findSignInElement(allALinkElements,matchingRule.signIn); //find the submit element from the a tags
-                        }
-                        else{
-                                submitElement=this.findSignInElementByTagname(matchingRule.signIn.element,matchingRule.signIn); //find the submit element from the any tags
-                        }
+                        submitElement=this.findSignInElement(data,matchingRule.signIn); //find the submit element from the input tags
                         if(!submitElement){
-                            continue; //try the next
+                                     continue; //try the next
                         }
+
                    }
                    //coming here means that a sign in form is found, so trying to buld signInForm object.
                    var that=this;
@@ -232,15 +257,23 @@
                       usernameElement:usernameElement,
                       passwordElement:passwordElement,
                       accountElement:accountElement,
+                      twoFactorElement:twoFactorElement,
                       submitElement:submitElement,
+                      matchingRule:matchingRule,
                       onUsernameChanged:function(username){
                               this.usernameElement.value=username; //pass the username value received from mobile to the username element
                       },
                       onPasswordChanged:function(password){
                               this.passwordElement.value=password; //pass the password value received from mobile to the username element
+                              if(password && this.submitElement && this.matchingRule.signIn.enableButton){
+                                  this.submitElement.disabled=false;
+                              }
                       },
                       onAccountChanged:function(account){
                               this.accountElement.value=account; //pass the account value received from mobile to the username element
+                      },
+                      onTwoFacorChanged:function(tfc){
+                            this.twoFactorElement.value=tfc; //pass the account value received from mobile to the username element
                       },
                       onSubmit:function(){
                                 this.submitElement.click();  //click on submit element when the same action happenned in mobile
@@ -294,6 +327,19 @@
                                 }
                         });
                   }
+                  if(signInForm.twoFactorElement){
+                      signInForm.form.fields.push({
+                                id:"twofactor",
+                                label:"Two Factor",
+                                type:"text",
+                                operations:{
+                                    onInput:function(account){
+                                         signInForm.onTwoFacorChanged(account);
+                                    }
+                                }
+                        });
+                  }
+
                   if(signInForm.submitElement){
                       signInForm.form.fields.push({
                                 label:"Login",
@@ -316,7 +362,7 @@
   */
    sendMessageToExtension:function(message){
         chrome.runtime.sendMessage(message, function(response) {
-            console.log("message sent to extension");
+
         });
    },
 
@@ -408,110 +454,78 @@
 
 
 
-
-
-
    /**
       find the form element from allInputElements.
-      allInputElements is an array that contains all the input elements in the page.
       matchCriteria specifies the criteria for example id, name attribute of the input element.
+      data is the catch holder object to speed up the search.
    **/
 
-   findSignInElement(elementsToSearch,matchCriteria){
-            for(var x=0;x<elementsToSearch.length;x++){
-                  var currentElement=elementsToSearch[x];
-                  var matched=false;
-                  if(currentElement.id){
-                        if(currentElement.getAttribute("id") === matchCriteria.id){
-                              matched=true;
-                        }
-                        else{
-                            continue;
-                        }
-                  }
-                  if(matchCriteria.name){
-                        if(currentElement.getAttribute("name") === matchCriteria.name){
-                              matched=true;
-                        }
-                        else{
-                            continue;
-                        }
-                  }
-                  if(matchCriteria.type){
-                        if(currentElement.getAttribute("type") === matchCriteria.type){
-                              matched=true;
-                        }
-                        else{
-                            continue;
-                        }
-                  }
-                  if(matchCriteria.className){
-                        if(currentElement.getAttribute("class") === matchCriteria.className){
-                              matched=true;
-                        }
-                        else{
-                            continue;
-                        }
-                  }
-                  if(matched){
-                      return currentElement;
+   findSignInElement(data,matchCriteria){
+            var elemmentToSearch="input";
+            if(matchCriteria.element){
+                  elemmentToSearch=matchCriteria.element;
+            }
+            if(!data[elemmentToSearch]){
+                data[elemmentToSearch]={
+                    elements:document.getElementsByTagName(elemmentToSearch)
+                };
+            }
+            var elementsToMatch=data[elemmentToSearch].elements;
+
+            if((!elementsToMatch) || (!elementsToMatch.length)){
+                  //if there is no any controllable elements in the page, it will not operate
+                  return null;
+            }
+
+
+            for(var x=0;x<elementsToMatch.length;x++){
+                  var currentElement=elementsToMatch[x];
+                  var attrData={matched:0};
+                  this.matchAttribute(attrData,currentElement,"id",matchCriteria.id);
+                  this.matchAttribute(attrData,currentElement,"name",matchCriteria.name);
+                  this.matchAttribute(attrData,currentElement,"type",matchCriteria.type);
+                  this.matchAttribute(attrData,currentElement,"class",matchCriteria.className);
+                  this.matchAttribute(attrData,currentElement,"data-callback",matchCriteria.dataCallback);
+                  this.matchAttribute(attrData,currentElement,"value",matchCriteria.value);
+                  if(attrData.matched===1){
+                          return currentElement;
                   }
         }
         return null;
    },
-   /**
-     find the sign in element by tag name from the document, instead from the list of elements that are already collected
-   **/
-   findSignInElementByTagname(tagName,matchCriteria){
-       var allElements=document.getElementsByTagName(tagName); //Collecting all the elements
-       if((!allElements) || (!allElements.length)){
-             return null;
-       }
-       if(matchCriteria.id){ //find element by id
-             return this.findElementsByAttribute(allElements,"id",matchCriteria.id);
-       }
-       else if(matchCriteria.type && matchCriteria.name){//find element by type and name attributes
-             return this.findElementsByTwoAttribute(allElements,"type", matchCriteria.type, "name", matchCriteria.name);
-       }
-       else if(matchCriteria.name){ //find element by type and name attribute
-             return this.findElementsByAttribute(allElements,"name",matchCriteria.name);
-        }
-       else if(matchCriteria.className && matchCriteria.type){ //find element by class and type attribute
-             return this.findElementsByTwoAttribute(allElements,"class", matchCriteria.className, "type", matchCriteria.type);
-       }
-
-        else{
-             return null;
-        }
-   },
-
-
-
-   /**
-      looking for element from allInputElements, the element should satisfy the condition: the value of attributename equals to attributevalue
-   **/
-
-   findElementsByAttribute:function(allInputElements, attributename, attributevalue){
-       for(var x=0;x<allInputElements.length;x++){
-           if(allInputElements[x].getAttribute(attributename) === attributevalue){
-               return allInputElements[x];
-           }
-       }
-       return null;
-   },
-
-   /**
-     looking for element from allInputElements, the element should satisfy the condition: the value of attributename1 equals to attributevalue1, and value of  attributename2 equals to attributevalue2
-   **/
-
-   findElementsByTwoAttribute:function(allInputElements, attributename1, attributevalue1,attributename2, attributevalue2){
-      for(var x=0;x<allInputElements.length;x++){
-          if(allInputElements[x].getAttribute(attributename1) === attributevalue1 && allInputElements[x].getAttribute(attributename2) === attributevalue2){
-              return allInputElements[x];
+   matchAttribute:function(attrData,currentElement,attributeName,matchValue){
+          if(typeof matchValue === 'undefined'){
+                return;
           }
-      }
-      return null;
+          if(attrData.matched===2){
+              return;
+          }
+
+          var attrValue=currentElement.getAttribute(attributeName);
+          if(attrValue){
+            attrValue=attrValue.trim();
+          }
+
+          if(typeof matchValue ==='object' && Array.isArray(matchValue)){
+                  for(var i=0;i<matchValue.length;i++){
+                    if(attrValue === matchValue[i]){
+                         attrData.matched=1;
+                         return;
+                    }
+                  }
+                  attrData.matched=2;
+          }
+          else{
+                if(attrValue === matchValue){
+                     attrData.matched=1;
+                }
+                else{
+                   attrData.matched=2;
+                }
+          }
+
    }
+
 
 
 

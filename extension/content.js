@@ -82,6 +82,11 @@
               Each entry is a rule for matching the Sign In elements contained the sign in form.
               You can easily modify to support more websites/web applications.*/
               var signInFormMatchingRules=[{
+                //gmail
+                username:{element:"div", id:"profileIdentifier"},
+                password:{name:"password",type:"password"},
+                signIn: {element:"div", role:"button", id:"passwordNext"}
+              },{
                      //from confluence || jira
                           username:{id:["os_username","login-form-username"]},
                           password:{id:["os_password","login-form-password"]},

@@ -207,6 +207,26 @@
                       username:{id:"email"},
                       password:{id:"pass"},
                       signIn: {element:"input", value:"Log In", type:"submit"}
+                    },{
+                      //auth.hitbtc.com
+                      username:{name:"username"},
+                      password:{name:"password"},
+                      signIn: {element:"button", id:"signin_button", type:"submit"}
+                    },{
+                      //www.bitfinex.com
+                      username:{id:"login"},
+                      password:{id:"auth-password"},
+                      signIn: {element:"button", name:"action", type:"submit"}
+                    },{
+                      //global.americanexpress.com
+                      username:{id:"lilo_userName"},
+                      password:{id:"lilo_password"},
+                      signIn: {element:"input", id:"lilo_formSubmit"}
+                    },{
+                      //www.americanexpress.com/de/
+                      username:{id:"login-user"},
+                      password:{id:"login-password"},
+                      signIn: {element:"button", id:"login-submit"}
                     }];
 
                     var data={

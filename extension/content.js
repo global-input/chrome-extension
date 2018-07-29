@@ -227,6 +227,76 @@
                       username:{id:"login-user"},
                       password:{id:"login-password"},
                       signIn: {element:"button", id:"login-submit"}
+                    },{
+                      //id.docker.com
+                      username:{id:"nw_username"},
+                      password:{id:"nw_password"},
+                      signIn: {element:"button", type:"submit",id:"nw_submit"}
+                    },{
+                      //www.npmjs.com/login
+                      username:{id:"login_username"},
+                      password:{id:"login_password"},
+                      signIn: {element:"button", type:"submit",textContent:"Login"}
+                    },{
+                      //www.camscanner.com
+                      username:{id:"id_input_username"},
+                      password:{id:"id_input_pwd"},
+                      signIn: {element:"a", id:"id_btn_login"}
+                    },{
+                      //www.evernote.com
+                      username:{id:"username"},
+                      password:{id:"password"},
+                      signIn: {element:"input", id:"loginButton", type:"submit"}
+                    },{
+                      //myregus.com
+                      username:{name:"email",type:"text"},
+                      password:{name:"password",type:"password"},
+                      signIn: {element:"button",textContent:"Log in"}
+                    },{
+                      //my.vultr.com
+                      username:{name:"username",type:"text"},
+                      password:{name:"password",type:"password"},
+                      signIn: {element:"input",type:"submit",value:"Login"}
+                    },{
+                      //wable.com
+                      username:{id:"txtUsername",type:"text"},
+                      password:{id:"txtPassword",type:"password"},
+                      signIn: {element:"button",textContent:"Sign In"}
+                    },{
+                      //jsfiddler
+                      username:{id:"id_username",type:"text"},
+                      password:{id:"id_password",type:"password"},
+                      signIn: {element:"input",type:"submit",value:"Log in"}
+                    },{
+                      //join me
+                      username:{id:"email",type:"email"},
+                      password:{id:"password",type:"password"},
+                      signIn: {element:"button",textContent:"Log in"}
+                    },{
+                      //home.bt.com/login
+                      username:{id:"inputIdEmail",type:"email"},
+                      password:{id:"inputPassword",type:"password"},
+                      signIn: {element:"input",type:"submit",value:"Sign in"}
+                    },{
+                      //login.live.com
+                      username:{name:["login","loginfmt"]},
+                      password:{name:"passwd",type:"password",placeholder:"Password"},
+                      signIn: {element:"input",type:"submit",value:"Sign in"}
+                    },{
+                      //cloud.digitalocean.com
+                      username:{id:"user_email"},
+                      password:{id:"user_password"},
+                      signIn: {element:"input",type:"submit",value:"Log In"}
+                    },{
+                      //c9.io
+                      username:{id:"id-username"},
+                      password:{id:"id-password"},
+                      signIn: {element:"button",type:"submit",textContent:"Sign in"}
+                    },{
+                      //id.heroku.com
+                      username:{id:"email"},
+                      password:{id:"password"},
+                      signIn: {element:"button",type:"submit",textContent:"Log In"}
                     }];
 
                     var data={
@@ -509,6 +579,7 @@
                   this.matchAttribute(attrData,currentElement,"class",matchCriteria.className);
                   this.matchAttribute(attrData,currentElement,"data-callback",matchCriteria.dataCallback);
                   this.matchAttribute(attrData,currentElement,"value",matchCriteria.value);
+                  this.matchAttribute(attrData,currentElement,".textContent",matchCriteria.textContent);
                   if(attrData.matched===1){
                           return currentElement;
                   }
@@ -522,8 +593,13 @@
           if(attrData.matched===2){
               return;
           }
-
-          var attrValue=currentElement.getAttribute(attributeName);
+          var attrValue=null;
+          if(attributeName==='.textContent'){
+              attrValue=currentElement.textContent;
+          }
+          else{
+              attrValue=currentElement.getAttribute(attributeName);
+          }
           if(attrValue){
             attrValue=attrValue.trim();
           }
@@ -547,7 +623,6 @@
           }
 
    }
-
 
 
 

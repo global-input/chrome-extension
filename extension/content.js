@@ -138,8 +138,8 @@
                           signIn:  {element:"input", id:"wp-submit"}
                     },{
                           //developer.apple.com
-                          username:{id:["accountname","appleId"]},
-                          password:{id:["accountpassword","pwd"]},
+                          username:{id:["accountname","appleId","account_name_text_field"]},
+                          password:{id:["accountpassword","pwd","password_text_field"]},
                           signIn:  {element:"button", id:["submitButton2","sign-in"]}
                     },{
                           //wisepay
@@ -297,6 +297,11 @@
                       username:{id:"email"},
                       password:{id:"password"},
                       signIn: {element:"button",type:"submit",textContent:"Log In"}
+                    },{
+                      //jsbin.com
+                      username:{id:"login-username"},
+                      password:{id:"login-key"},
+                      signIn: {element:"input",type:"submit",value:"Log in"}
                     }];
 
                     var data={

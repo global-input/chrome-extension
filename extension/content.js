@@ -302,6 +302,16 @@
                       username:{id:"login-username"},
                       password:{id:"login-key"},
                       signIn: {element:"input",type:"submit",value:"Log in"}
+                    },{
+                      //linkedin
+                      username:{id:"login-email"},
+                      password:{id:"login-password"},
+                      signIn: {element:"input",type:"submit",id:"login-submit"}
+                    },{
+                      //tesco
+                      username:{id:"username"},
+                      password:{id:"password"},
+                      signIn: {element:"button",childElement:{tagName:"span",textContent:"Sign in"}}
                     }];
 
                     var data={
@@ -585,10 +595,11 @@
                   this.matchAttribute(attrData,currentElement,"data-callback",matchCriteria.dataCallback);
                   this.matchAttribute(attrData,currentElement,"value",matchCriteria.value);
                   this.matchAttribute(attrData,currentElement,".textContent",matchCriteria.textContent);
+                  this.matchChildElement(attrData,currentElement,matchCriteria.childElement);
                   if(attrData.matched===1){
                           return currentElement;
                   }
-        }
+           }
         return null;
    },
    matchAttribute:function(attrData,currentElement,attributeName,matchValue){
@@ -627,10 +638,38 @@
                 }
           }
 
+   },
+   matchChildElement:function(attrData,currentElement,childElement){
+          if(typeof childElement === 'undefined'){
+                return;
+          }
+          if(attrData.matched===2){
+              return;
+          }
+          if((!currentElement.children) || (!currentElement.children.length) ){
+                attrData.matched=2;
+                return;
+          }
+          if(childElement.tagName && childElement.textContent){
+              if(this.matchElementsByTagNameAndTextContent(currentElement.children,childElement.tagName,childElement.textContent)){
+                attrData.matched=1;
+              }
+              else{
+                attrData.matched=2;
+              }
+          }
+   },
+   matchElementsByTagNameAndTextContent:function(elements,matchTagName,matchTextContent){
+     matchTagName=matchTagName.toUpperCase();
+     for(var i=0;i<elements.length;i++){
+         if(elements[i].tagName===matchTagName){
+                 if(matchTextContent===elements[i].textContent){
+                    return true;
+                 }
+             }
+    }
+    return false;
    }
-
-
-
 
  };
 

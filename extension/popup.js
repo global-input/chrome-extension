@@ -1,5 +1,8 @@
 
 var globalInputChromeExtension={
+
+  pagedata:{},
+  /* The entry function for initiasing the extensions script */
     onDocumentLoaded:function(){
           this.contentContainer=document.getElementById('content');
           var connectButton = document.getElementById('connectToGlobalInputApp');
@@ -7,37 +10,88 @@ var globalInputChromeExtension={
           var that=this;
           chrome.runtime.onMessage.addListener(this.onContentMessageReceived.bind(this));
     },
+    /* Messages from the content script */
+    onContentMessageReceived:function(message,sender,sendResponse){
+          console.log("We are not expecting to receive content message");
+    },
+
+    /* send a message to the content script  */
+
     sendMessageToContent:function(messageType, content){
         var that=this;
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
             chrome.tabs.sendMessage(tabs[0].id, {messageType:messageType,content:content}, that.onReplyMessageReceived.bind(that));
         });
     },
+    /*this will be called when the 'connect to mobile' button is clicked  */
+    connectToGlobalInputApp:function(){
+        this.showInitialising();
+        this.sendMessageToContent("get-page-config");
+    },
+    /*
+    This will send the field value received from the mobile to the content script.
+    */
+    sendFieldValue:function(fieldId, fieldValue){
+        this.sendMessageToContent("set-form-field",{fieldId:fieldId,fieldValue:fieldValue});
+    },
 
 
+    /*
+     Receive the result of the message sent to the content script.
+    */
     onReplyMessageReceived:function(message){
+      this.pagedata.hostname=message.hostname;
       if(!message){
            this.contentContainer.innerText="Unable to communicate with the page content, please reload/refresh the page and try again.";
       }
       else if(message.messageType==="get-page-config"){
-            this.onPageConfigDataReceived(message.content);
+            this.onPageConfigDataReceived(message);
+      }
+      else if(message.messageType==="set-form-field"){
+            //we assume it is always successful for the time being.
       }
       else{
         console.log("reply message is not recognized");
       }
     },
-      onContentMessageReceived(message,sender,sendResponse){
-            console.log("We are not expecting to receive content message");
-            // sendResponse({messageType:messageType,content:content});
-            // this.replyToContent(sendResponse,"default",{status:"success"});
+
+    /*When we got the reply from content script for our page config request*/
+    onPageConfigDataReceived:function(message){
+        var that=this;
+        var globalinputConfig={
+                       onSenderConnected:this.onSenderConnected.bind(this),
+                       onSenderDisconnected:this.onSenderDisconnected.bind(this),
+                       onRegistered:(next)=>{
+                                    next();
+                                    this.onWebSocketConnect();
+                       },
+                       initData:{
+                         form:null,
+                         action:"input",
+                         dataType:"form",
+                       },
+        };
+        if(message.status==="success"){
+            globalinputConfig.initData.form=this.buildGlobalInputForm(message);
+        }
+        else{
+            globalinputConfig.initData.form=this.buildGlobalInputCustomForm(message.host);
+        }
+
+
+        var globalInputApi=require("global-input-message"); //get the Global Input Api
+        if(this.globalInputConnector){
+            this.globalInputConnector.disconnect();
+            this.globalInputConnector=null;
+        }
+        this.globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
+        this.globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
+
       },
 
-      connectToGlobalInputApp:function(){
-          this.showInitialising();
-          this.sendMessageToContent("get-page-config");
-      },
 
 
+/* When the Global Input App has connected to the extension */
       onSenderConnected:function(sender, senders){
         this.contentContainer.innerHTML="";
         var message="Sender Connected ("+senders.length+"):";
@@ -49,8 +103,8 @@ var globalInputChromeExtension={
           }
         }
 
-        if(this.formData){
-             this.contentContainer.appendChild(this.formData.formContainer);
+        if(this.pagedata.formData){
+             this.contentContainer.appendChild(this.pagedata.formData.formContainer);
              document.body.style.height="100px";
         }
         else{
@@ -63,34 +117,29 @@ var globalInputChromeExtension={
       },
       onWebSocketConnect:function(){
         console.log("connected**************");
-        this.displayHostName(this.hostname);
+        this.displayHostName(this.pagedata.hostname);
         var qrcodedata=this.globalInputConnector.buildInputCodeData();
         console.log("code data:[["+qrcodedata+"]]");
         this.displayPageQRCode(qrcodedata,this.formType);
       },
 
-    sendFieldValue:function(fieldId, fieldValue){
-        this.sendMessageToContent("set-form-field",{fieldId:fieldId,fieldValue:fieldValue});
-    },
-    buildGlobalInputForm:function(content){
-        if(!content.form){
-              return null;
-        }
-        this.extensionForm=null;
 
+    buildGlobalInputForm:function(message){
+        this.extensionForm=null;
         var form={
-             id:content.form.id,
-             title:content.form.title,
+             id:message.content.form.id,
+             title:message.content.form.title,
              fields:[]
         };
         var that=this;
-        for(var i=0;i<content.form.fields.length;i++){
+        for(var i=0;i<message.content.form.fields.length;i++){
+                var field=message.content.form.fields[i];
                 var nField={
-                                id:content.form.fields[i].id,
-                                label:content.form.fields[i].label,
-                                type:content.form.fields[i].type,
+                                id:field.id,
+                                label:field.label,
+                                type:field.type,
                                 operations:{
-                                    contetFormId:content.form.fields[i].id,
+                                    contetFormId:field.id,
                                     onInput:function(value){
                                         that.sendFieldValue(this.contetFormId,value);
                                     }
@@ -98,7 +147,7 @@ var globalInputChromeExtension={
 
                 }
                 if(nField.type==='button'){
-                    nField.id=null;
+                    nField.id=null; //Global Input App will not store its value if it does not have id
                 }
                 form.fields.push(nField);
              }
@@ -110,24 +159,22 @@ var globalInputChromeExtension={
     buildGlobalInputField:function(fieldOpts){
             var that=this;
             var opts={
-                messageElement:fieldOpts.messageElement,
                 label:fieldOpts.label,
                 id:fieldOpts.id,
                 type:fieldOpts.type,
                 placeholder:fieldOpts.placeholder
             }
             var inputContainer=this.createOneInputField(opts);
-            var formElement=opts.element;
-            this.formData.fields.push({id:fieldOpts.id,formElement:formElement});
-            fieldOpts.formData.formContainer.appendChild(inputContainer);
+            this.pagedata.formData.fields.push({id:fieldOpts.id,formElement:opts.element});
+            this.pagedata.formData.formContainer.appendChild(inputContainer);
             var formfield={
                   label:fieldOpts.label,
                   id:fieldOpts.id,
                   type:fieldOpts.type==='password'?'secret':"text",
                   operations:{
                         onInput:function(newValue){
-                          for(var i=0;i<that.formData.fields.length;i++){
-                              var field=that.formData.fields[i];
+                          for(var i=0;i<that.pagedata.formData.fields.length;i++){
+                              var field=that.pagedata.formData.fields[i];
                               if(field.id===this.fieldId){
                                   field.formElement.value=newValue;
                                   break;
@@ -137,94 +184,64 @@ var globalInputChromeExtension={
                   }
              };
             formfield.operations.fieldId=formfield.id;
-            fieldOpts.form.fields.push(formfield);
+            return formfield;
     },
-    buildGlobalInputCustomForm:function(content){
-      var formContainer = document.createElement('div');
-      this.formData={
-          fields:[],
-          formContainer:formContainer
-      };
 
-      var that=this;
+    /* Build a custom form when a form is not found on the page */
+    buildGlobalInputCustomForm:function(hostname){
 
-      formContainer.id="form";
-      var messageElement = document.createElement('div');
-      var form={
-            id:    "###username###"+"@"+content.host, // unique id for saving the form content on mobile automating the form-filling process.
-            title: "Sign In on "+content.host,  //Title of the form displayed on the mobile
-            fields:[]
-      };
+          this.pagedata.formData={
+              fields:[],
+              formContainer:document.createElement('div'),
+              messageElement:document.createElement('div')
+          };
 
-      this.buildGlobalInputField({formData:this.formData,
-            form:form,
-            messageElement:messageElement,
-            label:"Username",
-            id:"username",
-            type:"text",
-            placeholder:'Enter Username'
-        });
+          var form={
+                id:    "###username###"+"@"+hostname, // unique id for saving the form content on mobile automating the form-filling process.
+                title: "Sign In on "+hostname,  //Title of the form displayed on the mobile
+                fields:[]
+          };
 
-     this.buildGlobalInputField({formData:this.formData,
-              form:form,
-              messageElement:messageElement,
-              label:"Password",
-              id:"password",
-              type:"password",
-              placeholder:'Enter Password'
-    });
-
-    this.buildGlobalInputField({formData:this.formData,
-                form:form,
-                messageElement:messageElement,
-                label:"Account",
-                id:"account",
+          var formfield=this.buildGlobalInputField({
+                label:"Username",
+                id:"username",
                 type:"text",
-                placeholder:'Enter Account Number if any'
-    });
+                placeholder:'Enter Username'
+           });
+           form.fields.push(formfield);
 
-  this.buildGlobalInputField({formData:this.formData,
-                  form:form,
-                  messageElement:messageElement,
-                  label:"Note",
-                  id:"note",
-                  type:"text",
-                  placeholder:'Enter Optional Note'
-  });
-  return form;
+           formfield=this.buildGlobalInputField({
+                  label:"Password",
+                  id:"password",
+                  type:"password",
+                  placeholder:'Enter Password'
+           });
+           form.fields.push(formfield);
+
+          formfield=this.buildGlobalInputField({
+                      label:"Account",
+                      id:"account",
+                      type:"text",
+                      placeholder:'Enter Account Number if any'
+          });
+          form.fields.push(formfield);
+
+          formfield=this.buildGlobalInputField({
+                          label:"Note",
+                          id:"note",
+                          type:"text",
+                          placeholder:'Enter Optional Note'
+          });
+          form.fields.push(formfield);
+
+          return form;
   },
-  onPageConfigDataReceived:function(content){
-        var that=this;
-      var globalinputConfig={
-                     onSenderConnected:this.onSenderConnected.bind(this),
-                     onSenderDisconnected:this.onSenderDisconnected.bind(this),
-                     onRegistered:(next)=>{
-                                  next();
-                                  this.onWebSocketConnect();
-                     },
-                     initData:{
-                       form:null,
-                       action:"input",
-                       dataType:"form",
-                     },
-      };
-      globalinputConfig.initData.form=this.buildGlobalInputForm(content);
-      if(!globalinputConfig.initData.form){
-          globalinputConfig.initData.form=this.buildGlobalInputCustomForm(content);
-      }
-      var globalInputApi=require("global-input-message"); //get the Global Input Api
-      if(this.globalInputConnector){
-          this.globalInputConnector.disconnect();
-          this.globalInputConnector=null;
-      }
-      this.globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
-      this.globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
 
-    },
 
 
 
     createOneInputField:function(opts){
+          var that=this;
           var inputContainer=document.createElement('div');
           inputContainer.className = "field";
               var labelElement = document.createElement('label');
@@ -246,7 +263,7 @@ var globalInputChromeExtension={
                   opts.element.select();
                   document.execCommand("Copy");
                   opts.element.type=opts.type;
-                  opts.messageElement.innerText="The "+opts.id+" is copied into the clipboard";
+                  that.pagedata.formData.messageElement.innerText="The "+opts.id+" is copied into the clipboard";
            };
         inputContainer.appendChild(copyButtonElement);
         return inputContainer;

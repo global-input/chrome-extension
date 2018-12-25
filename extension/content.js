@@ -1,6 +1,9 @@
 (function(){
 
   var globalInputFormManager={
+    /* Matching rules for locating a form in a pge
+    the comment indicates the name of the application
+    where the rule is coming from */
     pageFormMatchingRules:[{
                  //gmail
                 username:{element:"div", id:"profileIdentifier"},
@@ -233,7 +236,10 @@
             password:{id:"password"},
             signIn: {element:"button",childElement:{tagName:"span",textContent:"Sign in"}}
           }],
-          findSignInElement:function(cache,matchCriteria){
+          /* find a specific form element from the pageForm
+              @cache: passing the cache object to speed up the search on a same page
+              @matchCriteria:rule for locating the element */
+          findPageFormElement:function(cache,matchCriteria){
                    var elemmentToSearch="input";
                    if(matchCriteria.element){
                          elemmentToSearch=matchCriteria.element;
@@ -266,47 +272,77 @@
                   }
                return null;
           },
-    /**
-        only this method should be called from the content script to start listenning messages.
-        The message will be coming from the extension script (popup.js)
-    **/
+    /* The entry function when this script file is loaded */
      init:function(){
             chrome.runtime.onMessage.addListener(this.onExtensionMessageReceived.bind(this));
      },
-     replyToExtension:function(sendResponse, messageType,content){
-        sendResponse({messageType:messageType,content:content});
-     },
-     onExtensionMessageReceived:function(message, sender, sendResponse){
+     /*  message handler for message coming from extension */
+     onExtensionMessageReceived:function(message, sender, replyBack){
          if(!message){
                console.error("empty message is received");
-               this.replyToExtension(sendResponse,"error", {status:"error", reason:"empty"});
+               replyBack({
+                           messageType:"error",
+                           status:"error",
+                           host:window.location.host,
+                           content:"empty"
+                         }
+                         );
                return;
          }
-         if(message.messageType==='get-page-config'){
+         else if(message.messageType==='get-page-config'){
               var pageConfig=this.getPageConfig();
-              this.replyToExtension(sendResponse,message.messageType,pageConfig);
+              if(!pageConfig){
+                replyBack({
+                  messageType:message.messageType,
+                  host:window.location.host,
+                  status:"failed",
+                  content:"no recognized form"
+                });
+              }
+              else{
+                replyBack({
+                  messageType:message.messageType,
+                  host:window.location.host,
+                  status:"success",
+                  content:pageConfig
+                });
+              }
+
          }
-         if(message.messageType==='set-form-field'){
+         else if(message.messageType==='set-form-field'){
                 if(!this.pageForm){
-                      this.replyToExtension(sendResponse,"error","page form not found");
+                      replyBack({
+                        messageType:message.messageType,
+                        host:window.location.host,
+                        status:"error",
+                        content:"no form in the page"
+                      });
                       return;
                 }
                 this.pageForm.form.setFormFieldValue(message.content.fieldId,message.content.fieldValue);
-                this.replyToExtension(sendResponse,message.messageType,{status:"ok"});
+                replyBack({
+                            messageType:message.messageType,
+                            host:window.location.host,
+                            status:"success"
+                           });
          }
 
          else{
-            this.replyToExtension(sendResponse,"error","messageType not recognized");
+            replyBack({
+                         messageType:message.messageType,
+                         host:window.location.host,
+                         status:"error",
+                         content:"messageType not recognized"
+                      });
          }
-
      },
+     /* find the form element to build a form config data to be used
+     to display a similar form on the mobile screen */
      getPageConfig(){
         var pageForm=this.findMatchingPageForm();
-        this.pageForm=pageForm;
+        this.pageForm=pageForm; //save it to use to set the value in the form when received input evens from mobile
         if(!pageForm){
-          return{
-              host:window.location.host
-          }
+              return null;
         }
         var pageConfig={
               host:window.location.host,
@@ -327,14 +363,9 @@
         return pageConfig;
 
      },
-     /**
-        find the form element from allInputElements.
-        matchCriteria specifies the criteria for example id, name attribute of the input element.
-        data is the catch holder object to speed up the search.
-     **/
 
 
-     /**find the form from page via the defined rule**/
+     /*find the form from page via the defined rule */
      findMatchingPageForm:function(){
                /*Matching Rules for finding the the Sign In Form.
                Each entry is a rule for matching the Sign In elements contained the sign in form.
@@ -361,7 +392,7 @@
                     };
                     var foundElement=null;
                     if(pageFormData.matchingRule.password){
-                         foundElement=this.findSignInElement(cache,pageFormData.matchingRule.password); //find the password element
+                         foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.password); //find the password element
                          if(foundElement){
                            pageFormData.form.fields.push({
                                   id:"password",
@@ -378,7 +409,7 @@
                          }
                     }
                     if(pageFormData.matchingRule.username){
-                         foundElement=this.findSignInElement(cache,pageFormData.matchingRule.username); //find the userame element
+                         foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.username); //find the userame element
                          if(foundElement){
                              pageFormData.form.fields.push({
                                     id:"username",
@@ -395,7 +426,7 @@
                          }
                     }
                    if(pageFormData.matchingRule.account){
-                        foundElement=this.findSignInElement(cache,pageFormData.matchingRule.account); //find the account element, i.e. aws uses this
+                        foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.account); //find the account element, i.e. aws uses this
                         if(foundElement){
                             pageFormData.form.fields.push({
                                    id:"account",
@@ -412,7 +443,7 @@
                         }
                    }
                    if(pageFormData.matchingRule.twofactor){
-                        foundElement=this.findSignInElement(cache,pageFormData.matchingRule.twofactor); //find the account element, i.e. aws uses this
+                        foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.twofactor); //find the account element, i.e. aws uses this
                         if(foundElement){
                             pageFormData.form.fields.push({
                                    id:"twofactor",
@@ -430,7 +461,7 @@
                    }
 
                    if(pageFormData.matchingRule.signIn){
-                         foundElement=this.findSignInElement(cache,pageFormData.matchingRule.signIn); //find the submit element from the input tags
+                         foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.signIn); //find the submit element from the input tags
                          if(foundElement){
                              pageFormData.form.fields.push({
                                     id:"submit",

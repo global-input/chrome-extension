@@ -236,6 +236,36 @@
             password:{id:"password"},
             signIn: {element:"button",childElement:{tagName:"span",textContent:"Sign in"}}
           }],
+          pagedata:{
+              cachefieldvalues:[],
+              pageForm:null,
+              setFieldCacheValue:function(fieldId, fieldValue){
+                    for(var i=0;i<this.cachefieldvalues.length;i++){
+                        if(this.cachefieldvalues[i].id===fieldId){
+                            this.cachefieldvalues[i].value=fieldValue;
+                            return;
+                        }
+                    }
+                    this.cachefieldvalues.push({id:fieldId,value:fieldValue});
+              },
+              getCacheFields(){
+                      var isEmpty=true;
+                      for(i=0;i<this.cachefieldvalues.length;i++){
+                        if(this.cachefieldvalues[i].value.length){
+                            isEmpty=false;
+                            break;
+                        }
+                      }
+                      if(isEmpty){
+                          return null;
+                      }
+                      else{
+                          return this.cachefieldvalues;
+                      }
+                }
+
+
+          },
           /* find a specific form element from the pageForm
               @cache: passing the cache object to speed up the search on a same page
               @matchCriteria:rule for locating the element */
@@ -276,6 +306,10 @@
      init:function(){
             chrome.runtime.onMessage.addListener(this.onExtensionMessageReceived.bind(this));
      },
+     resetAll:function(){
+       this.pagedata.cachefieldvalues=[];
+       this.pagedata.pageForm=null;
+     },
      /*  message handler for message coming from extension */
      onExtensionMessageReceived:function(message, sender, replyBack){
          if(!message){
@@ -310,7 +344,7 @@
 
          }
          else if(message.messageType==='set-form-field'){
-                if(!this.pageForm){
+                if(!this.pagedata.pageForm){
                       replyBack({
                         messageType:message.messageType,
                         host:window.location.host,
@@ -319,14 +353,39 @@
                       });
                       return;
                 }
-                this.pageForm.form.setFormFieldValue(message.content.fieldId,message.content.fieldValue);
+                this.pagedata.pageForm.form.setFormFieldValue(message.content.fieldId,message.content.fieldValue);
                 replyBack({
                             messageType:message.messageType,
                             host:window.location.host,
                             status:"success"
                            });
          }
-
+         else if(message.messageType==='set-cache-field'){
+            this.pagedata.setFieldCacheValue(message.content.fieldId,message.content.fieldValue);
+            replyBack({
+                        messageType:message.messageType,
+                        host:window.location.host,
+                        status:"success"
+                       });
+         }
+         else if(message.messageType==='reset'){
+            this.resetAll();
+            replyBack({
+                        messageType:message.messageType,
+                        host:window.location.host,
+                        status:"success"
+                       });
+         }
+         else if(message.messageType==='check-page-status'){
+           replyBack({
+                       messageType:message.messageType,
+                       host:window.location.host,
+                       status:"success",
+                       content:{
+                                cachefields:this.pagedata.getCacheFields()
+                            }
+                      });
+         }
          else{
             replyBack({
                          messageType:message.messageType,
@@ -340,7 +399,7 @@
      to display a similar form on the mobile screen */
      getPageConfig(){
         var pageForm=this.findMatchingPageForm();
-        this.pageForm=pageForm; //save it to use to set the value in the form when received input evens from mobile
+        this.pagedata.pageForm=pageForm; //save it to use to set the value in the form when received input evens from mobile
         if(!pageForm){
               return null;
         }
@@ -391,23 +450,7 @@
                         }
                     };
                     var foundElement=null;
-                    if(pageFormData.matchingRule.password){
-                         foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.password); //find the password element
-                         if(foundElement){
-                           pageFormData.form.fields.push({
-                                  id:"password",
-                                  label:"Password",
-                                  type:"secret",
-                                  formElement:foundElement,
-                                  setFieldValue:function(newValue){
-                                      this.formElement.value=newValue;
-                                  }
-                           });
-                         }
-                         else{
-                               continue;//try the next matching rule, for the password element could not be found with the current rule.
-                         }
-                    }
+
                     if(pageFormData.matchingRule.username){
                          foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.username); //find the userame element
                          if(foundElement){
@@ -423,6 +466,23 @@
                          }
                          else{
                            continue; //try the next rule
+                         }
+                    }
+                    if(pageFormData.matchingRule.password){
+                         foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.password); //find the password element
+                         if(foundElement){
+                           pageFormData.form.fields.push({
+                                  id:"password",
+                                  label:"Password",
+                                  type:"secret",
+                                  formElement:foundElement,
+                                  setFieldValue:function(newValue){
+                                      this.formElement.value=newValue;
+                                  }
+                           });
+                         }
+                         else{
+                               continue;//try the next matching rule, for the password element could not be found with the current rule.
                          }
                     }
                    if(pageFormData.matchingRule.account){

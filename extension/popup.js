@@ -1,15 +1,189 @@
-
 var globalInputChromeExtension={
+  pagedata:{
+      hostname:"",
+      contentContainer:null,
+      formData:{
+        formType:null,
+        formContainer:null,
+        fields:[],
+      },
+      form:null
+  },
 
-  pagedata:{},
+  createContentContainer:function(){
+    this.pagedata.contentContainer=document.getElementById('content');
+  },
+  clearContent:function(){
+      this.pagedata.contentContainer.innerHTML="";
+  },
+  setWindowHeight:function(height){
+        document.body.style.height=height+"px";
+  },
+  appendForm:function(){
+      this.appendElement(this.pagedata.formData.formContainer);
+      this.setWindowHeight(100);
+  },
+  appendMessage:function(message){
+    var messageElement=this.createMessageElement(message);
+    this.appendElement(messageElement);
+  },
+  appendElement(element){
+    this.pagedata.contentContainer.appendChild(element);
+  },
+  appendResetButton:function(message){
+    var buttonElement=this.createOneButton({label:"Reset", onclick:this.resetAll.bind(this)});
+    this.appendElement(buttonElement);
+  },
+  displayMessage:function(message){
+    this.clearContent();
+    this.setWindowHeight(50);
+    this.appendMessage(message);
+  },
+  displayForm:function(message){
+      this.clearContent();
+      this.appendForm();
+      this.appendMessage(message);
+  },
+  appendQRCode:function(qrcodeData){
+        var qrCodeContainerElement=this.createQRCode(qrcodeData);
+        this.pagedata.contentContainer.appendChild(qrCodeContainerElement);
+  },
+  displayPageQRCode:function(codeData, message){
+        this.clearContent();
+        this.appendQRCode(codeData);
+        this.appendMessage(message);
+        this.setWindowHeight(500);
+
+   },
+  displayInitialising:function(){
+         this.clearContent();
+         this.appendMessage("Initialising.....");
+  },
+  displayHostName:function(){
+          var hostnameContainer=document.getElementById('hostname');
+          if(hostnameContainer){
+              hostnameContainer.innerText="("+this.pagedata.hostname+")";
+          }
+  },
+  setFormFieldValue:function(fieldId,newValue){
+      for(var i=0;i<this.pagedata.formData.fields.length;i++){
+          if(this.pagedata.formData.fields[i].id===fieldId){
+              this.pagedata.formData.fields[i].formElement.value=newValue;
+              break;
+          }
+      }
+      this.sendMessageToContent("set-cache-field",{fieldId:fieldId,fieldValue:newValue}, function(message){
+        //nothing to do at the moment
+      });
+  },
+  displayCacheFormPage(message){
+    for(var i=0;i<message.content.cachefields.length;i++){
+        var field=message.content.cachefields[i];
+        this.setFormFieldValue(field.id,field.value);
+    }
+    this.pagedata.formData.formType='cached-form';
+    this.displayForm("Global Input App Disconnected");
+    this.appendResetButton();
+  },
+  isCopyPasteForm:function(){
+      return this.pagedata.formData.formType==='copy-and-paste';
+  },
+  addFormElement:function(fieldId, formElement,inputContainer){
+      this.pagedata.formData.fields.push({id:fieldId,formElement:formElement});
+      this.pagedata.formData.formContainer.appendChild(inputContainer);
+  },
+
+
+
+
   /* The entry function for initiasing the extensions script */
     onDocumentLoaded:function(){
-          this.contentContainer=document.getElementById('content');
+          this.createContentContainer();
           var connectButton = document.getElementById('connectToGlobalInputApp');
           connectButton.addEventListener("click", this.connectToGlobalInputApp.bind(this));
           var that=this;
           chrome.runtime.onMessage.addListener(this.onContentMessageReceived.bind(this));
+          this.checkPageStatus();
+
     },
+    checkPageStatus:function(){
+        var that=this;
+
+        this.sendMessageToContent('check-page-status',null, function(message){
+            if(!message){
+                that.displayMessage("Unable to communicate with the page content, please reload/refresh the page and try again.");
+            }
+            else{
+                that.initPageData(message);
+                var settingsButton = document.getElementById('settings');
+                settingsButton.addEventListener("click", that.displaySettings.bind(that));
+            }
+
+        })
+    },
+    getGlobalInputSettings:function(){
+      var globalInputSettings={
+          url:   localStorage.getItem("globaliput.url"),
+          apikey:localStorage.getItem("globaliput.apikey"),
+      };
+      if(!globalInputSettings.url){
+          globalInputSettings.url="https://globalinput.co.uk";
+      }
+      if(!globalInputSettings.apikey){
+          globalInputSettings.apikey="k7jc3QcMPKEXGW5UC";
+      }
+      return globalInputSettings;
+
+    },
+    displaySettings:function(){
+
+      var globalInputSettings=this.getGlobalInputSettings();
+      this.clearContent();
+
+
+      var opts={
+          label:"URL:",
+          id:"globlaInputURL",
+          type:"text",
+          placeholder:"WebSocket Server URL",
+          value:globalInputSettings.url,
+          clipboard:false
+      }
+      var inputContainer=this.createInputField(opts);
+      
+
+
+
+      this.pagedata.contentContainer.appendChild(inputContainer);
+
+
+
+
+
+
+    },
+    initPageData:function(message){
+            this.pagedata.formData.formContainer=document.createElement('div');
+            this.pagedata.hostname=message.host;
+            this.pagedata.form=this.buildCopyAndPasteGlobalInputForm(message);
+            this.displayHostName();
+            if(message.content.cachefields){
+                this.displayCacheFormPage(message);
+            }
+            else{
+
+            }
+    },
+    resetAll:function(){
+      var that=this;
+        this.sendMessageToContent("reset",null,function(message){
+            that.connectToGlobalInputApp();
+
+        });
+
+
+    },
+
     /* Messages from the content script */
     onContentMessageReceived:function(message,sender,sendResponse){
           console.log("We are not expecting to receive content message");
@@ -17,46 +191,23 @@ var globalInputChromeExtension={
 
     /* send a message to the content script  */
 
-    sendMessageToContent:function(messageType, content){
+    sendMessageToContent:function(messageType, content,callback){
         var that=this;
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-            chrome.tabs.sendMessage(tabs[0].id, {messageType:messageType,content:content}, that.onReplyMessageReceived.bind(that));
+            chrome.tabs.sendMessage(tabs[0].id, {messageType:messageType,content:content}, callback);
         });
     },
     /*this will be called when the 'connect to mobile' button is clicked  */
     connectToGlobalInputApp:function(){
-        this.showInitialising();
-        this.sendMessageToContent("get-page-config");
+        this.displayInitialising();
+        this.sendMessageToContent("get-page-config",null,this.executeConnectToGlobalInputApp.bind(this));
     },
-    /*
-    This will send the field value received from the mobile to the content script.
-    */
-    sendFieldValue:function(fieldId, fieldValue){
-        this.sendMessageToContent("set-form-field",{fieldId:fieldId,fieldValue:fieldValue});
-    },
-
-
-    /*
-     Receive the result of the message sent to the content script.
-    */
-    onReplyMessageReceived:function(message){
-      this.pagedata.hostname=message.hostname;
-      if(!message){
-           this.contentContainer.innerText="Unable to communicate with the page content, please reload/refresh the page and try again.";
-      }
-      else if(message.messageType==="get-page-config"){
-            this.onPageConfigDataReceived(message);
-      }
-      else if(message.messageType==="set-form-field"){
-            //we assume it is always successful for the time being.
-      }
-      else{
-        console.log("reply message is not recognized");
-      }
-    },
-
-    /*When we got the reply from content script for our page config request*/
-    onPageConfigDataReceived:function(message){
+    /*Connect to Global Input App after we got the reply from the content script*/
+    executeConnectToGlobalInputApp:function(message){
+        if(!message){
+          this.displayMessage("Unable to communicate with the page content, please reload/refresh the page and try again.");
+        }
+        this.pagedata.hostname=message.host;
         var that=this;
         var globalinputConfig={
                        onSenderConnected:this.onSenderConnected.bind(this),
@@ -72,13 +223,14 @@ var globalInputChromeExtension={
                        },
         };
         if(message.status==="success"){
-            globalinputConfig.initData.form=this.buildGlobalInputForm(message);
+            globalinputConfig.initData.form=this.buildContentGlobalInputForm(message);
+            this.pagedata.formData.formType='content-form';
+
         }
         else{
-            globalinputConfig.initData.form=this.buildGlobalInputCustomForm(message.host);
+            globalinputConfig.initData.form=this.pagedata.form;
+            this.pagedata.formData.formType='copy-and-paste';
         }
-
-
         var globalInputApi=require("global-input-message"); //get the Global Input Api
         if(this.globalInputConnector){
             this.globalInputConnector.disconnect();
@@ -88,12 +240,23 @@ var globalInputChromeExtension={
         this.globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
 
       },
+    /*
+    This will send the field value received from the mobile to the content script.
+    */
+    sendFieldValue:function(fieldId, fieldValue){
+      var that=this;
+        this.sendMessageToContent("set-form-field",{fieldId:fieldId,fieldValue:fieldValue}, function(message){
+            that.connectToGlobalInputApp();
+        });
+    },
+
+
 
 
 
 /* When the Global Input App has connected to the extension */
       onSenderConnected:function(sender, senders){
-        this.contentContainer.innerHTML="";
+
         var message="Sender Connected ("+senders.length+"):";
         message+=senders[0].client;
         if(senders.length>1){
@@ -102,30 +265,30 @@ var globalInputChromeExtension={
               message+=senders[i].client;
           }
         }
-
-        if(this.pagedata.formData){
-             this.contentContainer.appendChild(this.pagedata.formData.formContainer);
-             document.body.style.height="100px";
+        if(this.isCopyPasteForm()){
+            this.displayForm(message);
         }
         else{
-           document.body.style.height="50px";
-         }
-         var messageElement=this.createMessageElement(message);
-         this.contentContainer.appendChild(messageElement);
+            this.displayMessage(message);
+        }
       },
       onSenderDisconnected:function(sender, senders){
+
       },
       onWebSocketConnect:function(){
         console.log("connected**************");
-        this.displayHostName(this.pagedata.hostname);
         var qrcodedata=this.globalInputConnector.buildInputCodeData();
         console.log("code data:[["+qrcodedata+"]]");
-        this.displayPageQRCode(qrcodedata,this.formType);
+
+        var message="Global Input is now enabled! Please scan the QR code above with the Global Input App on your mobile to connect to the page, so you can operate on the page with your mobile.";
+        if(this.isCopyPasteForm()){
+              message="The elements in the page are not identified. You can still scan the following QR code with the Global Input app on your mobile and transfer the content to this popup window first and then do copy and paste operations. If you would like to interact with the page directly with your mobile, the footprint of this page needs to be added to the script. This can be done easily with a little bit of Javascript knowledge. If you need help on this, please send a message to dilshat@iterativesolution.co.uk."
+        }
+        this.displayPageQRCode(qrcodedata,message);
       },
 
 
-    buildGlobalInputForm:function(message){
-        this.extensionForm=null;
+    buildContentGlobalInputForm:function(message){
         var form={
              id:message.content.form.id,
              title:message.content.form.title,
@@ -162,24 +325,20 @@ var globalInputChromeExtension={
                 label:fieldOpts.label,
                 id:fieldOpts.id,
                 type:fieldOpts.type,
-                placeholder:fieldOpts.placeholder
+                placeholder:fieldOpts.placeholder,
+                value:"",
+                clipboard:true
             }
-            var inputContainer=this.createOneInputField(opts);
-            this.pagedata.formData.fields.push({id:fieldOpts.id,formElement:opts.element});
-            this.pagedata.formData.formContainer.appendChild(inputContainer);
+            var inputContainer=this.createInputField(opts);
+            this.addFormElement(fieldOpts.id,opts.element,inputContainer);
+
             var formfield={
                   label:fieldOpts.label,
                   id:fieldOpts.id,
                   type:fieldOpts.type==='password'?'secret':"text",
                   operations:{
                         onInput:function(newValue){
-                          for(var i=0;i<that.pagedata.formData.fields.length;i++){
-                              var field=that.pagedata.formData.fields[i];
-                              if(field.id===this.fieldId){
-                                  field.formElement.value=newValue;
-                                  break;
-                              }
-                          }
+                              that.setFormFieldValue(this.fieldId,newValue);
                         }
                   }
              };
@@ -188,25 +347,21 @@ var globalInputChromeExtension={
     },
 
     /* Build a custom form when a form is not found on the page */
-    buildGlobalInputCustomForm:function(hostname){
+    buildCopyAndPasteGlobalInputForm:function(message){
 
-          this.pagedata.formData={
-              fields:[],
-              formContainer:document.createElement('div'),
-              messageElement:document.createElement('div')
-          };
 
+          var hostname=message.host;
           var form={
                 id:    "###username###"+"@"+hostname, // unique id for saving the form content on mobile automating the form-filling process.
                 title: "Sign In on "+hostname,  //Title of the form displayed on the mobile
-                fields:[]
+                fields:[],
           };
 
           var formfield=this.buildGlobalInputField({
                 label:"Username",
                 id:"username",
                 type:"text",
-                placeholder:'Enter Username'
+                placeholder:'Enter Username',
            });
            form.fields.push(formfield);
 
@@ -222,7 +377,7 @@ var globalInputChromeExtension={
                       label:"Account",
                       id:"account",
                       type:"text",
-                      placeholder:'Enter Account Number if any'
+                      placeholder:'Enter Account Number if any',
           });
           form.fields.push(formfield);
 
@@ -230,42 +385,73 @@ var globalInputChromeExtension={
                           label:"Note",
                           id:"note",
                           type:"text",
-                          placeholder:'Enter Optional Note'
+                          placeholder:'Enter Optional Note',
           });
           form.fields.push(formfield);
 
           return form;
   },
 
+    createInputField:function(opts){
+      var inputRowContainer=document.createElement('div');
+      inputRowContainer.className = "fielrow";
+
+            var inputContainer=document.createElement('div');
+                  inputContainer.className = "field";
+                  var labelElement = document.createElement('label');
+                  labelElement.innerText=opts.label;
+            inputContainer.appendChild(labelElement);
+                  var element = document.createElement('input');
+                  element.id=opts.id;
+                  element.type=opts.type;
+                  element.value = opts.value;
+            inputContainer.appendChild(element);
+            opts.element=element;
 
 
 
-    createOneInputField:function(opts){
+
+            if(opts.clipboard){
+                  var copyButtonElement = document.createElement('button');
+                  copyButtonElement.className="copybutton";
+                  copyButtonElement.innerText="Copy";
+                  copyButtonElement.onclick=function(){
+
+                        element.type='text';
+                        element.select();
+                        document.execCommand("Copy");
+                        element.type=opts.type;
+                        copyButtonElement.disabled=true;
+                        var messageElement=document.createElement('div');
+                        messageElement.innerText="The "+opts.id+" is copied into the clipboard";
+                        inputRowContainer.appendChild(messageElement);
+                        setTimeout(function(){
+                              inputRowContainer.removeChild(messageElement);
+                              copyButtonElement.disabled=false;
+                        },2000);
+                  };
+                  inputContainer.appendChild(copyButtonElement);
+            }
+      inputRowContainer.appendChild(inputContainer);
+      return inputRowContainer;
+
+    },
+
+
+
+
+    createOneButton:function(opts){
           var that=this;
           var inputContainer=document.createElement('div');
           inputContainer.className = "field";
-              var labelElement = document.createElement('label');
-              labelElement.innerText=opts.label;
-          inputContainer.appendChild(labelElement);
 
-          opts.element = document.createElement('input');
-          opts.element.id=opts.id;
-          opts.element.type=opts.type;
-          opts.element.value = '';
-          opts.element.placeholder = opts.placeholder;
-       inputContainer.appendChild(opts.element);
-
-           var copyButtonElement = document.createElement('button');
-           copyButtonElement.className="copybutton";
-           copyButtonElement.innerText="Copy to Clipboard";
-           copyButtonElement.onclick=function(){
-                  opts.element.type='text';
-                  opts.element.select();
-                  document.execCommand("Copy");
-                  opts.element.type=opts.type;
-                  that.pagedata.formData.messageElement.innerText="The "+opts.id+" is copied into the clipboard";
+           var buttonElement = document.createElement('button');
+           buttonElement.className='controlButton';
+           buttonElement.innerText=opts.label;
+           buttonElement.onclick=function(){
+                opts.onclick();
            };
-        inputContainer.appendChild(copyButtonElement);
+        inputContainer.appendChild(buttonElement);
         return inputContainer;
     },
     createMessageElement:function(message){
@@ -275,40 +461,10 @@ var globalInputChromeExtension={
           return messageContainer;
     },
 
-    displayMessage:function(message){
-       var messageContainer = document.getElementById('message');
-       if(messageContainer){
-             messageContainer.innerText=message;
-       }
-       else{
-         console.error("failed to display the error message:"+message);
-       }
-    },
-    displayHostName:function(hostname){
-       var hostnameContainer=document.getElementById('hostname');
-       if(hostnameContainer){
-           hostnameContainer.innerText="("+hostname+")";
-       }
-    },
-    displayPageQRCode:function(codeData, formType){
-          this.contentContainer.innerHTML="";
-          var message="Global Input is now enabled! Please scan the following QR code with the Global Input App on your mobile to connect to the page, so you can operate on the page with your mobile.";
-          if(formType!=='pageControl'){
-            message="The elements in the page are not identified. You can still scan the following QR code with the Global Input app on your mobile and transfer the content to this popup window first and then do copy and paste operations. If you would like to interact with the page directly with your mobile, the footprint of this page needs to be added to the script. This can be done easily with a little bit of Javascript knowledge. If you need help on this, please send a message to dilshat@iterativesolution.co.uk."
-          }
 
-          var messageElement=this.createMessageElement(message);
-          this.contentContainer.appendChild(messageElement);
-          var qrCodeContainerElement=this.createQRCode(codeData);
-          this.contentContainer.appendChild(qrCodeContainerElement);
-          document.body.style.height="500px";
-     },
-     showInitialising:function(){
-           this.contentContainer.innerHTML="";
-           var message="Initialising.....";
-           var messageElement=this.createMessageElement(message);
-           this.contentContainer.appendChild(messageElement);
-      },
+
+
+
       createQRCode:function(qrCodedata){
           var qrCodeContainer = document.createElement('div');
           qrCodeContainer.id="qrcode"; //this is where the QR code will be generated

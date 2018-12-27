@@ -1,6 +1,6 @@
 html, body {
-  width: 600px;
-  height: 100px;
+  margin:0;
+  padding:0;
 }
 #header {
   width:100%;
@@ -9,12 +9,17 @@ html, body {
   flex-direction: center;
   justify-content: center;
 }
+#content {
+  padding: 10px;
+}
 #title{
   font-family: "Avenir";
   font-size: 20px;
   font-weight: 100;
   color: #FFFFFF;
   line-height: 2.75rem;
+  white-space: nowrap;
+  padding:10px;
 }
 
 #connectToGlobalInputApp{
@@ -27,7 +32,19 @@ html, body {
   display: inline-block;
   font-size: 16px;
   margin:10px;
-
+  white-space: nowrap;
+  cursor: pointer;
+}
+.controlButton{
+  background-color: #008CBA;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin:10px;
 }
 .buttonContainer{
   width:100%;
@@ -44,7 +61,8 @@ html, body {
 }
 
 #qrcode{
-  margin-top: 25px;
+  margin: 20px;
+
 }
 
 #form{
@@ -55,21 +73,43 @@ html, body {
   padding:10px;
   background-color: #FFFFFF;
 }
-.field {
-  margin: 10px;
+.fielrow{
   width:100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.field {
+  width:100%;
+  padding:10px;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
 }
 .field label{
-    width:50px;
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
     margin:5px;
+    width:50px;
 }
 .field input{
-      width:200px;
-      margin-right: 5px;
+    margin-right: 5px;
+    min-width:200px;
+}
+#settingsContainer{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-end;
+
+}
+#settings{
+  margin-right: 30px;
+  margin-top: 30px;
+  background-color: #008CBA;
+  color:white;
+  padding:10px;
+  cursor: pointer;
 }

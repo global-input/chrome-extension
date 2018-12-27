@@ -7,7 +7,23 @@ var globalInputChromeExtension={
         formContainer:null,
         fields:[],
       },
-      form:null
+      form:null,
+      globalInputApi:null,
+      globalInputConnector:null,
+  },
+  disconnectGlobalInputApp:function(){
+    if(this.pagedata.globalInputConnector){
+        this.pagedata.globalInputConnector.disconnect();
+    }
+    this.pagedata.globalInputConnector=null;
+  },
+  connectToGlobalInputApp:function(globalinputConfig){
+    if(!this.pagedata.globalInputApi){
+        this.pagedata.globalInputApi=require("global-input-message"); //get the Global Input Api
+    }
+    this.disconnectGlobalInputApp();
+    this.pagedata.globalInputConnector=this.pagedata.globalInputApi.createMessageConnector(); //Create the connector
+    this.pagedata.globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
   },
 
   createContentContainer:function(){
@@ -27,7 +43,12 @@ var globalInputChromeExtension={
     var messageElement=this.createMessageElement(message);
     this.appendElement(messageElement);
   },
-  appendElement(element){
+  appendTitle:function(title){
+    var titleElement=this.creatTitleElement(title);
+    this.appendElement(titleElement);
+
+  },
+  appendElement:function(element){
     this.pagedata.contentContainer.appendChild(element);
   },
   appendResetButton:function(message){
@@ -82,7 +103,7 @@ var globalInputChromeExtension={
         this.setFormFieldValue(field.id,field.value);
     }
     this.pagedata.formData.formType='cached-form';
-    this.displayForm("Global Input App Disconnected");
+    this.displayForm("Global Input App is disconnected.");
     this.appendResetButton();
   },
   isCopyPasteForm:function(){
@@ -99,11 +120,36 @@ var globalInputChromeExtension={
   /* The entry function for initiasing the extensions script */
     onDocumentLoaded:function(){
           this.createContentContainer();
-          var connectButton = document.getElementById('connectToGlobalInputApp');
-          connectButton.addEventListener("click", this.connectToGlobalInputApp.bind(this));
-          var that=this;
           chrome.runtime.onMessage.addListener(this.onContentMessageReceived.bind(this));
           this.checkPageStatus();
+
+    },
+    displayMainWindow:function(){
+      var that=this;
+      this.clearContent();
+      opts={
+          label:"Connect to Mobile",
+          onclick:function(){
+              that.onClickConnectToMobile();
+          }
+      }
+      var buttons=this.createOneButton(opts);
+      this.appendElement(buttons);
+      var messageContainer = document.createElement('div');
+      messageContainer.innerHTML='Clicking on the button above should display a QR Code that you can scan with the Global Input App (<a href="https://play.google.com/store/apps/details?id=uk.co.globalinput&hl=en_GB" target="_blank">Google Play</a> and <a href="https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4" target="_blank">App Store</a>) on your mobile to operate with your mobile.';
+      this.appendElement(messageContainer);
+
+      var inputContainer=document.createElement('div');
+      inputContainer.id = "settingsContainer";
+       var buttonElement = document.createElement('button');
+       buttonElement.id='settings';
+       buttonElement.innerText="Settings";
+       buttonElement.onclick=function(){
+          that.displaySettings();
+       };
+       inputContainer.appendChild(buttonElement);
+       this.appendElement(inputContainer);
+
 
     },
     checkPageStatus:function(){
@@ -115,16 +161,14 @@ var globalInputChromeExtension={
             }
             else{
                 that.initPageData(message);
-                var settingsButton = document.getElementById('settings');
-                settingsButton.addEventListener("click", that.displaySettings.bind(that));
             }
 
         })
     },
     getGlobalInputSettings:function(){
       var globalInputSettings={
-          url:   localStorage.getItem("globaliput.url"),
-          apikey:localStorage.getItem("globaliput.apikey"),
+          url:   localStorage.getItem("iterative.globaliputapp.url"),
+          apikey:localStorage.getItem("iterative.globaliputapp.apikey"),
       };
       if(!globalInputSettings.url){
           globalInputSettings.url="https://globalinput.co.uk";
@@ -135,10 +179,16 @@ var globalInputChromeExtension={
       return globalInputSettings;
 
     },
+    saveGlobalInputSettings:function(globalInputSettings){
+        localStorage.setItem("iterative.globaliputapp.url",globalInputSettings.url);
+        localStorage.setItem("iterative.globaliputapp.apikey",globalInputSettings.apikey);
+    },
     displaySettings:function(){
 
+      var that=this;
       var globalInputSettings=this.getGlobalInputSettings();
       this.clearContent();
+      this.appendTitle("Global Input Settings");
 
 
       var opts={
@@ -150,13 +200,40 @@ var globalInputChromeExtension={
           clipboard:false
       }
       var inputContainer=this.createInputField(opts);
-      
+      this.appendElement(inputContainer);
+
+      var globlaInputURLelement=opts.element;
 
 
+      var opts={
+          label:"API Key:",
+          id:"apikey",
+          type:"text",
+          placeholder:"API Key",
+          value:globalInputSettings.apikey,
+          clipboard:false
+      }
+      inputContainer=this.createInputField(opts);
+      var globlaInputAPIKeyelement=opts.element;
 
-      this.pagedata.contentContainer.appendChild(inputContainer);
+      this.appendElement(inputContainer);
 
 
+      opts={
+          label1:"Cancel",
+          label2:"Save",
+          onclick1:function(){
+              that.displayMainWindow();
+          },
+          onclick2:function(){
+              globalInputSettings.url=globlaInputURLelement.value;
+              globalInputSettings.apikey=globlaInputAPIKeyelement.value;
+              that.saveGlobalInputSettings(globalInputSettings);
+              that.displayMainWindow();
+          }
+      }
+      var buttons=this.createTwoButton(opts);
+      this.appendElement(buttons);
 
 
 
@@ -171,14 +248,13 @@ var globalInputChromeExtension={
                 this.displayCacheFormPage(message);
             }
             else{
-
+                this.displayMainWindow();
             }
     },
     resetAll:function(){
       var that=this;
         this.sendMessageToContent("reset",null,function(message){
-            that.connectToGlobalInputApp();
-
+            that.displayMainWindow();
         });
 
 
@@ -198,18 +274,22 @@ var globalInputChromeExtension={
         });
     },
     /*this will be called when the 'connect to mobile' button is clicked  */
-    connectToGlobalInputApp:function(){
+    onClickConnectToMobile:function(){
         this.displayInitialising();
-        this.sendMessageToContent("get-page-config",null,this.executeConnectToGlobalInputApp.bind(this));
+        this.sendMessageToContent("get-page-config",null,this.onPageConfigDataReceived.bind(this));
     },
-    /*Connect to Global Input App after we got the reply from the content script*/
-    executeConnectToGlobalInputApp:function(message){
+    /*We have received the response for our request to page config*/
+    onPageConfigDataReceived:function(message){
+        var globalInputSettings=this.getGlobalInputSettings();
         if(!message){
           this.displayMessage("Unable to communicate with the page content, please reload/refresh the page and try again.");
+          return;
         }
         this.pagedata.hostname=message.host;
         var that=this;
         var globalinputConfig={
+                       url:globalInputSettings.url,
+                       apikey:globalInputSettings.apikey,
                        onSenderConnected:this.onSenderConnected.bind(this),
                        onSenderDisconnected:this.onSenderDisconnected.bind(this),
                        onRegistered:(next)=>{
@@ -231,14 +311,7 @@ var globalInputChromeExtension={
             globalinputConfig.initData.form=this.pagedata.form;
             this.pagedata.formData.formType='copy-and-paste';
         }
-        var globalInputApi=require("global-input-message"); //get the Global Input Api
-        if(this.globalInputConnector){
-            this.globalInputConnector.disconnect();
-            this.globalInputConnector=null;
-        }
-        this.globalInputConnector=globalInputApi.createMessageConnector(); //Create the connector
-        this.globalInputConnector.connect(globalinputConfig);  //connect to the proxy.
-
+        this.connectToGlobalInputApp(globalinputConfig);
       },
     /*
     This will send the field value received from the mobile to the content script.
@@ -246,7 +319,7 @@ var globalInputChromeExtension={
     sendFieldValue:function(fieldId, fieldValue){
       var that=this;
         this.sendMessageToContent("set-form-field",{fieldId:fieldId,fieldValue:fieldValue}, function(message){
-            that.connectToGlobalInputApp();
+            //No need to do anythign at this time
         });
     },
 
@@ -277,7 +350,7 @@ var globalInputChromeExtension={
       },
       onWebSocketConnect:function(){
         console.log("connected**************");
-        var qrcodedata=this.globalInputConnector.buildInputCodeData();
+        var qrcodedata=this.pagedata.globalInputConnector.buildInputCodeData();
         console.log("code data:[["+qrcodedata+"]]");
 
         var message="Global Input is now enabled! Please scan the QR code above with the Global Input App on your mobile to connect to the page, so you can operate on the page with your mobile.";
@@ -443,7 +516,7 @@ var globalInputChromeExtension={
     createOneButton:function(opts){
           var that=this;
           var inputContainer=document.createElement('div');
-          inputContainer.className = "field";
+          inputContainer.className = "buttonContainer";
 
            var buttonElement = document.createElement('button');
            buttonElement.className='controlButton';
@@ -454,10 +527,41 @@ var globalInputChromeExtension={
         inputContainer.appendChild(buttonElement);
         return inputContainer;
     },
+    createTwoButton:function(opts){
+          var that=this;
+          var inputContainer=document.createElement('div');
+          inputContainer.className = "buttonContainer";
+
+           var buttonElement = document.createElement('button');
+           buttonElement.className='controlButton';
+           buttonElement.innerText=opts.label1;
+           buttonElement.onclick=function(){
+                opts.onclick1();
+           };
+        inputContainer.appendChild(buttonElement);
+
+
+        var buttonElement = document.createElement('button');
+        buttonElement.className='controlButton';
+        buttonElement.innerText=opts.label2;
+        buttonElement.onclick=function(){
+             opts.onclick2();
+        };
+     inputContainer.appendChild(buttonElement);
+
+
+        return inputContainer;
+    },
     createMessageElement:function(message){
           var messageContainer = document.createElement('div');
           messageContainer.id="message";
           messageContainer.innerText=message;
+          return messageContainer;
+    },
+    creatTitleElement:function(title){
+          var messageContainer = document.createElement('div');
+          messageContainer.className="title";
+          messageContainer.innerText=title;
           return messageContainer;
     },
 

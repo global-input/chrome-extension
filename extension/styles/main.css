@@ -21,6 +21,15 @@ html, body {
   white-space: nowrap;
   padding:10px;
 }
+.title{
+  font-family: "Avenir";
+  font-size: 16px;
+  font-weight: 100;
+  color: #000000;
+  line-height: 2.75rem;
+  white-space: nowrap;
+  padding:10px;
+}
 
 #connectToGlobalInputApp{
   background-color: #008CBA;
@@ -108,8 +117,7 @@ html, body {
 #settings{
   margin-right: 30px;
   margin-top: 30px;
-  background-color: #008CBA;
-  color:white;
+  color:#008CBA;
   padding:10px;
   cursor: pointer;
 }

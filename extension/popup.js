@@ -1,6 +1,7 @@
 var globalInputChromeExtension={
   pagedata:{
       hostname:"",
+      senders:null,
       contentContainer:null,
       formData:{
         formType:null,
@@ -11,6 +12,15 @@ var globalInputChromeExtension={
       globalInputApi:null,
       globalInputConnector:null,
   },
+  initFormData:function(message){
+    this.pagedata.formData.formContainer=document.createElement('div');
+    this.pagedata.formData.fields=[];
+    this.pagedata.hostname=message.host;
+    this.pagedata.form=this.buildCopyAndPasteGlobalInputForm(message);
+    this.displayHostName();
+
+  },
+
   disconnectGlobalInputApp:function(){
     if(this.pagedata.globalInputConnector){
         this.pagedata.globalInputConnector.disconnect();
@@ -97,7 +107,7 @@ var globalInputChromeExtension={
         //nothing to do at the moment
       });
   },
-  displayCacheFormPage(message){
+  displayCachedFormPage(message){
     for(var i=0;i<message.content.cachefields.length;i++){
         var field=message.content.cachefields[i];
         this.setFormFieldValue(field.id,field.value);
@@ -110,8 +120,24 @@ var globalInputChromeExtension={
       return this.pagedata.formData.formType==='copy-and-paste';
   },
   addFormElement:function(fieldId, formElement,inputContainer){
-      this.pagedata.formData.fields.push({id:fieldId,formElement:formElement});
+    var that=this;
+      var onkeyup=function(){
+            if(that.pagedata.globalInputConnector && that.pagedata.senders){
+                  var value=this.formElement.value;
+                  that.pagedata.globalInputConnector.sendInputMessage(value,this.fieldIndex);
+            }
+
+      }
+      var fieldobj={
+                     id:fieldId,
+                     formElement:formElement,
+                     fieldIndex:this.pagedata.formData.fields.length
+                   };
+      formElement.onkeyup=onkeyup.bind(fieldobj);
+      this.pagedata.formData.fields.push(fieldobj);
       this.pagedata.formData.formContainer.appendChild(inputContainer);
+
+
   },
 
 
@@ -124,21 +150,23 @@ var globalInputChromeExtension={
           this.checkPageStatus();
 
     },
-    displayMainWindow:function(){
+    appendConnectToMobileButton:function(){
       var that=this;
-      this.clearContent();
-      opts={
+      var opts={
           label:"Connect to Mobile",
           onclick:function(){
               that.onClickConnectToMobile();
           }
-      }
+      };
       var buttons=this.createOneButton(opts);
       this.appendElement(buttons);
+    },
+    appendConnectHelpMessage:function(){
       var messageContainer = document.createElement('div');
       messageContainer.innerHTML='Clicking on the button above should display a QR Code that you can scan with the Global Input App (<a href="https://play.google.com/store/apps/details?id=uk.co.globalinput&hl=en_GB" target="_blank">Google Play</a> and <a href="https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4" target="_blank">App Store</a>) on your mobile to operate with your mobile.';
       this.appendElement(messageContainer);
-
+    },
+    appendSettingsButton:function(){
       var inputContainer=document.createElement('div');
       inputContainer.id = "settingsContainer";
        var buttonElement = document.createElement('button');
@@ -149,8 +177,14 @@ var globalInputChromeExtension={
        };
        inputContainer.appendChild(buttonElement);
        this.appendElement(inputContainer);
-
-
+    },
+    displayMainWindow:function(){
+      this.disconnectGlobalInputApp();
+      var that=this;
+      this.clearContent();
+      this.appendConnectToMobileButton();
+      this.appendConnectHelpMessage();
+      this.appendSettingsButton();
     },
     checkPageStatus:function(){
         var that=this;
@@ -234,25 +268,23 @@ var globalInputChromeExtension={
       }
       var buttons=this.createTwoButton(opts);
       this.appendElement(buttons);
-
-
-
-
     },
+
+
     initPageData:function(message){
-            this.pagedata.formData.formContainer=document.createElement('div');
-            this.pagedata.hostname=message.host;
-            this.pagedata.form=this.buildCopyAndPasteGlobalInputForm(message);
-            this.displayHostName();
+            this.initFormData(message);
             if(message.content.cachefields){
-                this.displayCacheFormPage(message);
+                this.displayCachedFormPage(message);
             }
             else{
                 this.displayMainWindow();
             }
     },
     resetAll:function(){
-      var that=this;
+        var that=this;
+        for(var i=0;i<this.pagedata.formData.fields.length;i++){
+              this.pagedata.formData.fields[i].formElement.value="";
+        }
         this.sendMessageToContent("reset",null,function(message){
             that.displayMainWindow();
         });
@@ -329,7 +361,7 @@ var globalInputChromeExtension={
 
 /* When the Global Input App has connected to the extension */
       onSenderConnected:function(sender, senders){
-
+        this.pagedata.senders=senders;
         var message="Sender Connected ("+senders.length+"):";
         message+=senders[0].client;
         if(senders.length>1){
@@ -346,7 +378,9 @@ var globalInputChromeExtension={
         }
       },
       onSenderDisconnected:function(sender, senders){
-
+          this.pagedata.senders=null;
+          this.disconnectGlobalInputApp();
+          this.checkPageStatus();
       },
       onWebSocketConnect:function(){
         console.log("connected**************");
@@ -400,8 +434,10 @@ var globalInputChromeExtension={
                 type:fieldOpts.type,
                 placeholder:fieldOpts.placeholder,
                 value:"",
+                nLines:fieldOpts.nLines,
                 clipboard:true
-            }
+            };
+
             var inputContainer=this.createInputField(opts);
             this.addFormElement(fieldOpts.id,opts.element,inputContainer);
 
@@ -415,6 +451,9 @@ var globalInputChromeExtension={
                         }
                   }
              };
+             if(fieldOpts.nLines && fieldOpts.nLines>1){
+                  formfield.nLines=fieldOpts.nLines;
+             }
             formfield.operations.fieldId=formfield.id;
             return formfield;
     },
@@ -458,6 +497,7 @@ var globalInputChromeExtension={
                           label:"Note",
                           id:"note",
                           type:"text",
+                          nLines:5,
                           placeholder:'Enter Optional Note',
           });
           form.fields.push(formfield);
@@ -474,9 +514,20 @@ var globalInputChromeExtension={
                   var labelElement = document.createElement('label');
                   labelElement.innerText=opts.label;
             inputContainer.appendChild(labelElement);
-                  var element = document.createElement('input');
+                  var element=null;
+                  if(opts.nLines && opts.nLines>1){
+                        element = document.createElement('textarea');
+                        element.rows=opts.nLines;
+                        element.cols=30;
+                  }
+                  else{
+                    element = document.createElement('input');
+                    element.type=opts.type;
+                  }
+
+
+
                   element.id=opts.id;
-                  element.type=opts.type;
                   element.value = opts.value;
             inputContainer.appendChild(element);
             opts.element=element;

@@ -172,6 +172,7 @@ var globalInputChromeExtension={
        var buttonElement = document.createElement('button');
        buttonElement.id='settings';
        buttonElement.innerText="Settings";
+       var that=this;
        buttonElement.onclick=function(){
           that.displaySettings();
        };

@@ -17,7 +17,7 @@ var globalInputChromeExtension={
     this.pagedata.formData.fields=[];
     this.pagedata.hostname=message.host;
     this.pagedata.form=this.buildCopyAndPasteGlobalInputForm(message);
-    this.displayHostName();
+
 
   },
 
@@ -65,27 +65,26 @@ var globalInputChromeExtension={
     var buttonElement=this.createOneButton({label:"Reset", onclick:this.resetAll.bind(this)});
     this.appendElement(buttonElement);
   },
-  displayMessage:function(message){
-    this.clearContent();
-    this.setWindowHeight(50);
-    this.appendMessage(message);
-  },
+
 
   appendQRCode:function(qrcodeData){
         var qrCodeContainerElement=this.createQRCode(qrcodeData);
-        this.pagedata.contentContainer.appendChild(qrCodeContainerElement);
+        this.appendElement(qrCodeContainerElement);
+  },
+  appendGlobalInputAppAvailable:function(){
+        var element=this.createHTMLElement('Scan the QR Code above with your Global Input App. Global Input App is available in <a href="https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4" target="_blank">App Store</a> and <a href="https://play.google.com/store/apps/details?id=uk.co.globalinput&hl=en_GB" target="_blank">Google Play Store</a>. Please visit <a href="https://globalinput.co.uk" target="_blank">our website</a> for more information.');
+        this.appendElement(element);
   },
 
+  appendCustomFormPage:function(){
+      var element=this.createHTMLElement('You have to copy and paste from the form in this window to the page for the moment, because no identifiable form found on this page for direct operation. In the mean time, you can <a href="https://globalinput.co.uk/global-input-app/contact-us" target="_blank">let us know</a> so that we can enhance the extension to recognise the form on this page.');
+      this.appendElement(element);
+  },
   displayInitialising:function(){
          this.clearContent();
          this.appendMessage("Initialising.....");
   },
-  displayHostName:function(){
-          var hostnameContainer=document.getElementById('hostname');
-          if(hostnameContainer){
-              hostnameContainer.innerText="("+this.pagedata.hostname+")";
-          }
-  },
+
   setFormFieldValue:function(fieldId,newValue){
       for(var i=0;i<this.pagedata.formData.fields.length;i++){
           if(this.pagedata.formData.fields[i].id===fieldId){
@@ -154,30 +153,23 @@ var globalInputChromeExtension={
       var buttons=this.createOneButton(opts);
       this.appendElement(buttons);
     },
-    appendConnectHelpMessage:function(){
-      var messageContainer = document.createElement('div');
-      messageContainer.innerHTML='Clicking on the button above displays a QR Code. You can then scan it with your Global Input App (<a href="https://play.google.com/store/apps/details?id=uk.co.globalinput&hl=en_GB" target="_blank">Google Play</a> and <a href="https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4" target="_blank">App Store</a>) on your mobile to connect to the page. Then you will be able to communicate with the page using your mobile, and the communication is secured with the end-to-end encryption.';
-      this.appendElement(messageContainer);
-    },
+
     appendSettingsButton:function(){
-      var inputContainer=document.createElement('div');
-      inputContainer.id = "settingsContainer";
-       var buttonElement = document.createElement('button');
-       buttonElement.id='settings';
-       buttonElement.innerText="Settings";
-       var that=this;
-       buttonElement.onclick=function(){
+      var that=this;
+      var inputContainer=this.createButton({
+        label:'Settings',
+        onclick:function(){
           that.displaySettings();
-       };
-       inputContainer.appendChild(buttonElement);
-       this.appendElement(inputContainer);
+        }
+      });
+      this.appendElement(inputContainer);
     },
     displayMainWindow:function(){
       this.disconnectGlobalInputApp();
       var that=this;
       this.clearContent();
       this.appendConnectToMobileButton();
-      this.appendConnectHelpMessage();
+      that.appendMessage("Click on the button above to connect to your Global Input App on your mobile.");
       this.appendSettingsButton();
     },
     checkPageStatus:function(){
@@ -185,7 +177,11 @@ var globalInputChromeExtension={
 
         this.sendMessageToContent('check-page-status',null, function(message){
             if(!message){
-                that.displayMessage("Unable to obtain the page status, please reload/refresh the page and try again. You also need to wait for the page fully loaded before you can use this exntesion.");
+              that.clearContent();
+              that.setWindowHeight(50);
+              that.appendMessage("Unable to obtain the page status, please reload/refresh the page, and try again after the page is fully loaded.");
+
+
             }
             else{
                 that.initPageData(message);
@@ -345,7 +341,9 @@ var globalInputChromeExtension={
     onPageConfigDataReceived:function(message){
         var globalInputSettings=this.getGlobalInputSettings();
         if(!message){
-          this.displayMessage("Unable to communicate with the page content, please reload/refresh the page and try again.");
+          this.clearContent();
+          this.setWindowHeight(50);
+          this.appendMessage("Unable to communicate with the page content, please reload/refresh the page and try again.");
           return;
         }
         this.pagedata.hostname=message.host;
@@ -368,7 +366,6 @@ var globalInputChromeExtension={
         if(message.status==="success"){
             globalinputConfig.initData.form=this.buildContentGlobalInputForm(message);
             this.pagedata.formData.formType='content-form';
-
         }
         else{
             globalinputConfig.initData.form=this.pagedata.form;
@@ -387,29 +384,34 @@ var globalInputChromeExtension={
     },
 
 
+    getSenderTextContent:function(senders){
+      var message="Mobile Connected ("+senders.length+"):";
+      message+=senders[0].client;
+      if(senders.length>1){
+        for(var i=1;i<senders.length;i++){
+            message+", ";
+            message+=senders[i].client;
+        }
+      }
+      return message;
 
+    },
 
 
 /* When the Global Input App has connected to the extension */
       onSenderConnected:function(sender, senders){
         this.pagedata.senders=senders;
+        this.clearContent();
+
 
         if(this.isCopyPasteForm()){
-            this.clearContent();
             this.appendForm();
-            var message="Sender Connected ("+senders.length+"):";
-            message+=senders[0].client;
-            if(senders.length>1){
-              for(var i=1;i<senders.length;i++){
-                  message+", ";
-                  message+=senders[i].client;
-              }
-            }            
-            this.appendMessage(message);
-            this.appendResetButton();
+            this.appendMessage(this.getSenderTextContent(senders));
+            this.appendCustomFormPage();
         }
         else{
-            this.displayMessage(message);
+            this.appendMessage(this.getSenderTextContent(senders));
+            this.setWindowHeight(50);
         }
       },
       onSenderDisconnected:function(sender, senders){
@@ -421,15 +423,9 @@ var globalInputChromeExtension={
         console.log("connected**************");
         var qrcodedata=this.pagedata.globalInputConnector.buildInputCodeData();
         console.log("code data:[["+qrcodedata+"]]");
-
-        var message="Please scan the QR code above using the Global Input App on your mobile to connect to this page. You will then be able to use your mobile to operate on this page.";
-        if(this.isCopyPasteForm()){
-              message="Please scan the QR code above using the Global Input App on your mobile to connect to this popup window. Since the extension failed to reliably identify the form on this page, you have to transfer the content to the form on this popup window first, and then you can use copy-and-paste operation to transfer content to the page. Please send a message to dilshat@iterativesolution.co.uk to make this page operable directly with your mobile."
-        }
         this.clearContent();
         this.appendQRCode(qrcodedata);
-        this.appendMessage(message);
-
+        this.appendGlobalInputAppAvailable();
         this.setWindowHeight(500);
 
       },
@@ -578,7 +574,18 @@ var globalInputChromeExtension={
 
     },
 
-
+    createButton:function(opts){
+       var inputContainer=document.createElement('div');
+       inputContainer.className = "buttonContainer2";
+       var buttonElement = document.createElement('button');
+       buttonElement.className='button';
+       buttonElement.innerText=opts.label;
+       var that=this;
+       buttonElement.onclick=opts.onclick;
+       inputContainer.appendChild(buttonElement);
+       this.appendElement(inputContainer);
+       return inputContainer;
+    },
 
 
     createOneButton:function(opts){
@@ -632,12 +639,13 @@ var globalInputChromeExtension={
           messageContainer.innerText=title;
           return messageContainer;
     },
+    createHTMLElement:function(htmlContent){
+        var messageContainer = document.createElement('div');
+        messageContainer.innerHTML=htmlContent;
+        return messageContainer;
+    },
 
-
-
-
-
-      createQRCode:function(qrCodedata){
+    createQRCode:function(qrCodedata){
           var qrCodeContainer = document.createElement('div');
           qrCodeContainer.id="qrcode"; //this is where the QR code will be generated
           qrCodeContainer.style.display='flex';

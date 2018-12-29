@@ -70,22 +70,12 @@ var globalInputChromeExtension={
     this.setWindowHeight(50);
     this.appendMessage(message);
   },
-  displayForm:function(message){
-      this.clearContent();
-      this.appendForm();
-      this.appendMessage(message);
-  },
+
   appendQRCode:function(qrcodeData){
         var qrCodeContainerElement=this.createQRCode(qrcodeData);
         this.pagedata.contentContainer.appendChild(qrCodeContainerElement);
   },
-  displayPageQRCode:function(codeData, message){
-        this.clearContent();
-        this.appendQRCode(codeData);
-        this.appendMessage(message);
-        this.setWindowHeight(500);
 
-   },
   displayInitialising:function(){
          this.clearContent();
          this.appendMessage("Initialising.....");
@@ -113,7 +103,10 @@ var globalInputChromeExtension={
         this.setFormFieldValue(field.id,field.value);
     }
     this.pagedata.formData.formType='cached-form';
-    this.displayForm("Global Input App is disconnected.");
+
+    this.clearContent();
+    this.appendForm();
+    this.appendMessage("Global Input App is disconnected.");
     this.appendResetButton();
   },
   isCopyPasteForm:function(){
@@ -163,7 +156,7 @@ var globalInputChromeExtension={
     },
     appendConnectHelpMessage:function(){
       var messageContainer = document.createElement('div');
-      messageContainer.innerHTML='Clicking on the button above should display a QR Code that you can scan with the Global Input App (<a href="https://play.google.com/store/apps/details?id=uk.co.globalinput&hl=en_GB" target="_blank">Google Play</a> and <a href="https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4" target="_blank">App Store</a>) on your mobile to operate with your mobile.';
+      messageContainer.innerHTML='Clicking on the button above displays a QR Code. You can then scan it with your Global Input App (<a href="https://play.google.com/store/apps/details?id=uk.co.globalinput&hl=en_GB" target="_blank">Google Play</a> and <a href="https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4" target="_blank">App Store</a>) on your mobile to connect to the page. Then you will be able to communicate with the page using your mobile, and the communication is secured with the end-to-end encryption.';
       this.appendElement(messageContainer);
     },
     appendSettingsButton:function(){
@@ -192,7 +185,7 @@ var globalInputChromeExtension={
 
         this.sendMessageToContent('check-page-status',null, function(message){
             if(!message){
-                that.displayMessage("Unable to communicate with the page content, please reload/refresh the page and try again.");
+                that.displayMessage("Unable to obtain the page status, please reload/refresh the page and try again. You also need to wait for the page fully loaded before you can use this exntesion.");
             }
             else{
                 that.initPageData(message);
@@ -214,6 +207,45 @@ var globalInputChromeExtension={
       return globalInputSettings;
 
     },
+    getFormSettings:function(){
+          var formsettings={
+                id:    "###username###"+"@###hostname###",
+                title: "Sign In on ###hostname###",
+                fields:[{
+                      label:"Username",
+                      id:"username",
+                      type:"text"
+                 },{
+                   label:"Password",
+                   id:"password",
+                   type:"password"
+                 },{
+                   label:"Account",
+                   id:"account",
+                   type:"text"
+                 },{
+                   label:"Note",
+                   id:"note",
+                   type:"text",
+                   nLines:5
+                 }],
+          };
+
+        var fieldString=localStorage.getItem("iterative.formsettings.fields");
+        if(fieldString){
+          try{
+              var fields=JSON.parse(fieldString);
+              if(fields && fields.length>0){
+                  formsettings.fields=fields;
+              }
+          }
+          catch(error){
+              console.error(error);
+          }
+
+        }
+        return formsettings;
+    },
     saveGlobalInputSettings:function(globalInputSettings){
         localStorage.setItem("iterative.globaliputapp.url",globalInputSettings.url);
         localStorage.setItem("iterative.globaliputapp.apikey",globalInputSettings.apikey);
@@ -230,7 +262,6 @@ var globalInputChromeExtension={
           label:"URL:",
           id:"globlaInputURL",
           type:"text",
-          placeholder:"WebSocket Server URL",
           value:globalInputSettings.url,
           clipboard:false
       }
@@ -244,7 +275,6 @@ var globalInputChromeExtension={
           label:"API Key:",
           id:"apikey",
           type:"text",
-          placeholder:"API Key",
           value:globalInputSettings.apikey,
           clipboard:false
       }
@@ -363,16 +393,20 @@ var globalInputChromeExtension={
 /* When the Global Input App has connected to the extension */
       onSenderConnected:function(sender, senders){
         this.pagedata.senders=senders;
-        var message="Sender Connected ("+senders.length+"):";
-        message+=senders[0].client;
-        if(senders.length>1){
-          for(var i=1;i<senders.length;i++){
-              message+", ";
-              message+=senders[i].client;
-          }
-        }
+
         if(this.isCopyPasteForm()){
-            this.displayForm(message);
+            this.clearContent();
+            this.appendForm();
+            var message="Sender Connected ("+senders.length+"):";
+            message+=senders[0].client;
+            if(senders.length>1){
+              for(var i=1;i<senders.length;i++){
+                  message+", ";
+                  message+=senders[i].client;
+              }
+            }            
+            this.appendMessage(message);
+            this.appendResetButton();
         }
         else{
             this.displayMessage(message);
@@ -388,11 +422,16 @@ var globalInputChromeExtension={
         var qrcodedata=this.pagedata.globalInputConnector.buildInputCodeData();
         console.log("code data:[["+qrcodedata+"]]");
 
-        var message="Global Input is now enabled! Please scan the QR code above with the Global Input App on your mobile to connect to the page, so you can operate on the page with your mobile.";
+        var message="Please scan the QR code above using the Global Input App on your mobile to connect to this page. You will then be able to use your mobile to operate on this page.";
         if(this.isCopyPasteForm()){
-              message="The elements in the page are not identified. You can still scan the following QR code with the Global Input app on your mobile and transfer the content to this popup window first and then do copy and paste operations. If you would like to interact with the page directly with your mobile, the footprint of this page needs to be added to the script. This can be done easily with a little bit of Javascript knowledge. If you need help on this, please send a message to dilshat@iterativesolution.co.uk."
+              message="Please scan the QR code above using the Global Input App on your mobile to connect to this popup window. Since the extension failed to reliably identify the form on this page, you have to transfer the content to the form on this popup window first, and then you can use copy-and-paste operation to transfer content to the page. Please send a message to dilshat@iterativesolution.co.uk to make this page operable directly with your mobile."
         }
-        this.displayPageQRCode(qrcodedata,message);
+        this.clearContent();
+        this.appendQRCode(qrcodedata);
+        this.appendMessage(message);
+
+        this.setWindowHeight(500);
+
       },
 
 
@@ -433,7 +472,6 @@ var globalInputChromeExtension={
                 label:fieldOpts.label,
                 id:fieldOpts.id,
                 type:fieldOpts.type,
-                placeholder:fieldOpts.placeholder,
                 value:"",
                 nLines:fieldOpts.nLines,
                 clipboard:true
@@ -462,47 +500,25 @@ var globalInputChromeExtension={
     /* Build a custom form when a form is not found on the page */
     buildCopyAndPasteGlobalInputForm:function(message){
 
+      var formSettings=this.getFormSettings();
 
           var hostname=message.host;
           var form={
-                id:    "###username###"+"@"+hostname, // unique id for saving the form content on mobile automating the form-filling process.
-                title: "Sign In on "+hostname,  //Title of the form displayed on the mobile
+                id:  formSettings.id.replace("###hostname###",hostname), // unique id for saving the form content on mobile automating the form-filling process.
+                title: formSettings.title.replace("###hostname###",hostname),  //Title of the form displayed on the mobile
                 fields:[],
           };
+          for(var i=0;i<formSettings.fields.length;i++){
+            var fsetfields=formSettings.fields[i];
 
-          var formfield=this.buildGlobalInputField({
-                label:"Username",
-                id:"username",
-                type:"text",
-                placeholder:'Enter Username',
-           });
-           form.fields.push(formfield);
-
-           formfield=this.buildGlobalInputField({
-                  label:"Password",
-                  id:"password",
-                  type:"password",
-                  placeholder:'Enter Password'
-           });
-           form.fields.push(formfield);
-
-          formfield=this.buildGlobalInputField({
-                      label:"Account",
-                      id:"account",
-                      type:"text",
-                      placeholder:'Enter Account Number if any',
-          });
-          form.fields.push(formfield);
-
-          formfield=this.buildGlobalInputField({
-                          label:"Note",
-                          id:"note",
-                          type:"text",
-                          nLines:5,
-                          placeholder:'Enter Optional Note',
-          });
-          form.fields.push(formfield);
-
+            var formfield=this.buildGlobalInputField({
+                  label:fsetfields.label,
+                  id:fsetfields.id,
+                  type:fsetfields.type,
+                  nLines:fsetfields.nLines
+             });
+             form.fields.push(formfield);
+          }
           return form;
   },
 

@@ -17,16 +17,17 @@ html, body {
   font-size: 20px;
   font-weight: 100;
   color: #FFFFFF;
-  line-height: 2.75rem;
   white-space: nowrap;
-  padding:10px;
+  padding-top:10px;
+  padding-bottom:10px;
+  padding-left:30px;
+  padding-right:30px;
 }
 .title{
   font-family: "Avenir";
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 100;
-  color: #000000;
-  line-height: 2.75rem;
+  color: #153E85;
   white-space: nowrap;
   padding:10px;
 }
@@ -109,4 +110,16 @@ html, body {
 .field input{
     margin-right: 5px;
     min-width:200px;
+}
+.deleteButton{
+    color:red;
+
+}
+.radioLabel{
+    white-space: nowrap;
+    padding-left:5px;
+}
+.radioButton{
+  margin-left:10px;
+  margin-right: 5px;
 }

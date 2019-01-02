@@ -235,6 +235,11 @@
             username:{id:"username"},
             password:{id:"password"},
             signIn: {element:"button",childElement:{tagName:"span",textContent:"Sign in"}}
+          },{
+            //proton
+            username:{id:"username"},
+            password:{id:"password"},
+            signIn: {element:"button",type:"submit", id:"login_btn"}
           }],
           pagedata:{
               cachefieldvalues:[],
@@ -269,7 +274,7 @@
           updateClearCacheTime:function(){
             var that=this;
             this.clearClearCacheTimer();
-            this.pagedata.clearachefieldvalues.timer=setTimeout(function(){                
+            this.pagedata.clearachefieldvalues.timer=setTimeout(function(){
                 that.pagedata.clearachefieldvalues.timer=null;
                 that.resetAll();
             },this.pagedata.clearachefieldvalues.ttl);

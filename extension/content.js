@@ -240,6 +240,12 @@
             username:{id:"username"},
             password:{id:"password"},
             signIn: {element:"button",type:"submit", id:"login_btn"}
+          },{
+            //proton
+            username:{id:"username"},
+            password:{id:"password"},
+            confirmPassword:{id:"passwordc"},
+            createAccount: {element:"button",type:"submit", textContent:"Create Account"}
           }],
           pagedata:{
               cachefieldvalues:[],
@@ -490,26 +496,41 @@
                               if(this.fields.length){
                                   for(var i=0;i<this.fields.length;i++){
                                       if(this.fields[i].id===fieldId){
-                                        this.fields[i].setFieldValue(newValue);
+                                          if(this.fields[i].type==='button'){
+                                              this.fields[i].formElement.click();
+                                          }
+                                          else{
+                                              this.fields[i].formElement.value=newValue;
+                                              this.fileInputEvent(this.fields[i].formElement);
+                                              if(this.fields[i].confirm){
+                                                this.fields[i].confirm.formElement.value=newValue;
+                                                this.fileInputEvent(this.fields[i].confirm.formElement);
+                                              }
+                                          }
                                       }
                                   }
                               }
+                          },
+                          fileInputEvent:function(formElement){
+                                var event = new Event('change');
+                                formElement.dispatchEvent(event);
                           }
                         }
                     };
                     var foundElement=null;
+                    var matchingRule=null;
 
                     if(pageFormData.matchingRule.username){
-                         foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.username); //find the userame element
+                         matchingRule=pageFormData.matchingRule.username;
+                         foundElement=this.findPageFormElement(cache,matchingRule); //find the userame element
                          if(foundElement){
                              pageFormData.form.fields.push({
                                     id:"username",
                                     label:"Username",
                                     type:"text",
-                                    formElement:foundElement,
-                                    setFieldValue:function(newValue){
-                                        this.formElement.value=newValue;
-                                    }
+                                    matchingRule:matchingRule,
+                                    formElement:foundElement
+
                              });
                          }
                          else{
@@ -517,33 +538,47 @@
                          }
                     }
                     if(pageFormData.matchingRule.password){
-                         foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.password); //find the password element
+                         matchingRule=pageFormData.matchingRule.password;
+                         foundElement=this.findPageFormElement(cache,matchingRule); //find the password element
                          if(foundElement){
-                           pageFormData.form.fields.push({
-                                  id:"password",
-                                  label:"Password",
-                                  type:"secret",
-                                  formElement:foundElement,
-                                  setFieldValue:function(newValue){
-                                      this.formElement.value=newValue;
-                                  }
-                           });
+                           var passwordProperty={
+                             id:"password",
+                             label:"Password",
+                             type:"secret",
+                             matchingRule:matchingRule,
+                             formElement:foundElement
+                           };
+
+                           if(pageFormData.matchingRule.confirmPassword){
+                                matchingRule=pageFormData.matchingRule.confirmPassword;
+                                foundElement=this.findPageFormElement(cache,matchingRule); //find the password element
+                                if(foundElement){
+                                  passwordProperty.confirm={
+                                      formElement:foundElement
+                                  };
+                                }
+                           }
+                           pageFormData.form.fields.push(passwordProperty);
                          }
                          else{
                                continue;//try the next matching rule, for the password element could not be found with the current rule.
                          }
                     }
+
+
+
+
                    if(pageFormData.matchingRule.account){
-                        foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.account); //find the account element, i.e. aws uses this
+                        matchingRule=pageFormData.matchingRule.account;
+                        foundElement=this.findPageFormElement(cache,matchingRule); //find the account element, i.e. aws uses this
                         if(foundElement){
                             pageFormData.form.fields.push({
                                    id:"account",
                                    label:"Account",
                                    type:"text",
-                                   formElement:foundElement,
-                                   setFieldValue:function(newValue){
-                                       this.formElement.value=newValue;
-                                   }
+                                   matchingRule:matchingRule,
+                                   formElement:foundElement
+
                             });
                         }
                         else{
@@ -551,16 +586,15 @@
                         }
                    }
                    if(pageFormData.matchingRule.twofactor){
-                        foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.twofactor); //find the account element, i.e. aws uses this
+                        matchingRule=pageFormData.matchingRule.twofactor;
+                        foundElement=this.findPageFormElement(cache,matchingRule); //find the account element, i.e. aws uses this
                         if(foundElement){
                             pageFormData.form.fields.push({
                                    id:"twofactor",
                                    label:"Two Factor",
                                    type:"text",
-                                   formElement:foundElement,
-                                   setFieldValue:function(newValue){
-                                       this.formElement.value=newValue;
-                                   }
+                                   matchingRule:matchingRule,
+                                   formElement:foundElement
                             });
                         }
                         else{
@@ -569,16 +603,15 @@
                    }
 
                    if(pageFormData.matchingRule.signIn){
-                         foundElement=this.findPageFormElement(cache,pageFormData.matchingRule.signIn); //find the submit element from the input tags
+                         matchingRule=pageFormData.matchingRule.signIn;
+                         foundElement=this.findPageFormElement(cache,matchingRule); //find the submit element from the input tags
                          if(foundElement){
                              pageFormData.form.fields.push({
                                     id:"submit",
                                     label:"Login",
                                     type:"button",
+                                    matchingRule:matchingRule,
                                     formElement:foundElement,
-                                    setFieldValue:function(newValue){
-                                          this.formElement.click();
-                                    }
                              });
                          }
                          else{
@@ -586,6 +619,26 @@
                          }
 
                     }
+
+                    if(pageFormData.matchingRule.createAccount){
+                          matchingRule=pageFormData.matchingRule.createAccount;
+                          foundElement=this.findPageFormElement(cache,matchingRule); //find the submit element from the input tags
+                          if(foundElement){
+                              pageFormData.form.fields.push({
+                                     id:"createAccount",
+                                     label:"Create Account",
+                                     type:"button",
+                                     matchingRule:matchingRule,
+                                     formElement:foundElement,
+                              });
+                          }
+                          else{
+                            continue; //try the next rule
+                          }
+
+                     }
+
+
                     return pageFormData;
 
               }

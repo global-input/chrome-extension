@@ -238,34 +238,55 @@
           }],
           pagedata:{
               cachefieldvalues:[],
-              pageForm:null,
-              setFieldCacheValue:function(fieldId, fieldValue){
-                    for(var i=0;i<this.cachefieldvalues.length;i++){
-                        if(this.cachefieldvalues[i].id===fieldId){
-                            this.cachefieldvalues[i].value=fieldValue;
-                            return;
-                        }
-                    }
-                    this.cachefieldvalues.push({id:fieldId,value:fieldValue});
+              clearachefieldvalues:{
+                    ttl:60000,
+                    timer:null,
               },
-              getCacheFields(){
-                      var isEmpty=true;
-                      for(i=0;i<this.cachefieldvalues.length;i++){
-                        if(this.cachefieldvalues[i].value.length){
-                            isEmpty=false;
-                            break;
-                        }
-                      }
-                      if(isEmpty){
-                          return null;
-                      }
-                      else{
-                          return this.cachefieldvalues;
-                      }
-                }
-
-
+              pageForm:null,
           },
+          getCacheFields(){
+                  var isEmpty=true;
+                  for(i=0;i<this.pagedata.cachefieldvalues.length;i++){
+                    if(this.pagedata.cachefieldvalues[i].value.length){
+                        isEmpty=false;
+                        break;
+                    }
+                  }
+                  if(isEmpty){
+                      return null;
+                  }
+                  else{
+                      return this.pagedata.cachefieldvalues;
+                  }
+            },
+            clearClearCacheTimer:function(){
+              if(this.pagedata.clearachefieldvalues.timer){
+                   var timer=this.pagedata.clearachefieldvalues.timer;
+                   this.pagedata.clearachefieldvalues.timer=null;
+                   clearTimeout(timer);
+              }
+            },
+          updateClearCacheTime:function(){
+            var that=this;
+            this.clearClearCacheTimer();
+            this.pagedata.clearachefieldvalues.timer=setTimeout(function(){                
+                that.pagedata.clearachefieldvalues.timer=null;
+                that.resetAll();
+            },this.pagedata.clearachefieldvalues.ttl);
+          },
+          setFieldCacheValue:function(fieldId, fieldValue){
+                for(var i=0;i<this.pagedata.cachefieldvalues.length;i++){
+                    if(this.pagedata.cachefieldvalues[i].id===fieldId){
+                        this.pagedata.cachefieldvalues[i].value=fieldValue;
+                        return;
+                    }
+                }
+                this.pagedata.cachefieldvalues.push({id:fieldId,value:fieldValue});
+          },
+          setCacheFields:function(cachefields){
+              this.pagedata.cachefieldvalues=cachefields;
+          },
+
           /* find a specific form element from the pageForm
               @cache: passing the cache object to speed up the search on a same page
               @matchCriteria:rule for locating the element */
@@ -309,6 +330,7 @@
      resetAll:function(){
        this.pagedata.cachefieldvalues=[];
        this.pagedata.pageForm=null;
+       this.clearClearCacheTimer();
      },
      /*  message handler for message coming from extension */
      onExtensionMessageReceived:function(message, sender, replyBack){
@@ -323,6 +345,16 @@
                          );
                return;
          }
+         else if(message.messageType==='update-cache-time'){
+               this.updateClearCacheTime();
+               replyBack({
+                           messageType:message.messageType,
+                           status:"success",
+                           host:window.location.host,
+                           content:null
+                         });
+         }
+
          else if(message.messageType==='get-page-config'){
               var pageConfig=this.getPageConfig();
               if(!pageConfig){
@@ -330,13 +362,15 @@
                   messageType:message.messageType,
                   host:window.location.host,
                   status:"failed",
-                  content:"no recognized form"
+                  content:"no recognized form",
+                  cacheTTL:this.pagedata.clearachefieldvalues.ttl
                 });
               }
               else{
                 replyBack({
                   messageType:message.messageType,
                   host:window.location.host,
+                  cacheTTL:this.pagedata.clearachefieldvalues.ttl,
                   status:"success",
                   content:pageConfig
                 });
@@ -361,7 +395,15 @@
                            });
          }
          else if(message.messageType==='set-cache-field'){
-            this.pagedata.setFieldCacheValue(message.content.fieldId,message.content.fieldValue);
+            this.setFieldCacheValue(message.content.fieldId,message.content.fieldValue);
+            replyBack({
+                        messageType:message.messageType,
+                        host:window.location.host,
+                        status:"success"
+                       });
+         }
+         else if(message.messageType==='set-all-cache-fields'){
+            this.setCacheFields(message.content.cachefields);
             replyBack({
                         messageType:message.messageType,
                         host:window.location.host,
@@ -380,9 +422,10 @@
            replyBack({
                        messageType:message.messageType,
                        host:window.location.host,
+                       cacheTTL:this.pagedata.clearachefieldvalues.ttl,
                        status:"success",
                        content:{
-                                cachefields:this.pagedata.getCacheFields()
+                                cachefields:this.getCacheFields()
                             }
                       });
          }

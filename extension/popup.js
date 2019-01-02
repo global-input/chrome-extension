@@ -4,6 +4,9 @@ var globalInputChromeExtension={
       hostname:"",
       senders:null,
       contentContainer:null,
+      actionType:null,
+      cacheTTL:null,
+      cacheTimer:null,
       formData:{
         formContainer:null,
         fields:[],
@@ -15,21 +18,63 @@ var globalInputChromeExtension={
   setHostName:function(hostname){
     this.pagedata.hostname=hostname;
   },
+  setCacheTTL:function(ttl){
+    this.pagedata.cacheTTL=ttl;
+  },
+  getCacheFreshTTL:function(){
+    if(this.pagedata.cacheTTL){
+        return this.pagedata.cacheTTL*2/3;
+    }
+    else{
+      return 0;
+    }
+
+  },
   setSenders:function(senders){
     this.pagedata.senders=senders;
   },
   isSenderConnected:function(){
     return this.pagedata.globalInputConnector && this.pagedata.senders;
   },
+  updateCacheTimer:function(){
+        this.clearCacheTimer();
+        if(this.pagedata.action==='display-cached-values' || this.pagedata.action==='connected-window'){
+                that=this;
+                this.sendMessageToContent("update-cache-time",null, function(message){
+                    if(message){
+                      var cacheTTL=that.getCacheFreshTTL();
+                      if(cacheTTL>500){
+                           that.pagedata.cacheTimer=setTimeout(that.updateCacheTimer.bind(that),cacheTTL);
+                      }
+                    }
+                    else{
+                      console.log("update-cache-time failure");
+                    }
+                });
+        }
+        else{
+            this.clearCacheTimer();
+        }
+
+  },
+  clearCacheTimer:function(){
+          if(this.pagedata.cacheTimer){
+              var timer=this.pagedata.cacheTimer;
+              this.pagedata.cacheTimer=null;
+              clearTimeout(timer);
+          }
+  },
 
   setAction:function(action){
       console.log(action);
       this.pagedata.action=action;
-
+      if(action==='connect-to-window' || action==='connect-to-content'){
+          this.pagedata.actionType=action;
+      }
   },
 
   isConnectToWindowForm:function(){
-      return this.pagedata.action==='connect-to-window';
+      return this.pagedata.actionType==='connect-to-window';
   },
   isFormEditor:function(){
       return this.pagedata.action==='form-editor';
@@ -56,6 +101,7 @@ var globalInputChromeExtension={
            });
            this.pagedata.form.fields.push(formfield);
         }
+
 },
 
   disconnectGlobalInputApp:function(){
@@ -127,13 +173,17 @@ var globalInputChromeExtension={
               break;
           }
       }
+      var that=this;
       this.sendMessageToContent("set-cache-field",{fieldId:fieldId,fieldValue:newValue}, function(message){
-        //nothing to do at the moment
+          //for the moment
       });
   },
+
   displayCachedFormPage(message){
     this.setAction("display-cached-values");
+
     this.buildWindowForm();
+
     for(var i=0;i<message.content.cachefields.length;i++){
         var field=message.content.cachefields[i];
         this.setFormFieldValue(field.id,field.value);
@@ -142,6 +192,10 @@ var globalInputChromeExtension={
     this.appendForm();
     this.appendMessage("Global Input App is disconnected.");
     this.appendResetButton();
+
+    this.updateCacheTimer();
+
+
   },
 
   addFormElement:function(fieldId, formElement,inputContainer){
@@ -173,8 +227,8 @@ var globalInputChromeExtension={
           this.createContentContainer();
           chrome.runtime.onMessage.addListener(this.onContentMessageReceived.bind(this));
           this.checkPageStatus();
-
     },
+
     appendConnectToMobileButton:function(){
       var that=this;
       var opts={
@@ -227,6 +281,7 @@ var globalInputChromeExtension={
             }
             else{
                 that.setHostName(message.host);
+                that.setCacheTTL(message.cacheTTL);
                 if(message.content.cachefields){
                     that.displayCachedFormPage(message);
                 }
@@ -252,7 +307,22 @@ var globalInputChromeExtension={
       return globalInputSettings;
 
     },
-    getFormSettings:function(){
+    _getFormSettingLocalStoragePrefix:function(){
+      var formprefix="extension."+this.pagedata.hostname?this.pagedata.hostname:'default';
+      return formprefix+".forms.fields";
+    },
+    clearFormFieldsSettings:function(){
+        var key=this._getFormSettingLocalStoragePrefix();
+        localStorage.removeItem(key);
+    },
+    saveFormFieldSettings:function(formSettings){
+          if(formSettings.isDefault){
+              this.clearFormFieldsSettings();
+          }
+          var fieldString=JSON.stringify(formSettings.fields);
+          localStorage.setItem(this._getFormSettingLocalStoragePrefix(),fieldString);
+    },
+    getFormSettings:function(loadDefaultSettings){
           var formsettings={
                 id:    "###username###"+"@###hostname###",
                 title: "Sign In on ###hostname###",
@@ -277,9 +347,12 @@ var globalInputChromeExtension={
                    nLines:5
                  }],
           };
-
-        var fieldString=localStorage.getItem("iterative.formsettings.fields");
-        if(fieldString){
+          if(loadDefaultSettings){
+              return formsettings;
+          }
+          var fieldString=localStorage.getItem(this._getFormSettingLocalStoragePrefix());
+          if(fieldString){
+            formsettings.isDefault=false;
           try{
               var fields=JSON.parse(fieldString);
               if(fields && fields.length>0){
@@ -290,11 +363,11 @@ var globalInputChromeExtension={
               console.error(error);
           }
         }
-        else{
-          formsettings.isDefault=false;
-        }
+
         return formsettings;
     },
+
+
     saveGlobalInputSettings:function(globalInputSettings){
         localStorage.setItem("iterative.globaliputapp.url",globalInputSettings.url);
         localStorage.setItem("iterative.globaliputapp.apikey",globalInputSettings.apikey);
@@ -350,139 +423,189 @@ var globalInputChromeExtension={
       this.appendElement(buttons);
     },
     displayWindowFormEditor:function(){
+        var chromeExtension=this;
         this.setAction("form-editor");
-        var that=this;
-        var formSettings=this.getFormSettings();
-        var modified=false;
+        var formEditorData={
+              modified:false,
+              formSettings:null,
+              original:{
+                  isDefault:null
+              },
+              adjustModified:function(){
+                if(this.original.isDefault && this.formSettings.isDefault){
+                    this.modified=false;
+                }
+              },
 
-        var that=this;
-        var cancelEdit=function(){
-          if(that.isSenderConnected()){
-             that.displayConnectedWindowForm();
-          }
-          else{
-             that.reconnectToWindowForm();
-          }
-        }
-        var displayAddNewField=function(){
-              that.clearContent();
-              that.appendTitle("Adding a New Field");
-              var nameProperty={
-                  label:"Name",
-                  id:"newfieldname",
-                  type:"text",
-                  value:"",
-                  placeholder:"Name of the new field"
-              };
-              var fieldLinesProperty={
-                    name:"fieldLines",
-                    items:[{label:'Single-line', value:"singleline"},
-                           {label:'Multi-line',  value:"multiline"}]
+              start:function(){
+                this.formSettings=chromeExtension.getFormSettings();
+                this.original.isDefault=this.formSettings.isDefault;
+                this.renderFormEditor();
+              },
+              cancelEdit:function(){
+                if(chromeExtension.isSenderConnected()){
+                   chromeExtension.displayConnectedWindowForm();
+                }
+                else{
+                   chromeExtension.reconnectToWindowForm();
+                }
+              },
+              saveFormEditorData:function(){
+                if(!this.modified){
+                    console.log("not changed");
+                }
+                chromeExtension.saveFormFieldSettings(this.formSettings);
+                chromeExtension.reconnectToWindowForm();
+              },
+              addNewField:function(newFieldProperty){
+                  this.formSettings.fields.push(newFieldProperty);
+                  this.formSettings.isDefault=false;
+                  this.modified=true;
+              },
+              deleteAField:function(fieldid){
+                this.modified=true;
+                this.formSettings.fields=this.formSettings.fields.filter(f=>f.id!==fieldid);
+                this.formSettings.isDefault=false;
+              },
+              resetToDefault:function(){
+                 this.formSettings=chromeExtension.getFormSettings(true);
+                 this.modified=true;
+                 this.renderFormEditor();
+              },
+              displayAddNewField:function(){
+                          chromeExtension.clearContent();
+                          chromeExtension.appendTitle("Adding a New Field");
+                          var newFieldData={
+                              nameProperty:{
+                                    label:"Name",
+                                    id:"newfieldname",
+                                    type:"text",
+                                    value:"",
+                                    placeholder:"Name of the new field"
+                              },
+                              linesProperty:{
+                                name:"fieldLines",
+                                value:'singleline',
+                                items:[{label:'Single-line', value:"singleline"},
+                                       {label:'Multi-line',  value:"multiline"}]
 
-              };
+                              },
+                              onOk:function(){
+                                      var newFieldlabel=this.nameProperty.element.value.trim();
+                                      if(!newFieldlabel){
+                                          that.appendMessage("The field is is not valid");
+                                          return;
+                                      }
+                                      var newFieldId=newFieldlabel.replace(' ',"_").toLowerCase();
+                                      var nLines=1;
+                                      if(this.linesProperty.elements[1].checked){
+                                          nLines=5;
+                                      }
+                                      var newFieldProperty={
+                                        label:newFieldlabel,
+                                        id:newFieldId,
+                                        type:'text',
+                                      };
+                                      if(nLines>1){
+                                        newFieldProperty.nLines=nLines;
+                                      }
+                                      formEditorData.addNewField(newFieldProperty);
+                                      formEditorData.renderFormEditor();
+                              },
+                              onCancel:function(){
+                                    formEditorData.renderFormEditor();
+                              }
 
-              var inputContainer=that.createInputField(nameProperty);
-              that.appendElement(inputContainer);
 
-              inputContainer=that.createRadioButtons(fieldLinesProperty);
-              that.appendElement(inputContainer);
 
-              var addNewField=function(){
-                    var newFieldlabel=nameProperty.element.value.trim();
-                    if(!newFieldlabel){
-                        that.appendMessage("The field is is not valid");
-                        return;
+                          };
+                          var inputContainer=chromeExtension.createInputField(newFieldData.nameProperty);
+                          chromeExtension.appendElement(inputContainer);
+
+                          inputContainer=chromeExtension.createRadioButtons(newFieldData.linesProperty);
+                          chromeExtension.appendElement(inputContainer);
+                          var buttonContainer=chromeExtension.createTwoButton({
+                              label1:"Back",
+                              label2:"Add",
+                              onclick1:newFieldData.onCancel.bind(newFieldData),
+                              onclick2:newFieldData.onOk.bind(newFieldData),
+                          });
+                          chromeExtension.appendElement(buttonContainer);
+              },
+
+              appendEditFormFields:function(){
+                    for(var i=0;i<this.formSettings.fields.length;i++){
+                          var fsetfields=this.formSettings.fields[i];
+                           var opts={
+                               label:fsetfields.label,
+                               id:fsetfields.id,
+                               type:fsetfields.type,
+                               value:"",
+                               readonly:true,
+                               nLines:fsetfields.nLines,
+                               button:{
+                                        className:"deleteButton",
+                                        label:"Delete",
+
+                              },
+                              clickOnButton:function(){
+                                  formEditorData.deleteAField(this.id);
+                                  formEditorData.renderFormEditor();
+                              }
+                           };
+                           var inputContainer=chromeExtension.createInputField(opts);
+                           chromeExtension.appendElement(inputContainer);
                     }
-                    var newFieldId=newFieldlabel.replace(' ',"_").toLowerCase();
-                    var nLines=1;
-                    if(fieldLinesProperty.elements[1].checked){
-                        nLines=5;
-                    }
-                    var newFieldProperty={
-                      label:newFieldlabel,
-                      id:newFieldId,
-                      type:'text',
-                    };
-                    if(nLines>1){
-                      newFieldProperty.nLines=nLines;
-                    }
-                    formSettings.fields.push(newFieldProperty);
-                    renderFormEditor();
+              },
+              appendEditorFieldButtons:function(){
+                if(this.formSettings.isDefault){
+                  var inputContainer=chromeExtension.createButton({
+                    label:'Add New Field',
+                    onclick:this.displayAddNewField.bind(this),
+                  });
+                  chromeExtension.appendElement(inputContainer);
+                }
+                else{
+                  var inputContainer=chromeExtension.createTwoButton({
+                    label1:"Reset to Default",
+                    label2:'Add New Field',
+                    className:"button",
+                    onclick1:this.resetToDefault.bind(this),
+                    onclick2:this.displayAddNewField.bind(this),
+                  });
+                  chromeExtension.appendElement(inputContainer);
+                }
+              },
+              appendFormEditorButtons:function(){
+                if(this.modified && this.formSettings.fields.length){
+                       var buttonContainer=chromeExtension.createTwoButton({
+                           label1:"Cancel",
+                           label2:"Save",
+                           onclick1:this.cancelEdit.bind(this),
+                           onclick2:this.saveFormEditorData.bind(this)
+                       });
+                       chromeExtension.appendElement(buttonContainer);
+                }
+                else{
+                  var buttonContainer=chromeExtension.createOneButton({
+                      label:"Cancel",
+                      onclick:this.cancelEdit
+                  });
+                  chromeExtension.appendElement(buttonContainer);
+                }
+              },
+              renderFormEditor:function(){
+                      chromeExtension.clearContent();
+                      chromeExtension.appendTitle("Customising Form");
+                      this.adjustModified();
+                      this.appendEditFormFields();
+                      this.appendEditorFieldButtons();
+                      this.appendFormEditorButtons();
 
-
-              };
-              var buttonContainer=that.createTwoButton({
-                  label1:"Back",
-                  label2:"Add",
-                  onclick1:renderFormEditor,
-                  onclick2:addNewField,
-              });
-              that.appendElement(buttonContainer);
+              }
 
         };
-
-        var renderFormEditor=function(){
-              that.clearContent();
-              that.appendTitle("Customising Form");
-              for(var i=0;i<formSettings.fields.length;i++){
-                    var fsetfields=formSettings.fields[i];
-                     var opts={
-                         label:fsetfields.label,
-                         id:fsetfields.id,
-                         type:fsetfields.type,
-                         value:"",
-                         nLines:fsetfields.nLines,
-                         button:{
-                                  className:"deleteButton",
-                                  label:"Delete",
-
-                        },
-                        clickOnButton:function(){
-                            modified=true;
-                            formSettings.fields=formSettings.fields.filter(f=>f.id!==this.id);
-                            renderFormEditor();
-                        }
-                     };
-
-                     var inputContainer=that.createInputField(opts);
-                     that.appendElement(inputContainer);
-              }
-              var inputContainer=that.createTwoButton({
-                label1:"Reset to Default",
-                label2:'Add New Field',
-                className:"button",
-                onclick1:null,
-                onclick2:displayAddNewField,
-              });
-              that.appendElement(inputContainer);
-
-
-              if(modified && formSettings.fields.length){
-                     var buttonContainer=that.createTwoButton({
-                         label1:"Cancel",
-                         label2:"Save",
-                         onclick1:cancelEdit,
-                         onclick2:function(){
-
-                         }
-                     });
-                     that.appendElement(buttonContainer);
-              }
-              else{
-                var buttonContainer=that.createOneButton({
-                    label:"Cancel",
-                    onclick:cancelEdit
-                });
-                that.appendElement(buttonContainer);
-              }
-
-
-        };
-
-        renderFormEditor();
-
-
-
+        formEditorData.start();
     },
 
 
@@ -522,6 +645,8 @@ var globalInputChromeExtension={
                   return;
               }
               that.setHostName(message.host);
+              that.setCacheTTL(message.cacheTTL);
+
               var globalInputSettings=that.getGlobalInputSettings();
               var globalinputConfig=that.buildBasicGlobalInputConfig(globalInputSettings);
               if(message.status==="success"){
@@ -549,8 +674,8 @@ var globalInputChromeExtension={
     whenEmptyReplyReceived:function(){
       this.setWindowHeight(50);
       this.setAction("content-not-available");
-      that.clearContent();
-      that.appendMessage("Unable to obtain the page status, please reload/refresh the page, and try again after the page is fully loaded.");
+      this.clearContent();
+      this.appendMessage("Unable to obtain the page status, please reload/refresh the page, and try again after the page is fully loaded.");
 
     },
     buildBasicGlobalInputConfig:function(globalInputSettings){
@@ -598,13 +723,16 @@ var globalInputChromeExtension={
     },
 
    displayConnectedWindowForm:function(){
+     this.setAction('connected-window');
      this.clearContent();
      this.appendForm();
      this.appendMessage(this.getSenderTextContent());
      this.appendElement(this.createHTMLElement('No identifiable form found on this page. Hence, instead of direct operation, you have to copy the content from the form on this window to the target application. In the mean time, you may <a href="https://globalinput.co.uk/global-input-app/contact-us" target="_blank">let us know</a> so we can do the necessary improvement to allow you to operate on this page directly.'));
      this.appendCustomiseWindowFormButton();
+     this.updateCacheTimer();
    },
    displayConnectedContentMessage:function(){
+     this.setAction('connected-content');
      this.clearContent();
      this.appendMessage(this.getSenderTextContent());
      this.setWindowHeight(50);
@@ -626,7 +754,6 @@ var globalInputChromeExtension={
           }
       },
       onWebSocketConnect:function(){
-        console.log("connected**************");
         var qrcodedata=this.pagedata.globalInputConnector.buildInputCodeData();
         console.log("code data:[["+qrcodedata+"]]");
         this.clearContent();
@@ -725,6 +852,10 @@ var globalInputChromeExtension={
                   if(opts.placeholder){
                     element.placeholder=opts.placeholder;
                   }
+                  if(opts.readonly){
+                    element.readOnly=opts.readonly;
+                  }
+
             inputContainer.appendChild(element);
             opts.element=element;
 
@@ -769,19 +900,20 @@ var globalInputChromeExtension={
       var inputRowContainer=document.createElement('div');
       inputRowContainer.className = "fielrow";
       opts.elements=[];
-
-
-
                   for(i=0;i<opts.items.length;i++){
                         var inputContainer=document.createElement('div');
                         inputContainer.className = "field";
                             var item=opts.items[i];
                             var element = document.createElement('input');
+
                             element.type="radio";
                             element.name=opts.name;
                             element.value=item.value;
                             element.className="radioButton";
                             element.id=opts.name+'_'+item.value;
+                            if(opts.value===item.value){
+                              element.checked=true;
+                            }
                             opts.elements.push(element);
                             inputContainer.appendChild(element);
                             var labelElement = document.createElement('label');

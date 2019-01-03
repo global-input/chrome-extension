@@ -697,15 +697,7 @@ var globalInputChromeExtension={
            };
     },
 
-    /*
-    This will send the field value received from the mobile to the content script.
-    */
-    sendFieldValue:function(fieldId, fieldValue){
-      var that=this;
-        this.sendMessageToContent("set-form-field",{fieldId:fieldId,fieldValue:fieldValue}, function(message){
-            //No need to do anythign at this time
-        });
-    },
+
 
 
     getSenderTextContent:function(){
@@ -762,6 +754,34 @@ var globalInputChromeExtension={
         this.setWindowHeight(500);
 
       },
+      requestNextPageConfig:function(field){
+          var that=this;
+          this.setAction('next-page-config');
+          this.sendMessageToContent("next-page-config",{field:field},function(message){
+                if(!message){
+                    that.whenEmptyReplyReceived();
+                    return;
+                }
+                that.setHostName(message.host);
+                var initData={
+                  form:null,
+                  action:"input",
+                  dataType:"form",
+                };
+                if(message.status==="success"){
+                    initData.form=that.buildContentGlobalInputForm(message);
+                    that.setAction('connect-to-content');
+                }
+                else{
+                    that.setAction('connect-to-window');
+                    that.buildWindowForm();
+                    initData.form=that.pagedata.form;
+                    that.displayConnectedWindowForm();
+                }
+                that.pagedata.globalInputConnector.sendInitData(initData);
+          });
+
+      },
 
 
     buildContentGlobalInputForm:function(message){
@@ -773,26 +793,35 @@ var globalInputChromeExtension={
         var that=this;
         for(var i=0;i<message.content.form.fields.length;i++){
                 var field=message.content.form.fields[i];
-                var nField={
-                                id:field.id,
-                                label:field.label,
-                                type:field.type,
-                                operations:{
-                                    contetFormId:field.id,
-                                    onInput:function(value){
-                                        that.sendFieldValue(this.contetFormId,value);
-                                    }
-                               }
+                var fieldProperty={
+                      id:field.type==='button' || field.type==='list'?null:field.id,
+                      label:field.label,
+                      type:field.type,
+                      items:field.items,
+                      selectType:field.selectType,
+                      operations:{
+                        field:field,
+                        onInput:function(newValue){
+                            var field=this.field;
+                            that.sendMessageToContent("set-form-field",{fieldId:field.id,fieldValue:newValue}, function(message){
+                                if(field.matchingRule.nextUI){
+                                      setTimeout(function(){
+                                          that.requestNextPageConfig(field);
+                                      },field.matchingRule.nextUI.loadingTime);
 
-                }
-                if(nField.type==='button'){
-                    nField.id=null; //Global Input App will not store its value if it does not have id
-                }
-                form.fields.push(nField);
+
+                                }
+                            });
+                        }
+                      }
+                };
+
+
+
+                form.fields.push(fieldProperty);
              }
         return form;
     },
-
 
 
     buildGlobalInputField:function(fieldOpts){

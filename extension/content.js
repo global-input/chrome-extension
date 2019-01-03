@@ -247,6 +247,64 @@
             confirmPassword:{id:"passwordc"},
             createAccount: {element:"button",type:"submit", textContent:"Create Account"}
           }],
+
+          domainSpecificRules:[
+              {
+                      hostnames:["accounts.google.com"],
+                      forms:[{
+                                fields:[{
+                                      label:"Accounts",
+                                      id:"account",
+                                      type:"list",
+                                      selectType:"single",
+                                      selector:'ul li p[data-email]',
+                                      select:{
+                                            type:"attribute",
+                                            attributeName:"data-email"
+                                          },
+                                      nextUI:{
+                                               loadingTime:3000
+                                      }
+                                }]
+
+                            },{
+                                fields:[{
+                                            label:"Email or phone",
+                                            id:"username",
+                                            type:"text",
+                                            selector:'input[id="identifierId"]'
+                                        },{
+                                              id:"next",
+                                              label:"Next",
+                                              type:"button",
+                                              selector:'div[id="identifierNext"]',
+                                              nextUI:{
+                                                  loadingTime:1000
+                                              }
+                                        }]
+                             },{
+                                 username:{
+                                          selector:'div[id="profileIdentifier"]',
+                                          select:{type:"textContent"}
+                                 },
+                                 fields:[{
+                                             id:"password",
+                                             label:"Password",
+                                             type:"secret",
+                                             selector:'input[type="password"][name="password"]'
+                                         },{
+                                              id:"next",
+                                              label:"Next",
+                                              type:"button",
+                                              selector:'div[id="passwordNext"]',
+                                              nextUI:{
+                                                   loadingTime:3000
+                                              }
+                                         }]
+                              }]
+               }
+          ],
+
           pagedata:{
               cachefieldvalues:[],
               clearachefieldvalues:{
@@ -365,8 +423,7 @@
                            content:null
                          });
          }
-
-         else if(message.messageType==='get-page-config'){
+         else if(message.messageType==='get-page-config' || message.messageType==='next-page-config'){
               var pageConfig=this.getPageConfig();
               if(!pageConfig){
                 replyBack({
@@ -451,33 +508,194 @@
      },
      /* find the form element to build a form config data to be used
      to display a similar form on the mobile screen */
-     getPageConfig(){
-        var pageForm=this.findMatchingPageForm();
+     getPageConfig:function(){
+        var pageForm=this.findFormWithDomainSpecificRule();
+        if(!pageForm){
+            pageForm=this.findMatchingPageForm();
+        }
         this.pagedata.pageForm=pageForm; //save it to use to set the value in the form when received input evens from mobile
         if(!pageForm){
               return null;
         }
-        var pageConfig={
+        else{
+          var globalInputForms={
               host:window.location.host,
               form:{
-                id:pageForm.form.id,
-                title:pageForm.form.title,
-                fields:[]
+                  id:pageForm.form.id,
+                  title:pageForm.form.title,
+                  fields:[]
               }
-        };
-        for(var i=0;i<pageForm.form.fields.length;i++){
-            var field=pageForm.form.fields[i];
-            pageConfig.form.fields.push({
-                id:field.id,
-                label:field.label,
-                type:field.type,
-            });
+          };
+          for(var i=0;i<pageForm.form.fields.length;i++){
+            var gFieldProperty={
+                  id:pageForm.form.fields[i].id,
+                  label:pageForm.form.fields[i].label,
+                  type:pageForm.form.fields[i].type,
+                  matchingRule:pageForm.form.fields[i].matchingRule,
+            };
+            if(pageForm.form.fields[i].type==='list'){
+                gFieldProperty.items=[];
+                for(var k=0;k<pageForm.form.fields[i].items.length;k++){
+                    gFieldProperty.items.push({
+                      value:pageForm.form.fields[i].items[k].value,
+                      label:pageForm.form.fields[i].items[k].label
+                    });
+                }
+                gFieldProperty.selectType=pageForm.form.fields[i].selectType;
+            }
+            globalInputForms.form.fields.push(gFieldProperty);
+          }
+          return globalInputForms;
         }
-        return pageConfig;
 
      },
+     findFormWithDomainSpecificRule:function(message){
+          if((!window)|| (!window.location) || (!window.location.host)){
+              return null;
+          }
+          var formManager=this;
+          var domainSpecificFormBuilder={
+              hostname:window.location.host,
+              start:function(){
+                for(var i=0;i<formManager.domainSpecificRules.length;i++){
+                    var matchRule=formManager.domainSpecificRules[i];
+                    for(var k=0;k<matchRule.hostnames.length;k++){
+                        if(matchRule.hostnames[k]===this.hostname){
+                          for(var t=0;t<matchRule.forms.length;t++){
+                                var form=this.buildForm(matchRule.forms[t]);
+                                if(form){
+                                  return form;
+                                }
+                          }
+                        }
+                    }
+                }
+                return null;
+              },
+              buildListFieldProperty:function(fieldRule){
+                var elements=document.querySelectorAll(fieldRule.selector);
+                if(!elements.length){
+                    return null;
+                }
+                var items=[];
+                for(var i=0;i<elements.length;i++){
+                    var val=null;
+                    if(fieldRule.select.type==='attribute'){
+                        val=elements[i].getAttribute(fieldRule.select.attributeName);
+                    }
+                    else{
+                          val=elements[i].textContent;
+                    }
+                    var label=elements[i].textContent;
+                    items.push({
+                        value:val,
+                        label:label,
+                        element:elements[i]
+                    });
+                }
+                return {
+                       id:fieldRule.id,
+                       label:fieldRule.label,
+                       type:fieldRule.type,
+                       selectType:fieldRule.selectType,
+                       matchingRule:fieldRule,
+                       items:items
+                };
 
+              },
+              buildFieldProperty:function(fieldRule){
+                  var element=document.querySelector(fieldRule.selector);
+                  if(!element){
+                      return null;
+                  }
+                  else{
+                    return {
+                      id:fieldRule.id,
+                      label:fieldRule.label,
+                      type:fieldRule.type,
+                      matchingRule:fieldRule,
+                      formElement:element,
+                    };
+                  }
+              },
+              buildForm:function(formRule){
+                var signInForm=formManager.getSignInForm();
+                for(var i=0;i<formRule.fields.length;i++){
+                    var fieldProperty=null;
+                    if(formRule.fields[i].type==='list'){
+                        fieldProperty=this.buildListFieldProperty(formRule.fields[i]);
+                    }
+                    else{
+                        fieldProperty=this.buildFieldProperty(formRule.fields[i]);
+                    }
+                    if(!fieldProperty){
+                          return null;
+                    }
+                    signInForm.form.fields.push(fieldProperty);
+                }
+                if(formRule.username){
+                      var usernameelement=document.querySelector(formRule.username.selector);
+                      username=null;
+                      if(usernameelement){
+                          if(formRule.username.select.type==='textContent'){
+                                signInForm.staticFields.username=usernameelement.textContent;
+                                if(signInForm.staticFields.username){
+                                    signInForm.form.id=signInForm.form.id.replace('###username###',signInForm.staticFields.username);
+                                }
+                          }
 
+                      }
+                }
+                return signInForm;
+              },
+          };
+          return domainSpecificFormBuilder.start();
+     },
+     getSignInForm:function(){
+        return {
+            staticFields:{},
+            form:{
+              id:"###username###"+"@"+window.location.host, // unique id for saving the form content in mobile automating the form-filling process.
+              title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
+              fields:[],  //the fields to be displayed on the mobile screen, this will be populated in the next step
+              setFormFieldValue:function(fieldId, newValue){
+                  if(this.fields.length){
+                      for(var i=0;i<this.fields.length;i++){
+                          if(this.fields[i].id===fieldId){
+                              if(this.fields[i].type==='button'){
+                                  this.fields[i].formElement.click();
+                              }
+                              else if(this.fields[i].type==='list'){
+                                  if(newValue && newValue.length){
+                                    newValue=newValue[0];
+                                      for(var k=0;k<this.fields[i].items.length;k++){
+                                            var vitem=this.fields[i].items[k];
+                                            if(vitem.value===newValue){
+                                                 vitem.element.click();
+                                                 return;
+                                            }
+                                      }
+                                    }
+                              }
+                              else{
+                                  this.fields[i].formElement.value=newValue;
+                                  this.fileInputEvent(this.fields[i].formElement);
+                                  if(this.fields[i].confirm){
+                                    this.fields[i].confirm.formElement.value=newValue;
+                                    this.fileInputEvent(this.fields[i].confirm.formElement);
+                                  }
+                              }
+                          }
+                      }
+                  }
+              },
+              fileInputEvent:function(formElement){
+                    var event = new Event('change');
+                    formElement.dispatchEvent(event);
+              }
+            }
+        };
+     },
      /*find the form from page via the defined rule */
      findMatchingPageForm:function(){
                /*Matching Rules for finding the the Sign In Form.
@@ -486,37 +704,8 @@
 
               var cache={};
               for(var i=0;i<this.pageFormMatchingRules.length;i++){
-                    var pageFormData={
-                        matchingRule:this.pageFormMatchingRules[i],
-                        form:{
-                          id:"###username###"+"@"+window.location.host, // unique id for saving the form content in mobile automating the form-filling process.
-                          title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile
-                          fields:[],  //the fields to be displayed on the mobile screen, this will be populated in the next step
-                          setFormFieldValue:function(fieldId, newValue){
-                              if(this.fields.length){
-                                  for(var i=0;i<this.fields.length;i++){
-                                      if(this.fields[i].id===fieldId){
-                                          if(this.fields[i].type==='button'){
-                                              this.fields[i].formElement.click();
-                                          }
-                                          else{
-                                              this.fields[i].formElement.value=newValue;
-                                              this.fileInputEvent(this.fields[i].formElement);
-                                              if(this.fields[i].confirm){
-                                                this.fields[i].confirm.formElement.value=newValue;
-                                                this.fileInputEvent(this.fields[i].confirm.formElement);
-                                              }
-                                          }
-                                      }
-                                  }
-                              }
-                          },
-                          fileInputEvent:function(formElement){
-                                var event = new Event('change');
-                                formElement.dispatchEvent(event);
-                          }
-                        }
-                    };
+                    var pageFormData=this.getSignInForm();
+                    pageFormData.matchingRule=this.pageFormMatchingRules[i];
                     var foundElement=null;
                     var matchingRule=null;
 

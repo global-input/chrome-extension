@@ -754,19 +754,61 @@ var globalInputChromeExtension={
         this.setWindowHeight(500);
 
       },
-      requestNextPageConfig:function(field){
+      displayNextUIOnMobile:function(nextUI){
+        var that=this;
+        var initData={
+          action:"input",
+          dataType:"form",
+          form:{
+                  title:this.pagedata.hostname,
+                  fields:[{
+                      type:"info",
+                      value:"Please continue"
+                  },{
+                      type:"button",
+                      label:"Close",
+                      icon:"cancel",
+                      viewId:"row1",
+                      operations:{
+                          onInput:function(){
+                              that.disconnectGlobalInputApp();
+                              window.close();
+                          }
+                      }
+
+                  },{
+                      type:"button",
+                      label:"Continue",
+                      viewId:"row1",
+                      icon:"right",
+                      operations:{
+                          onInput:function(){
+                            that.requestNextPageConfig(nextUI);
+                          }
+                      }
+
+                  }
+
+                  ]
+                }
+        };
+        this.pagedata.globalInputConnector.sendInitData(initData);
+
+
+      },
+      requestNextPageConfig:function(request){
           var that=this;
           this.setAction('next-page-config');
-          this.sendMessageToContent("next-page-config",{field:field},function(message){
+          this.sendMessageToContent("next-page-config",request,function(message){
                 if(!message){
                     that.whenEmptyReplyReceived();
                     return;
                 }
                 that.setHostName(message.host);
                 var initData={
-                  form:null,
                   action:"input",
                   dataType:"form",
+                  form:null,
                 };
                 if(message.status==="success"){
                     initData.form=that.buildContentGlobalInputForm(message);
@@ -794,7 +836,7 @@ var globalInputChromeExtension={
         for(var i=0;i<message.content.form.fields.length;i++){
                 var field=message.content.form.fields[i];
                 var fieldProperty={
-                      id:field.type==='button' || field.type==='list'?null:field.id,
+                      id:field.id,
                       label:field.label,
                       type:field.type,
                       items:field.items,
@@ -805,18 +847,18 @@ var globalInputChromeExtension={
                             var field=this.field;
                             that.sendMessageToContent("set-form-field",{fieldId:field.id,fieldValue:newValue}, function(message){
                                 if(field.matchingRule.nextUI){
-                                      setTimeout(function(){
-                                          that.requestNextPageConfig(field);
-                                      },field.matchingRule.nextUI.loadingTime);
-
-
+                                      that.displayNextUIOnMobile(field.matchingRule.nextUI)
                                 }
                             });
                         }
                       }
                 };
-
-
+                if(field.type==='button'||field.type==='list'||field.type==='info'){
+                    fieldProperty.id=null;
+                }
+                if(field.type==='info'){
+                  fieldProperty.value=field.value;
+                }
 
                 form.fields.push(fieldProperty);
              }

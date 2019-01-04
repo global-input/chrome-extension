@@ -253,17 +253,31 @@
                       hostnames:["accounts.google.com"],
                       forms:[{
                                 fields:[{
-                                      label:"Accounts",
+                                      label:"Choose an account",
                                       id:"account",
                                       type:"list",
                                       selectType:"single",
-                                      selector:'ul li p[data-email]',
-                                      select:{
+                                      selector:'ul li div[role="button"]',
+                                      items:[{
+                                        selector:'div p[data-email]',
+                                        label:{
+                                            type:"textContent"
+                                        },
+                                        value:{
                                             type:"attribute",
                                             attributeName:"data-email"
-                                          },
+                                        }
+                                      },{
+                                        selector:'div p',
+                                        label:{
+                                              type:"textContent"
+                                        },
+                                        value:{
+                                            type:"textContent",
+                                        }
+                                      }],
                                       nextUI:{
-                                               loadingTime:3000
+                                          type:"refresh"
                                       }
                                 }]
 
@@ -279,15 +293,25 @@
                                               type:"button",
                                               selector:'div[id="identifierNext"]',
                                               nextUI:{
-                                                  loadingTime:1000
+                                                       type:"refresh"
                                               }
                                         }]
                              },{
-                                 username:{
+                                 formid:{
                                           selector:'div[id="profileIdentifier"]',
-                                          select:{type:"textContent"}
+                                          value:{
+                                                type:"textContent"
+                                          }
                                  },
                                  fields:[{
+                                          id:"username",
+                                          type:"info",
+                                          label:"Username",
+                                          selector:'div[id="profileIdentifier"]',
+                                          value:{
+                                              type:"textContent"
+                                          }
+                                      },{
                                              id:"password",
                                              label:"Password",
                                              type:"secret",
@@ -298,9 +322,26 @@
                                               type:"button",
                                               selector:'div[id="passwordNext"]',
                                               nextUI:{
-                                                   loadingTime:3000
+                                                       type:"refresh"
                                               }
                                          }]
+                              },{
+                                fields:[{
+                                    id:"twofactorcode",
+                                    label:"Enter Code",
+                                    type:"text",
+                                    selector:'input[id="totpPin"][name="totpPin"]'
+                                },{
+                                  id:"next",
+                                  label:"Next",
+                                  type:"button",
+                                  selector:'div[role="button"][id="totpNext"]',
+                                  nextUI:{
+                                           type:"refresh"
+                                  }
+                                }]
+
+
                               }]
                }
           ],
@@ -543,6 +584,9 @@
                 }
                 gFieldProperty.selectType=pageForm.form.fields[i].selectType;
             }
+            else if(pageForm.form.fields[i].type==='info'){
+                gFieldProperty.value=pageForm.form.fields[i].value;
+            }
             globalInputForms.form.fields.push(gFieldProperty);
           }
           return globalInputForms;
@@ -579,29 +623,74 @@
                 }
                 var items=[];
                 for(var i=0;i<elements.length;i++){
-                    var val=null;
-                    if(fieldRule.select.type==='attribute'){
-                        val=elements[i].getAttribute(fieldRule.select.attributeName);
-                    }
-                    else{
-                          val=elements[i].textContent;
-                    }
-                    var label=elements[i].textContent;
-                    items.push({
-                        value:val,
-                        label:label,
-                        element:elements[i]
-                    });
-                }
-                return {
-                       id:fieldRule.id,
-                       label:fieldRule.label,
-                       type:fieldRule.type,
-                       selectType:fieldRule.selectType,
-                       matchingRule:fieldRule,
-                       items:items
-                };
+                  var element=elements[i];
 
+                  for(var k=0;k<fieldRule.items.length;k++){
+                    var itemRule=fieldRule.items[k];
+                    var itemElement=element.querySelector(itemRule.selector);
+                    if(itemElement){
+
+                      var val=null;
+                      var label=null;
+                      if(itemRule.value.type==='attribute'){
+                          val=itemElement.getAttribute(itemRule.value.attributeName);
+                      }
+                      else if(itemRule.value.type==='textContent'){
+                          val=itemElement.textContent;
+                      }
+                      if(itemRule.label.type==='attribute'){
+                          label=itemElement.getAttribute(itemRule.label.attributeName);
+                      }
+                      else if(itemRule.label.type==='textContent'){
+                          label=itemElement.textContent;
+                      }
+                      if(val && label){
+                        items.push({
+                            value:val,
+                            label:label,
+                            element:element
+                        });
+                      }
+                    }
+                  }
+                }
+                if(items.length){
+                  return {
+                         id:fieldRule.id,
+                         label:fieldRule.label,
+                         type:fieldRule.type,
+                         selectType:fieldRule.selectType,
+                         matchingRule:fieldRule,
+                         items:items
+                  };
+                }
+                else{
+                      return null;
+                }
+              },
+              buildInfoFieldProperty:function(fieldRule){
+                var element=document.querySelector(fieldRule.selector);
+                if(!element){
+                    return null;
+                }
+                var infoValue=null;
+                if(fieldRule.value.type==='textContent'){
+                  infoValue=element.textContent;
+                }
+                else if(fieldRule.value.type==='attribute'){
+                    var infoValue=element.getAttribute(fieldRule.value.attributeName);
+                }
+                if(!infoValue){
+                  infoValue="";
+                }
+                  return {
+                         id:fieldRule.id,
+                         label:fieldRule.label,
+                         type:fieldRule.type,
+                         matchingRule:fieldRule,
+                         value:infoValue,
+                         formElement:element,
+                  };
               },
               buildFieldProperty:function(fieldRule){
                   var element=document.querySelector(fieldRule.selector);
@@ -625,6 +714,9 @@
                     if(formRule.fields[i].type==='list'){
                         fieldProperty=this.buildListFieldProperty(formRule.fields[i]);
                     }
+                    else if(formRule.fields[i].type==='info'){
+                        fieldProperty=this.buildInfoFieldProperty(formRule.fields[i]);
+                    }
                     else{
                         fieldProperty=this.buildFieldProperty(formRule.fields[i]);
                     }
@@ -633,14 +725,13 @@
                     }
                     signInForm.form.fields.push(fieldProperty);
                 }
-                if(formRule.username){
-                      var usernameelement=document.querySelector(formRule.username.selector);
-                      username=null;
-                      if(usernameelement){
-                          if(formRule.username.select.type==='textContent'){
-                                signInForm.staticFields.username=usernameelement.textContent;
-                                if(signInForm.staticFields.username){
-                                    signInForm.form.id=signInForm.form.id.replace('###username###',signInForm.staticFields.username);
+                if(formRule.formid){
+                      var formidElement=document.querySelector(formRule.formid.selector);
+                      if(formidElement){
+                          if(formRule.formid.value.type==='textContent'){
+                                var formid=formidElement.textContent;
+                                if(formid){
+                                    signInForm.form.id=signInForm.form.id.replace('###username###',formid);
                                 }
                           }
 
@@ -653,7 +744,6 @@
      },
      getSignInForm:function(){
         return {
-            staticFields:{},
             form:{
               id:"###username###"+"@"+window.location.host, // unique id for saving the form content in mobile automating the form-filling process.
               title: "Sign In on "+window.location.host,  //Title of the form displayed on the mobile

@@ -252,6 +252,146 @@
               {
                       hostnames:["accounts.google.com"],
                       forms:[{
+                                title:"User Name",
+                                fields:[{
+                                  label:"First name",
+                                  id:"firstname",
+                                  type:"text",
+                                  selector:'input[id="firstName"]'
+                                },{
+                                  label:"Last name",
+                                  id:"firstname",
+                                  type:"text",
+                                  selector:'input[id="lastName"]'
+                                },{
+                                  label:"username",
+                                  id:"username",
+                                  type:"text",
+                                  selector:'input[id="username"]'
+                                },{
+                                  label:"Password",
+                                  id:"password",
+                                  type:"text",
+                                  selector:'input[type="password"][name="Passwd"]',
+                                  confirm:{
+                                      selector:'input[type="password"][name="ConfirmPasswd"]'
+                                   }
+                                },{
+                                        id:"next",
+                                        label:"Next",
+                                        type:"button",
+                                        selector:'div[id="accountDetailsNext"]',
+                                        nextUI:{
+                                                 type:"refresh"
+                                        }
+                                }]
+
+
+                             },{
+                                title:"Verification Mobile Number",
+                                fields:[{
+                                        id:"phoneNumber",
+                                        label:"Phone number",
+                                        type:"text",
+                                        selector:'input[id="phoneNumberId"]',
+
+                                      },{
+                                        id:"next",
+                                        label:"Next",
+                                        type:"button",
+                                        selector:'div[id="gradsIdvPhoneNext"]',
+                                        nextUI:{
+                                                 type:"refresh"
+                                        }
+                                      }]
+
+
+                             },{
+                                title:"Verifying Code",
+                                fields:[{
+                                        id:"verificationCode",
+                                        label:"Verfication Code",
+                                        type:"text",
+                                        selector:'input[id="code"]',
+
+                                      },{
+                                        id:"next",
+                                        label:"Next",
+                                        type:"button",
+                                        selector:'div[id="gradsIdvVerifyNext"]',
+                                        nextUI:{
+                                                 type:"refresh"
+                                        }
+                                      }]
+                             },{
+                                 title:"Personal Details",
+                                 fields:[{
+                                   id:"phoneNumber",
+                                   label:"Phone number",
+                                   type:"text",
+                                   selector:'input[id="phoneNumberId"]',
+                                 },{
+                                   id:"receoveryEmail",
+                                   label:"Receovery Email",
+                                   type:"text",
+                                   selector:'input[aria-label="Recovery email address (optional)"]',
+                                 },{
+                                   id:"month",
+                                   label:"Birthday Month",
+                                   type:"picker",
+                                   selector:'select[id="month"]',
+                                   items:{
+                                     selector:'option',
+                                     label:{
+                                         type:"textContent"
+                                     },
+                                     value:{
+                                         type:"attribute",
+                                         attributeName:"value"
+                                     }
+                                   }
+
+                                 },{
+                                   id:"day",
+                                   label:"Birthday Day",
+                                   type:"text",
+                                   selector:'input[id="day"]',
+                                 },{
+                                   id:"year",
+                                   label:"Birthday Year",
+                                   type:"text",
+                                   selector:'input[id="year"]',
+                                 },{
+                                   id:"gender",
+                                   label:"Gender",
+                                   type:"select",
+                                   selectType:"single",
+                                   selector:'select[id="gender"]',
+                                   items:{
+                                     selector:'option',
+                                     label:{
+                                         type:"textContent"
+                                     },
+                                     value:{
+                                         type:"attribute",
+                                         attributeName:"value"
+                                     }
+                                   }
+
+                                 },{
+                                   id:"next",
+                                   label:"Next",
+                                   type:"button",
+                                   selector:'div[id="personalDetailsNext"]',
+                                   nextUI:{
+                                            type:"refresh"
+                                   }
+                                 }]
+
+
+
+                             },{
+                                title:"Choose an Account",
                                 fields:[{
                                       label:"Choose an account",
                                       id:"account",
@@ -282,6 +422,7 @@
                                 }]
 
                             },{
+                                title:"Enter User Name",
                                 fields:[{
                                             label:"Email or phone",
                                             id:"username",
@@ -297,6 +438,7 @@
                                               }
                                         }]
                              },{
+                                 title:"Enter Password",
                                  formid:{
                                           selector:'div[id="profileIdentifier"]',
                                           value:{
@@ -326,6 +468,7 @@
                                               }
                                          }]
                               },{
+                                title:"Enter 2fc code",
                                 fields:[{
                                     id:"twofactorcode",
                                     label:"Enter Code",
@@ -342,9 +485,93 @@
                                 }]
 
 
+                              },{
+                                title:"2-step Verification",
+                                fields:[{
+                                    id:"twofactorcode",
+                                    label:"Enter Code",
+                                    type:"text",
+                                    selector:'input[id="idvPin"][name="idvPin"]'
+                                },{
+                                  id:"next",
+                                  label:"Next",
+                                  type:"button",
+                                  selector:'div[role="button"][id="idvPreregisteredPhoneNext"]',
+                                  nextUI:{
+                                           type:"refresh"
+                                  }
+                                }]
+
+
                               }]
-               }
-          ],
+               },{
+
+                 hostnames:["www.join.me"],
+                 forms:[{
+                    title:"Log In",
+                    fields:[{
+                                  label:"Email",
+                                  id:"username",
+                                  type:"text",
+                                  selector:'input[id="email"]'
+
+                            },{
+                                  label:"Password",
+                                  id:"password",
+                                  type:"secret",
+                                  selector:'input[id="password"]'
+
+                            },{
+                              id:"submit",
+                              label:"Log in",
+                              type:"button",
+                              selector:'button[id="btnSubmit"]',
+                              nextUI:{
+                                       type:"refresh"
+                              }
+                            }]
+
+                 },{
+                      title:"Get Started",
+                      fields:[{
+                                    label:"Email",
+                                    id:"username",
+                                    type:"text",
+                                    selector:'input[id="login-email"]'
+
+                              },{
+                                    label:"Create Password",
+                                    id:"password",
+                                    type:"secret",
+                                    selector:'input[id="login-password"]'
+
+                              },{
+                                id:"getStarted",
+                                label:"Get Started",
+                                type:"button",
+                                selector:'a[data-gaeventaction="host-meeting-intent"]',
+                                nextUI:{
+                                         type:"refresh"
+                                }
+                              },{
+                                id:"login",
+                                label:"Log In",
+                                type:"button",
+                                selector:'a[data-gaeventaction="log-in"]',
+                                nextUI:{
+                                         type:"refresh"
+                                }
+
+
+                              }]
+
+
+                 }]
+
+
+
+
+          }],
 
           pagedata:{
               cachefieldvalues:[],
@@ -574,7 +801,7 @@
                   type:pageForm.form.fields[i].type,
                   matchingRule:pageForm.form.fields[i].matchingRule,
             };
-            if(pageForm.form.fields[i].type==='list'){
+            if(pageForm.form.fields[i].type==='list' || pageForm.form.fields[i].type==='picker' || pageForm.form.fields[i].type==='select'){
                 gFieldProperty.items=[];
                 for(var k=0;k<pageForm.form.fields[i].items.length;k++){
                     gFieldProperty.items.push({
@@ -616,6 +843,56 @@
                 }
                 return null;
               },
+              buildPickerFieldProperty:function(fieldRule){
+                var pickerElement=document.querySelector(fieldRule.selector);
+                if(!pickerElement){
+                    return null;
+                }
+                var items=[];
+                var elements=pickerElement.querySelectorAll(fieldRule.items.selector);
+                if(!elements.length){
+                  return null;
+                }
+                for(var i=0;i<elements.length;i++){
+                      var itemElement=elements[i];
+                      var val=null;
+                      var label=null;
+                      if(fieldRule.items.value.type==='attribute'){
+                          val=itemElement.getAttribute(fieldRule.items.value.attributeName);
+                      }
+                      else if(fieldRule.items.value.type==='textContent'){
+                          val=itemElement.textContent;
+                      }
+                      if(fieldRule.items.label.type==='attribute'){
+                          label=itemElement.getAttribute(fieldRule.items.label.attributeName);
+                      }
+                      else if(fieldRule.items.label.type==='textContent'){
+                          label=itemElement.textContent;
+                      }
+                      if(val && label){
+                        items.push({
+                            value:val,
+                            label:label,
+                            element:itemElement
+                        });
+
+                      }
+
+                  }
+                if(items.length){
+                  return {
+                         id:fieldRule.id,
+                         label:fieldRule.label,
+                         type:fieldRule.type,
+                         selectType:fieldRule.selectType,
+                         matchingRule:fieldRule,
+                         items:items
+                  };
+                }
+                else{
+                      return null;
+                }
+              },
               buildListFieldProperty:function(fieldRule){
                 var elements=document.querySelectorAll(fieldRule.selector);
                 if(!elements.length){
@@ -650,6 +927,7 @@
                             label:label,
                             element:element
                         });
+                        break;
                       }
                     }
                   }
@@ -698,13 +976,22 @@
                       return null;
                   }
                   else{
-                    return {
+                    var fieldProperty={
                       id:fieldRule.id,
                       label:fieldRule.label,
                       type:fieldRule.type,
                       matchingRule:fieldRule,
                       formElement:element,
                     };
+                    if(fieldRule.confirm){
+                      var confirmElement=document.querySelector(fieldRule.confirm.selector);
+                      if(confirmElement){
+                        fieldProperty.confirm={
+                          formElement:confirmElement
+                        }
+                      }
+                    }
+                    return fieldProperty;
                   }
               },
               buildForm:function(formRule){
@@ -714,16 +1001,23 @@
                     if(formRule.fields[i].type==='list'){
                         fieldProperty=this.buildListFieldProperty(formRule.fields[i]);
                     }
+                    else if(formRule.fields[i].type==='picker' || formRule.fields[i].type==='select'){
+                        fieldProperty=this.buildPickerFieldProperty(formRule.fields[i]);
+                    }
+
                     else if(formRule.fields[i].type==='info'){
                         fieldProperty=this.buildInfoFieldProperty(formRule.fields[i]);
                     }
                     else{
                         fieldProperty=this.buildFieldProperty(formRule.fields[i]);
                     }
-                    if(!fieldProperty){
+                    if(fieldProperty){
+                        signInForm.form.fields.push(fieldProperty);
+                    }
+                    else{
                           return null;
                     }
-                    signInForm.form.fields.push(fieldProperty);
+
                 }
                 if(formRule.formid){
                       var formidElement=document.querySelector(formRule.formid.selector);

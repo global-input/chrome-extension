@@ -853,11 +853,17 @@ var globalInputChromeExtension={
                         }
                       }
                 };
-                if(field.type==='button'||field.type==='list'||field.type==='info'){
+                if(field.type==='button'||field.type==='list'||field.type==='info' || field.type==='picker' || field.type==='select'){
                     fieldProperty.id=null;
                 }
-                if(field.type==='info'){
+                if(field.type==='info' || field.type==='picker' || field.type==='select'){
                   fieldProperty.value=field.value;
+                      if(field.type==='picker'){
+                          if(typeof field.value ==='undefined'){
+                              fieldProperty.value=fieldProperty.items[0].value;
+                          }
+                      }
+
                 }
 
                 form.fields.push(fieldProperty);

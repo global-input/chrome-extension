@@ -1031,6 +1031,10 @@
 
                       }
                 }
+                if(formRule.title){
+                  signInForm.title=formRule.title;                  
+                }
+
                 return signInForm;
               },
           };

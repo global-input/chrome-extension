@@ -571,6 +571,207 @@
 
 
 
+          },{
+                hostnames:["github.com"],
+                forms:[{
+                    title:"Sign to GitHub",
+                    fields:[{
+                      id:"username",
+                      label:"Username",
+                      type:"text",
+                      selector:'input[id="login_field"]',
+                    },{
+                      id:"password",
+                      label:"Password",
+                      type:"secret",
+                      selector:'input[id="password"]',
+                    },{
+                      id:"login",
+                      label:"Sign In",
+                      type:"button",
+                      selector:'input[type="submit"][name="commit"][value="Sign in"]',
+                      nextUI:{
+                               type:"refresh"
+                      }
+
+
+                    }]
+                },{
+                    title:"Two-factor authentication",
+                    fields:[{
+                      id:"twofactorcode",
+                      label:"Authentication code",
+                      type:"text",
+                      selector:'input[id="otp"]',
+                    },{
+                      id:"verifyButton",
+                      label:"Verify",
+                      type:"button",
+                      selector:'button[type="submit"]',
+                      nextUI:{
+                               type:"refresh"
+                      }
+
+
+                    }]
+                }]
+
+          },{
+              hostnames:["id.atlassian.com"],
+              forms:[{
+                  title:"Username for Atlassian",
+                  fields:[{
+                    id:"username",
+                    label:"Username",
+                    type:"text",
+                    selector:'input[id="username"]',
+                  },{
+                    id:"continue",
+                    label:"Continue",
+                    type:"button",
+                    selector:'button[id="login-submit"]',
+                    nextUI:{
+                             type:"refresh"
+                    }
+
+                  }]
+              },{
+                  title:"Enter Password",
+                  formid:{
+                           selector:'form[id="form-login"] div[tabindex="0"] span',
+                           value:{
+                                 type:"textContent"
+                           }
+                  },
+                  fields:[{
+                           id:"username",
+                           type:"info",
+                           label:"Username",
+                           selector:'form[id="form-login"] div[tabindex="0"] span',
+                           value:{
+                               type:"textContent"
+                           }
+                       },{
+                              id:"password",
+                              label:"Password",
+                              type:"secret",
+                              selector:'input[id="password"]'
+                          },{
+                               id:"submit",
+                               label:"Log in",
+                               type:"button",
+                               selector:'button[id="login-submit"]',
+                               nextUI:{
+                                        type:"refresh"
+                               }
+                          }]
+               }]
+
+
+
+          },{
+              hostnames:["www.lucidchart.com"],
+              forms:[{
+                    title:"Account Update",
+                    formid:{
+                             selector:'input[id="user-username"]',
+                             value:{
+                                    type:"value"
+                             }
+                    },
+                    fields:[{
+                             id:"username",
+                             type:"info",
+                             label:"Username",
+                             selector:'input[id="user-username"]',
+                             value:{
+                                    type:"attribute",
+                                    attributeName:"value"
+                             }
+                           },{
+
+                              id:"password",
+                              label:"New Password",
+                              type:"secret",
+                              selector:'input[id="user-password-new"]',
+                              confirm:{
+                                  selector:'input[id="user-password-repeat"]'
+                               }
+                           },{
+                              id:"oldPassword",
+                              label:"Current Password",
+                              type:"secret",
+                              selector:'input[id="password-settings-password"]'
+                           },{
+                              id:"submit",
+                              label:"Save Changes",
+                              type:"button",
+                              selector:'input[type="submit"][value="Save changes"]'
+                           }]
+
+
+                 },{
+                  title:"Sign Up",
+                  fields:[{
+                            id:"name",
+                            label:"Your name",
+                            type:"text",
+                            selector:'input[id="name"]'
+                        },{
+                            id:"username",
+                            label:"Work Email",
+                            type:"text",
+                            selector:'input[id="email"]'
+                        },{
+                           id:"password",
+                           label:"Password",
+                           type:"secret",
+                           selector:'input[id="password"]'
+
+
+                        },{
+                               id:"register",
+                               label:"Register",
+                               type:"button",
+                               selector:'input[id="register_submit"]',
+                               nextUI:{
+                                        type:"refresh"
+                               }
+                          }]
+               },{
+                  title:"Start Free Account",
+                  fields:[{
+                               id:"signup",
+                               label:"Start Free Account",
+                               type:"button",
+                               selector:'a[id="free"]',
+                               nextUI:{
+                                        type:"refresh"
+                               }
+                          }]
+               },{
+                  title:"Choose Actions",
+                  fields:[{
+                           id:"login",
+                           type:"button",
+                           label:"Log in",
+                           selector:'a[id="nav-login-button"]',
+                           nextUI:{
+                                    type:"refresh"
+                           }
+                       },{
+                               id:"signup",
+                               label:"Sign Up",
+                               type:"button",
+                               selector:'a[id="nav-signup-button"]',
+                               nextUI:{
+                                        type:"refresh"
+                               }
+                          }]
+               }]
+
+
+
           }],
 
           pagedata:{
@@ -1022,17 +1223,24 @@
                 if(formRule.formid){
                       var formidElement=document.querySelector(formRule.formid.selector);
                       if(formidElement){
+                          var formid=null;
                           if(formRule.formid.value.type==='textContent'){
-                                var formid=formidElement.textContent;
-                                if(formid){
-                                    signInForm.form.id=signInForm.form.id.replace('###username###',formid);
-                                }
+                                formid=formidElement.textContent;
+                          }
+                          else if(formRule.formid.value.type==='attribute'){
+                                formid=formidElement.getAttribute(formRule.formid.value.attributeName);
+                          }
+                          else if(formRule.formid.value.type==='value'){
+                                formid=formidElement.value;
+                          }
+                          if(formid){
+                              signInForm.form.id=signInForm.form.id.replace('###username###',formid);
                           }
 
                       }
                 }
                 if(formRule.title){
-                  signInForm.title=formRule.title;                  
+                  signInForm.form.title=formRule.title;
                 }
 
                 return signInForm;
@@ -1051,6 +1259,9 @@
                       for(var i=0;i<this.fields.length;i++){
                           if(this.fields[i].id===fieldId){
                               if(this.fields[i].type==='button'){
+                                    if(this.fields[i].formElement.disabled){
+                                      this.fields[i].formElement.disabled=false;
+                                    }
                                   this.fields[i].formElement.click();
                               }
                               else if(this.fields[i].type==='list'){
@@ -1078,8 +1289,26 @@
                   }
               },
               fileInputEvent:function(formElement){
-                    var event = new Event('change');
+                    // var event = new Event('change');
+                    // formElement.dispatchEvent(event);
+                    //formElement.focus();
+                    var event = new Event('input', {
+                        'bubbles': true,
+                        'cancelable': true
+                    });
                     formElement.dispatchEvent(event);
+
+                    event = document.createEvent("HTMLEvents");
+                    event.initEvent("change", false, true);
+                    formElement.dispatchEvent(event);
+
+
+                    // event = document.createEvent("HTMLEvents");
+                    // event.initEvent("keypress", true, false);
+                    // event.keyCode=13;
+                    // formElement.dispatchEvent(event);
+
+
               }
             }
         };
@@ -1183,12 +1412,16 @@
                          matchingRule=pageFormData.matchingRule.signIn;
                          foundElement=this.findPageFormElement(cache,matchingRule); //find the submit element from the input tags
                          if(foundElement){
+                           matchingRule.nextUI={
+                                    type:"refresh"
+                           };
                              pageFormData.form.fields.push({
                                     id:"submit",
                                     label:"Login",
                                     type:"button",
                                     matchingRule:matchingRule,
                                     formElement:foundElement,
+
                              });
                          }
                          else{
@@ -1201,6 +1434,9 @@
                           matchingRule=pageFormData.matchingRule.createAccount;
                           foundElement=this.findPageFormElement(cache,matchingRule); //find the submit element from the input tags
                           if(foundElement){
+                              matchingRule.nextUI={
+                                       type:"refresh"
+                              };
                               pageFormData.form.fields.push({
                                      id:"createAccount",
                                      label:"Create Account",

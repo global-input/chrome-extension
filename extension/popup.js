@@ -81,13 +81,13 @@ var globalInputChromeExtension={
   },
 
   buildWindowForm:function(){
-    var formSettings=this.getFormSettings();
+    var formSettings=this.getWidowFormSettings();
     this.pagedata.formData.formContainer=document.createElement('div');
-    var hostname=this.pagedata.hostname;
-    this.pagedata.formData.fields=[];
+    var title=this.pagedata.hostname;
+    this.pagedata.formData.fields=[];    
     this.pagedata.form={
-              id:  formSettings.id.replace("###hostname###",hostname), // unique id for saving the form content on mobile automating the form-filling process.
-              title: formSettings.title.replace("###hostname###",hostname),  //Title of the form displayed on the mobile
+              id:  "###username###@"+this.pagedata.hostname, // unique id for saving the form content on mobile automating the form-filling process.
+              title: title,  //Title of the form displayed on the mobile
               label:formSettings.label,
               fields:[],
         };
@@ -322,10 +322,8 @@ var globalInputChromeExtension={
           var fieldString=JSON.stringify(formSettings.fields);
           localStorage.setItem(this._getFormSettingLocalStoragePrefix(),fieldString);
     },
-    getFormSettings:function(loadDefaultSettings){
+    getWidowFormSettings:function(loadDefaultSettings){
           var formsettings={
-                id:    "###username###"+"@###hostname###",
-                title: "Sign In on ###hostname###",
                 label:"web",
                 isDefault:true,
                 fields:[{
@@ -438,7 +436,7 @@ var globalInputChromeExtension={
               },
 
               start:function(){
-                this.formSettings=chromeExtension.getFormSettings();
+                this.formSettings=chromeExtension.getWidowFormSettings();
                 this.original.isDefault=this.formSettings.isDefault;
                 this.renderFormEditor();
               },
@@ -468,7 +466,7 @@ var globalInputChromeExtension={
                 this.formSettings.isDefault=false;
               },
               resetToDefault:function(){
-                 this.formSettings=chromeExtension.getFormSettings(true);
+                 this.formSettings=chromeExtension.getWidowFormSettings(true);
                  this.modified=true;
                  this.renderFormEditor();
               },

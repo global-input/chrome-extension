@@ -73,6 +73,13 @@ html, body {
   font-size: 12px;
   color: #333333;
 }
+.message{
+  margin-left:10px;
+  margin-right: 10px;
+  font-family: "Avenir";
+  font-size: 12px;
+  color: #333333;
+}
 
 #qrcode{
   margin: 20px;

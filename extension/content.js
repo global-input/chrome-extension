@@ -248,9 +248,11 @@
             createAccount: {element:"button",type:"submit", textContent:"Create Account"}
           }],
 
-          domainSpecificRules:[
-              {
-                      hostnames:["accounts.google.com"],
+          domainSpecificRules:[{
+                      hostnames:{
+                            type:"single",
+                            value:"accounts.google.com"
+                      },
                       forms:[{
                                 title:"User Name",
                                 fields:[{
@@ -271,7 +273,7 @@
                                 },{
                                   label:"Password",
                                   id:"password",
-                                  type:"text",
+                                  type:"secret",
                                   selector:'input[type="password"][name="Passwd"]',
                                   confirm:{
                                       selector:'input[type="password"][name="ConfirmPasswd"]'
@@ -505,8 +507,10 @@
 
                               }]
                },{
-
-                 hostnames:["www.join.me"],
+                 hostnames:{
+                       type:"single",
+                       value:"www.join.me"
+                 },
                  forms:[{
                     title:"Log In",
                     fields:[{
@@ -572,7 +576,10 @@
 
 
           },{
-                hostnames:["github.com"],
+                hostnames:{
+                      type:"single",
+                      value:"github.com"
+                },
                 forms:[{
                     title:"Sign to GitHub",
                     fields:[{
@@ -617,7 +624,10 @@
                 }]
 
           },{
-              hostnames:["id.atlassian.com"],
+              hostnames:{
+                    type:"single",
+                    value:"id.atlassian.com"
+              },
               forms:[{
                   title:"Username for Atlassian",
                   fields:[{
@@ -670,7 +680,10 @@
 
 
           },{
-              hostnames:["www.lucidchart.com"],
+              hostnames:{
+                    type:"array",
+                    value:["www.lucidchart.com","store.logmein.com"]
+              },
               forms:[{
                     title:"Account Update",
                     formid:{
@@ -768,9 +781,205 @@
                                         type:"refresh"
                                }
                           }]
+               },{
+                 title:"Billing Information",
+                 fields:[{
+                   id:"first name",
+                   label:"First Name",
+                   type:"text",
+                   selector:'input[id="FirstName"]'
+
+                 },{
+                   id:"last name",
+                   label:"Last Name",
+                   type:"text",
+                   selector:'input[id="LastName"]'
+
+                 },{
+                   id:"company name",
+                   label:"Company Name",
+                   type:"text",
+                   selector:'input[id="CompanyName"]'
+
+                 },{
+                   id:"email",
+                   label:"Email",
+                   type:"text",
+                   selector:'input[id="Email"]'
+
+                 },{
+                   id:"address1",
+                   label:"Address1",
+                   type:"text",
+                   selector:'input[id="Address1"]'
+
+                 },{
+                   id:"address2",
+                   label:"Address2",
+                   type:"text",
+                   selector:'input[id="Address2"]'
+                 },{
+                   id:"city",
+                   label:"City",
+                   type:"text",
+                   selector:'input[id="City"]'
+                 },{
+                   id:"Postal Code",
+                   label:"Postal Code",
+                   type:"text",
+                   selector:'input[id="PostalCode"]'
+                 },{
+                   id:"phone",
+                   label:"Phone",
+                   type:"text",
+                   selector:'input[id="Phone"]'
+                 },{
+                         id:"pay",
+                         label:"Continue To Payment",
+                         type:"button",
+                         selector:'input[id="btn-continue"]',
+                         nextUI:{
+                                  type:"refresh"
+                         }
+                    }]
                }]
 
 
+
+          },{
+                hostnames:{
+                      type:"single",
+                      value:"www.dropbox.com"
+                },
+                forms:[{
+                    title:"Sign In",
+                    fields:[{
+                      id:"username",
+                      label:"Email",
+                      type:"text",
+                      selector:'input[name="login_email"]'
+                    },{
+                      id:"password",
+                      label:"Password",
+                      type:"secret",
+                      selector:'input[name="login_password"][type="password"]'
+                    },{
+                      id:"submit",
+                      label:"Sign in",
+                      type:"button",
+                      selector:'button[class="login-button signin-button button-primary"][type="submit"]',
+                      nextUI:{
+                               type:"refresh"
+                      }
+                    }]
+                }]
+
+
+
+          },{
+              hostnames:{
+                    type:"array",
+                    value:["signin.aws.amazon.com","www.amazon.com"]
+              },
+              forms:[{
+                  title:"Sign In",
+                  fields:[{
+                      id:"username",
+                      label:"Email",
+                      type:"text",
+                      selector:'input[id="resolving_input"]'
+                    },{
+                    id:"next",
+                    label:"Next",
+                    type:"button",
+                    selector:'button[id="next_button"]',
+                    nextUI:{
+                             type:"refresh"
+                    }
+                  }]
+              },{
+                  title:"Password for Amazon",
+                  formid:{
+                           selector:'input[id="ap_email"]',
+                           value:{
+                                  type:"value"
+                           }
+                  },
+                  fields:[{
+                           id:"username",
+                           type:"info",
+                           label:"Username",
+                           selector:'input[id="ap_email"]',
+                           value:{
+                               type:"value"
+                           }
+                       },{
+                      id:"password",
+                      label:"Password",
+                      type:"secret",
+                      selector:'input[id="ap_password"]'
+                    },{
+                    id:"signIn",
+                    label:"Sign In",
+                    type:"button",
+                    selector:'input[id="signInSubmit-input"]',
+                    nextUI:{
+                             type:"refresh"
+                    }
+                  }]
+              }]
+
+          },{
+                    hostnames:{
+                          type:"single",
+                          value:"idmsa.apple.com"
+                    },
+                    forms:[{
+                              title:"Sign in to Apple Developer",
+                              type:"iframe",
+                              fields:[{
+                                id:"username",
+                                label:"Apple ID",
+                                type:"text",
+                                selector:'input[id="account_name_text_field"]'
+
+                              },{
+                                id:"password",
+                                label:"Password",
+                                type:"secret",
+                                selector:'input[id="password_text_field"]'
+
+                              },{
+                                id:"next",
+                                label:"Next",
+                                type:"button",
+                                selector:'button[id="sign-in"]',
+                                nextUI:{
+                                         type:"refresh"
+                                }
+
+                              }]
+
+                          },{
+                            title:"Sign in to Apple Developer",
+                            type:"iframe",
+                            fields:[{
+                              id:"username",
+                              label:"Apple ID",
+                              type:"text",
+                              selector:'input[id="account_name_text_field"]'
+
+                            },{
+                              id:"next",
+                              label:"Next",
+                              type:"button",
+                              selector:'button[id="sign-in"]',
+                              nextUI:{
+                                       type:"refresh"
+                              }
+
+                            }]
+                    }]
 
           }],
 
@@ -1028,24 +1237,35 @@
           var formManager=this;
           var domainSpecificFormBuilder={
               hostname:window.location.host,
+              hostnameMatch:function(matchRule){
+                  if(matchRule.hostnames.type==='single'){
+                        return matchRule.hostnames.value===this.hostname;
+                  }
+                  else if(matchRule.hostnames.type==='array'){
+                    for(var k=0;k<matchRule.hostnames.value.length;k++){
+                        if(matchRule.hostnames.value[k]===this.hostname){
+                            return true;
+                        }
+                    }
+                  }
+                  return false;
+              },
               start:function(){
                 for(var i=0;i<formManager.domainSpecificRules.length;i++){
                     var matchRule=formManager.domainSpecificRules[i];
-                    for(var k=0;k<matchRule.hostnames.length;k++){
-                        if(matchRule.hostnames[k]===this.hostname){
-                          for(var t=0;t<matchRule.forms.length;t++){
-                                var form=this.buildForm(matchRule.forms[t]);
-                                if(form){
-                                  return form;
-                                }
-                          }
-                        }
+                    if(this.hostnameMatch(matchRule)){
+                      for(var t=0;t<matchRule.forms.length;t++){
+                            var form=this.buildForm(matchRule.forms[t]);
+                            if(form){
+                              return form;
+                            }
+                      }
                     }
                 }
                 return null;
               },
-              buildPickerFieldProperty:function(fieldRule){
-                var pickerElement=document.querySelector(fieldRule.selector);
+              buildPickerFieldProperty:function(fieldRule,formContainer){
+                var pickerElement=formContainer.querySelector(fieldRule.selector);
                 if(!pickerElement){
                     return null;
                 }
@@ -1094,8 +1314,8 @@
                       return null;
                 }
               },
-              buildListFieldProperty:function(fieldRule){
-                var elements=document.querySelectorAll(fieldRule.selector);
+              buildListFieldProperty:function(fieldRule,formContainer){
+                var elements=formContainer.querySelectorAll(fieldRule.selector);
                 if(!elements.length){
                     return null;
                 }
@@ -1147,8 +1367,8 @@
                       return null;
                 }
               },
-              buildInfoFieldProperty:function(fieldRule){
-                var element=document.querySelector(fieldRule.selector);
+              buildInfoFieldProperty:function(fieldRule,formContainer){
+                var element=formContainer.querySelector(fieldRule.selector);
                 if(!element){
                     return null;
                 }
@@ -1158,6 +1378,9 @@
                 }
                 else if(fieldRule.value.type==='attribute'){
                     var infoValue=element.getAttribute(fieldRule.value.attributeName);
+                }
+                else if(fieldRule.value.type==='value'){
+                    var infoValue=element.value;
                 }
                 if(!infoValue){
                   infoValue="";
@@ -1171,8 +1394,8 @@
                          formElement:element,
                   };
               },
-              buildFieldProperty:function(fieldRule){
-                  var element=document.querySelector(fieldRule.selector);
+              buildFieldProperty:function(fieldRule,formContainer){
+                  var element=formContainer.querySelector(fieldRule.selector);
                   if(!element){
                       return null;
                   }
@@ -1196,21 +1419,30 @@
                   }
               },
               buildForm:function(formRule){
+                var formContainer=document;
+
+                if(formRule.type==='iframe'){
+                    var iframe=document.querySelector('iframe');
+                    if((!iframe)|| (!iframe.contentWindow) || (!iframe.contentWindow.document)){
+                        return null;
+                    }
+                    formContainer=iframe.contentWindow.document;
+                }
                 var signInForm=formManager.getSignInForm();
                 for(var i=0;i<formRule.fields.length;i++){
                     var fieldProperty=null;
                     if(formRule.fields[i].type==='list'){
-                        fieldProperty=this.buildListFieldProperty(formRule.fields[i]);
+                        fieldProperty=this.buildListFieldProperty(formRule.fields[i],formContainer);
                     }
                     else if(formRule.fields[i].type==='picker' || formRule.fields[i].type==='select'){
-                        fieldProperty=this.buildPickerFieldProperty(formRule.fields[i]);
+                        fieldProperty=this.buildPickerFieldProperty(formRule.fields[i],formContainer);
                     }
 
                     else if(formRule.fields[i].type==='info'){
-                        fieldProperty=this.buildInfoFieldProperty(formRule.fields[i]);
+                        fieldProperty=this.buildInfoFieldProperty(formRule.fields[i],formContainer);
                     }
                     else{
-                        fieldProperty=this.buildFieldProperty(formRule.fields[i]);
+                        fieldProperty=this.buildFieldProperty(formRule.fields[i],formContainer);
                     }
                     if(fieldProperty){
                         signInForm.form.fields.push(fieldProperty);
@@ -1303,10 +1535,10 @@
                     formElement.dispatchEvent(event);
 
 
-                    // event = document.createEvent("HTMLEvents");
-                    // event.initEvent("keypress", true, false);
-                    // event.keyCode=13;
-                    // formElement.dispatchEvent(event);
+                   //  event = document.createEvent("HTMLEvents");
+                   // event.initEvent("keypress", true, false);
+                   //  event.keyCode=13;
+                   //  formElement.dispatchEvent(event);
 
 
               }

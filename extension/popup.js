@@ -84,7 +84,7 @@ var globalInputChromeExtension={
     var formSettings=this.getWidowFormSettings();
     this.pagedata.formData.formContainer=document.createElement('div');
     var title=this.pagedata.hostname;
-    this.pagedata.formData.fields=[];    
+    this.pagedata.formData.fields=[];
     this.pagedata.form={
               id:  "###username###@"+this.pagedata.hostname, // unique id for saving the form content on mobile automating the form-filling process.
               title: title,  //Title of the form displayed on the mobile
@@ -157,6 +157,10 @@ var globalInputChromeExtension={
   },
   appendGlobalInputAppAvailable:function(){
         var element=this.createHTMLElement('Scan the QR Code above with your Global Input App. Global Input App is available in <a href="https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4" target="_blank">App Store</a> and <a href="https://play.google.com/store/apps/details?id=uk.co.globalinput&hl=en_GB" target="_blank">Google Play Store</a>. Please visit <a href="https://globalinput.co.uk" target="_blank">our website</a> for more information.');
+        this.appendElement(element);
+  },
+  appendSeparateWebApplication:function(){
+        var element=this.createHTMLElement('You can also use <a href="https://globalinput.co.uk/global-input-app/form-data-transfer" target="_blank">this separate web application</a> to transfer content');
         this.appendElement(element);
   },
 
@@ -673,7 +677,8 @@ var globalInputChromeExtension={
       this.setWindowHeight(50);
       this.setAction("content-not-available");
       this.clearContent();
-      this.appendMessage("Unable to obtain the page status, please reload/refresh the page, and try again after the page is fully loaded.");
+      this.appendMessage("Unable to obtain the page status. Please check the URL on the web adress bar and then reload/refresh the page, and try again after the page is fully loaded.");
+      this.appendSeparateWebApplication();
 
     },
     buildBasicGlobalInputConfig:function(globalInputSettings){
@@ -1077,6 +1082,7 @@ var globalInputChromeExtension={
     },
     createHTMLElement:function(htmlContent){
         var messageContainer = document.createElement('div');
+        messageContainer.className="message";
         messageContainer.innerHTML=htmlContent;
         return messageContainer;
     },

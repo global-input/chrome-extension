@@ -5,11 +5,6 @@
     the comment indicates the name of the application
     where the rule is coming from */
     pageFormMatchingRules:[{
-                 //gmail
-                username:{element:"div", id:"profileIdentifier"},
-                password:{name:"password",type:"password"},
-                signIn: {element:"div", role:"button", id:"passwordNext"}
-           },{
            //from confluence || jira
                 username:{id:["os_username","login-form-username"]},
                 password:{id:["os_password","login-form-password"]},
@@ -249,329 +244,397 @@
           }],
 
           domainSpecificRules:[{
-                      hostnames:{
-                            type:"single",
-                            value:"accounts.google.com"
-                      },
-                      forms:[{
-                                title:"User Name",
+                    hostnames:{
+                          type:"single",
+                          value:"accounts.google.com"
+                    },
+                    forms:[{
+                              title:"Choose an Account",
+                              fields:[{
+                                        id:"account",
+                                        type:"list",
+                                        selectType:"single",
+                                        selector:{
+                                            element:'form ul',
+                                            content:{
+                                                element:'li div[role="button"] div p[data-email]'
+                                            }
+                                        },
+                                        data:{
+                                            label:"Choose an account"
+                                        },
+                                        items:[{
+                                              selector:'li div[role="button"]',
+                                              data:{
+                                                    selector:'div p[data-email]',
+                                                    label:{
+                                                          type:"attribute",
+                                                          attributeName:"data-email"
+                                                    },
+                                                    value:{
+                                                          type:"attribute",
+                                                          attributeName:"data-email"
+                                                    }
+                                              }
+                                        },{
+                                              selector:{
+                                                  element:'li div[role="button"] p',
+                                                  textContent:"Use another account"
+                                              },
+                                              data:{
+                                                  label:"Use another account",
+                                                  value:"Use another account"
+                                              }
+                                        }],
+                                        nextUI:{
+                                            type:"refresh"
+                                         }
+
+                                      }],
+
+                          },{
+                                    title:"Choose an Account",
+                                    fields:[{
+                                              id:"account",
+                                              type:"list",
+                                              selectType:"single",
+                                              selector:{
+                                                  element:'form ul',
+                                                  content:{
+                                                      element:'li div[role="link"][data-identifier]'
+                                                  }
+                                              },
+                                              data:{
+                                                  label:"Choose an account"
+                                              },
+                                              items:[{
+                                                    selector:'li div[role="link"][data-identifier]',
+                                                    data:{
+                                                          label:{
+                                                                type:"attribute",
+                                                                attributeName:"data-identifier"
+                                                          },
+                                                          value:{
+                                                                type:"attribute",
+                                                                attributeName:"data-identifier"
+                                                          }
+                                                    }
+                                              },{
+                                                    selector:{
+                                                        element:'li div[role="link"] div',
+                                                        textContent:"Use another account"
+                                                    },
+                                                    data:{
+                                                        label:"Use another account",
+                                                        value:"Use another account"
+                                                    }
+                                              }],
+                                              nextUI:{
+                                                  type:"refresh"
+                                               }
+
+                                            }],
+
+                                },{
+                                    title:"Enter Password",
+                                                            formid:{
+                                                               selector:'div[id="profileIdentifier"]',
+                                                               data:{
+                                                                      value:{
+                                                                            type:"textContent"
+                                                                      }
+                                                               }
+                                                             },
+                                                               fields:[{
+                                                                     id:"username",
+                                                                     type:"info",
+                                                                     selector:'div[id="profileIdentifier"]',
+                                                                     data:{
+                                                                         label:"Username",
+                                                                         value:{
+                                                                             type:"textContent"
+                                                                         }
+                                                                     },
+                                                                 },{
+                                                                        id:"password",
+                                                                        type:"secret",
+                                                                        selector:'input[type="password"][name="password"]',
+                                                                        data:{
+                                                                            label:"Password",
+                                                                        }
+
+                                                                 },{
+                                                                         id:"next",
+                                                                         type:"button",
+                                                                         selector:'div[id="passwordNext"]',
+                                                                         data:{
+                                                                           label:"Next",
+                                                                         },
+                                                                         nextUI:{
+                                                                                  type:"refresh"
+                                                                         }
+
+                                                                  }]
+
+                             },{
+                                title:"Enter Email",
                                 fields:[{
-                                  label:"First name",
-                                  id:"firstname",
+                                            id:"username",
+                                            type:"text",
+                                            selector:'input[id="identifierId"]',
+                                            data:{
+                                                  label:"Email or phone"
+                                            },
+                                        },{
+                                              id:"next",
+                                              type:"button",
+                                              data:{
+                                                  label:"Next",
+                                              },
+                                              selector:'div[id="identifierNext"]',
+                                              nextUI:{
+                                                       type:"refresh"
+                                              }
+                                        },{
+                                              id:"createAccount",
+                                              type:"button",
+                                              data:{
+                                                  label:"Create account",
+                                              },
+                                              selector:{
+                                                        element:'div[role="button"]',
+                                                        content:{
+                                                            element:"content span",
+                                                            textContent:"Create account"
+                                                        }
+                                              },
+                                              nextUI:{
+                                                       type:"refresh"
+                                              }
+                                        }]
+
+
+
+                             },{
+                                    title:"2-step Verification",
+                                    fields:[{
+                                            id:"username",
+                                            type:"info",
+                                            selector:'div[id="profileIdentifier"]',
+                                            data:{
+                                                label:"Username",
+                                                value:{
+                                                    type:"textContent"
+                                                }
+                                            },
+                                    },{
+                                            id:"twofactorcode",
+                                            selector:'input[id="totpPin"]',
+                                            type:"text",
+                                            data:{
+                                                label:"Enter Code",
+                                            }
+                                    },{
+                                            id:"next",
+                                            type:"button",
+                                            selector:'div[role="button"][id="totpNext"]',
+                                            data:{
+                                              label:"Next",
+                                            },
+                                            nextUI:{
+                                                type:"refresh"
+                                            }
+                                }]
+
+
+                             },{
+                                    title:"2-step Verification",
+                                    fields:[{
+                                        id:"twofactorcode",
+                                        type:"text",
+                                        selector:'input[id="idvPin"]',
+                                        data:{label:"Enter Code"}
+                                    },{
+                                        id:"next",
+                                        type:"button",
+                                        selector:'div[id="idvPreregisteredPhoneNext"]',
+                                        data:{label:"Next"},
+                                        nextUI:{
+                                                 type:"refresh"
+                                        }
+                                    }]
+                             },{
+                                title:"Create your Google Account",
+                                fields:[{
+                                  id:"first_name",
                                   type:"text",
-                                  selector:'input[id="firstName"]'
+                                  selector:'input[id="firstName"]',
+                                  data:{label:"First name"}
                                 },{
-                                  label:"Last name",
-                                  id:"firstname",
+                                  id:"last_name",
                                   type:"text",
-                                  selector:'input[id="lastName"]'
+                                  selector:'input[id="lastName"]',
+                                  data:{label:"Last name"}
                                 },{
-                                  label:"username",
                                   id:"username",
                                   type:"text",
-                                  selector:'input[id="username"]'
+                                  selector:'input[id="username"]',
+                                  data:{label:"username"}
                                 },{
-                                  label:"Password",
+
                                   id:"password",
                                   type:"secret",
                                   selector:'input[type="password"][name="Passwd"]',
                                   confirm:{
                                       selector:'input[type="password"][name="ConfirmPasswd"]'
-                                   }
+                                  },
+                                  data:{label:"Password"}
                                 },{
                                         id:"next",
-                                        label:"Next",
                                         type:"button",
                                         selector:'div[id="accountDetailsNext"]',
+                                        data:{label:"Next"},
                                         nextUI:{
                                                  type:"refresh"
                                         }
                                 }]
+                             },{
+                                title:"Welcome to Google",
+                                fields:[{
+                                  id:"phone_number",
+                                  type:"text",
+                                  selector:'input[id="phoneNumberId"]',
+                                  data:{label:"Phone number"}
+                                },{
+                                  id:"recovery_email",
+                                  type:"text",
+                                  selector:'input[aria-label="Recovery email address (optional)"]',
+                                  data:{label:"Recovery Email"}
+                                },{
+                                  id:"birthday_month",
+                                  type:"picker",
+                                  selector:'select[id="month"]',
+                                  data:{label:"Birthday Month"},
+                                  items:[{
+                                      selector:'option',
+                                      data:{
+                                        label:{type:"textContent"},
+                                        value:{type:"attribute",attributeName:"value"}
+                                      }
+                                  }]
+                                },{
+                                  id:"birthday_day",
+                                  type:"text",
+                                  data:{label:"Birthday Day"},
+                                  selector:'input[id="day"]',
+                                },{
+                                  id:"birthday_year",
+                                  type:"text",
+                                  selector:'input[id="year"]',
+                                  data:{label:"Birthday Year"},
+                                },{
+                                  id:"gender",
+                                  type:"select",
+                                  selectType:"single",
+                                  selector:'select[id="gender"]',
+                                  data:{label:"Gender"},
+                                  items:[{
+                                        selector:'option',
+                                        data:{
+                                            label:{type:"textContent"},
+                                            value:{type:"attribute",  attributeName:"value"}
+                                        }
+                                  }]
+
+                                },{
+                                  id:"next",
+                                  type:"button",
+                                  selector:'div[id="personalDetailsNext"]',
+                                  data:{label:"Next"},
+                                  nextUI:{
+                                           type:"refresh"
+                                  }
+                                }]
 
 
                              },{
-                                title:"Verification Mobile Number",
-                                fields:[{
-                                        id:"phoneNumber",
-                                        label:"Phone number",
-                                        type:"text",
-                                        selector:'input[id="phoneNumberId"]',
-
+                                    title:"Verification Mobile Number",
+                                    fields:[{
+                                            id:"phoneNumber",
+                                            type:"text",
+                                            selector:'input[id="phoneNumberId"]',
+                                            data:{label:"Phone number"}
                                       },{
-                                        id:"next",
-                                        label:"Next",
-                                        type:"button",
-                                        selector:'div[id="gradsIdvPhoneNext"]',
-                                        nextUI:{
-                                                 type:"refresh"
-                                        }
+                                            id:"next",
+                                            type:"button",
+                                            selector:'div[id="gradsIdvPhoneNext"]',
+                                            data:{label:"Next"},
+                                            nextUI:{
+                                                     type:"refresh"
+                                            }
                                       }]
 
-
                              },{
-                                title:"Verifying Code",
-                                fields:[{
-                                        id:"verificationCode",
-                                        label:"Verfication Code",
+                                      title:"Verifying Code",
+                                      fields:[{
+                                        id:"verification_code",
                                         type:"text",
                                         selector:'input[id="code"]',
-
+                                        data:{label:"Verfication Code"}
                                       },{
                                         id:"next",
-                                        label:"Next",
                                         type:"button",
                                         selector:'div[id="gradsIdvVerifyNext"]',
+                                        data:{label:"Next"},
                                         nextUI:{
                                                  type:"refresh"
                                         }
                                       }]
                              },{
-                                 title:"Personal Details",
-                                 fields:[{
-                                   id:"phoneNumber",
-                                   label:"Phone number",
-                                   type:"text",
-                                   selector:'input[id="phoneNumberId"]',
-                                 },{
-                                   id:"receoveryEmail",
-                                   label:"Receovery Email",
-                                   type:"text",
-                                   selector:'input[aria-label="Recovery email address (optional)"]',
-                                 },{
-                                   id:"month",
-                                   label:"Birthday Month",
-                                   type:"picker",
-                                   selector:'select[id="month"]',
-                                   items:{
-                                     selector:'option',
-                                     label:{
-                                         type:"textContent"
-                                     },
-                                     value:{
-                                         type:"attribute",
-                                         attributeName:"value"
-                                     }
-                                   }
-
-                                 },{
-                                   id:"day",
-                                   label:"Birthday Day",
-                                   type:"text",
-                                   selector:'input[id="day"]',
-                                 },{
-                                   id:"year",
-                                   label:"Birthday Year",
-                                   type:"text",
-                                   selector:'input[id="year"]',
-                                 },{
-                                   id:"gender",
-                                   label:"Gender",
-                                   type:"select",
-                                   selectType:"single",
-                                   selector:'select[id="gender"]',
-                                   items:{
-                                     selector:'option',
-                                     label:{
-                                         type:"textContent"
-                                     },
-                                     value:{
-                                         type:"attribute",
-                                         attributeName:"value"
-                                     }
-                                   }
-
-                                 },{
-                                   id:"next",
-                                   label:"Next",
-                                   type:"button",
-                                   selector:'div[id="personalDetailsNext"]',
-                                   nextUI:{
-                                            type:"refresh"
-                                   }
-                                 }]
-
-
-
-                             },{
-                                title:"Choose an Account",
-                                fields:[{
-                                      label:"Choose an account",
-                                      id:"account",
-                                      type:"list",
-                                      selectType:"single",
-                                      selector:'ul li div[role="button"]',
-                                      items:[{
-                                        selector:'div p[data-email]',
-                                        label:{
-                                            type:"textContent"
-                                        },
-                                        value:{
-                                            type:"attribute",
-                                            attributeName:"data-email"
+                                      title:"Verify your phone number",
+                                      fields:[{
+                                        id:"send",
+                                        type:"button",
+                                        selector:'div[id="idvConsentNext"]',
+                                        data:{label:"Send"},
+                                        nextUI:{
+                                                 type:"refresh"
                                         }
-                                      },{
-                                        selector:'div p',
-                                        label:{
-                                              type:"textContent"
-                                        },
-                                        value:{
-                                            type:"textContent",
-                                        }
-                                      }],
-                                      nextUI:{
-                                          type:"refresh"
-                                      }
-                                }]
+                                    }]
 
-                            },{
-                                title:"Enter User Name",
-                                fields:[{
-                                            label:"Email or phone",
-                                            id:"username",
-                                            type:"text",
-                                            selector:'input[id="identifierId"]'
-                                        },{
-                                              id:"next",
-                                              label:"Next",
-                                              type:"button",
-                                              selector:'div[id="identifierNext"]',
-                                              nextUI:{
-                                                       type:"refresh"
-                                              }
-                                        }]
-                             },{
-                                 title:"Enter Password",
-                                 formid:{
-                                          selector:'div[id="profileIdentifier"]',
-                                          value:{
-                                                type:"textContent"
-                                          }
-                                 },
-                                 fields:[{
-                                          id:"username",
-                                          type:"info",
-                                          label:"Username",
-                                          selector:'div[id="profileIdentifier"]',
-                                          value:{
-                                              type:"textContent"
-                                          }
-                                      },{
-                                             id:"password",
-                                             label:"Password",
-                                             type:"secret",
-                                             selector:'input[type="password"][name="password"]'
-                                         },{
-                                              id:"next",
-                                              label:"Next",
-                                              type:"button",
-                                              selector:'div[id="passwordNext"]',
-                                              nextUI:{
-                                                       type:"refresh"
-                                              }
-                                         }]
-                              },{
-                                title:"Enter 2fc code",
-                                fields:[{
-                                    id:"twofactorcode",
-                                    label:"Enter Code",
-                                    type:"text",
-                                    selector:'input[id="totpPin"][name="totpPin"]'
-                                },{
-                                  id:"next",
-                                  label:"Next",
-                                  type:"button",
-                                  selector:'div[role="button"][id="totpNext"]',
-                                  nextUI:{
-                                           type:"refresh"
-                                  }
-                                }]
+                             }]
 
 
-                              },{
-                                title:"2-step Verification",
-                                fields:[{
-                                    id:"twofactorcode",
-                                    label:"Enter Code",
-                                    type:"text",
-                                    selector:'input[id="idvPin"][name="idvPin"]'
-                                },{
-                                  id:"next",
-                                  label:"Next",
-                                  type:"button",
-                                  selector:'div[role="button"][id="idvPreregisteredPhoneNext"]',
-                                  nextUI:{
-                                           type:"refresh"
-                                  }
-                                }]
-
-
-                              }]
-               },{
-                 hostnames:{
-                       type:"single",
-                       value:"www.join.me"
-                 },
-                 forms:[{
-                    title:"Log In",
+          },{
+               hostnames:{
+                     type:"single",
+                     value:"www.join.me"
+               },
+               forms:[{
+                    title:"Log In (Join Me)",
                     fields:[{
-                                  label:"Email",
                                   id:"username",
                                   type:"text",
-                                  selector:'input[id="email"]'
+                                  selector:'input[id="email"]',
+                                  data:{label:"Email"},
 
                             },{
-                                  label:"Password",
                                   id:"password",
                                   type:"secret",
-                                  selector:'input[id="password"]'
+                                  selector:'input[id="password"]',
+                                  data:{label:"Password"},
 
                             },{
                               id:"submit",
-                              label:"Log in",
                               type:"button",
                               selector:'button[id="btnSubmit"]',
+                              data:{label:"Log in"},
                               nextUI:{
                                        type:"refresh"
                               }
                             }]
 
-                 },{
-                      title:"Get Started",
-                      fields:[{
-                                    label:"Email",
-                                    id:"username",
-                                    type:"text",
-                                    selector:'input[id="login-email"]'
-
-                              },{
-                                    label:"Create Password",
-                                    id:"password",
-                                    type:"secret",
-                                    selector:'input[id="login-password"]'
-
-                              },{
-                                id:"getStarted",
-                                label:"Get Started",
-                                type:"button",
-                                selector:'a[data-gaeventaction="host-meeting-intent"]',
-                                nextUI:{
-                                         type:"refresh"
-                                }
-                              },{
-                                id:"login",
-                                label:"Log In",
-                                type:"button",
-                                selector:'a[data-gaeventaction="log-in"]',
-                                nextUI:{
-                                         type:"refresh"
-                                }
-
-
-                              }]
-
-
-                 }]
-
+               }]
 
 
 
@@ -581,406 +644,100 @@
                       value:"github.com"
                 },
                 forms:[{
-                    title:"Sign to GitHub",
+                    title:"Sign In to GitHub",
                     fields:[{
                       id:"username",
-                      label:"Username",
                       type:"text",
                       selector:'input[id="login_field"]',
+                      data:{label:"Username"},
                     },{
                       id:"password",
-                      label:"Password",
                       type:"secret",
                       selector:'input[id="password"]',
+                      data:{label:"Password"},
                     },{
                       id:"login",
-                      label:"Sign In",
                       type:"button",
                       selector:'input[type="submit"][name="commit"][value="Sign in"]',
+                      data:{label:"Sign In"},
                       nextUI:{
                                type:"refresh"
                       }
-
-
                     }]
                 },{
                     title:"Two-factor authentication",
                     fields:[{
                       id:"twofactorcode",
-                      label:"Authentication code",
                       type:"text",
                       selector:'input[id="otp"]',
+                      data:{label:"Authentication code"},
                     },{
                       id:"verifyButton",
-                      label:"Verify",
                       type:"button",
                       selector:'button[type="submit"]',
+                      data:{label:"Verify"},
                       nextUI:{
                                type:"refresh"
                       }
-
 
                     }]
                 }]
 
           },{
-              hostnames:{
-                    type:"single",
-                    value:"id.atlassian.com"
-              },
-              forms:[{
-                  title:"Username for Atlassian",
-                  fields:[{
-                    id:"username",
-                    label:"Username",
-                    type:"text",
-                    selector:'input[id="username"]',
-                  },{
-                    id:"continue",
-                    label:"Continue",
-                    type:"button",
-                    selector:'button[id="login-submit"]',
-                    nextUI:{
-                             type:"refresh"
-                    }
-
-                  }]
-              },{
-                  title:"Enter Password",
-                  formid:{
-                           selector:'form[id="form-login"] div[tabindex="0"] span',
-                           value:{
-                                 type:"textContent"
-                           }
-                  },
-                  fields:[{
-                           id:"username",
-                           type:"info",
-                           label:"Username",
-                           selector:'form[id="form-login"] div[tabindex="0"] span',
-                           value:{
-                               type:"textContent"
-                           }
-                       },{
-                              id:"password",
-                              label:"Password",
-                              type:"secret",
-                              selector:'input[id="password"]'
-                          },{
-                               id:"submit",
-                               label:"Log in",
-                               type:"button",
-                               selector:'button[id="login-submit"]',
-                               nextUI:{
-                                        type:"refresh"
-                               }
-                          }]
-               }]
-
-
-
-          },{
-              hostnames:{
-                    type:"array",
-                    value:["www.lucidchart.com","store.logmein.com"]
-              },
-              forms:[{
-                    title:"Account Update",
-                    formid:{
-                             selector:'input[id="user-username"]',
-                             value:{
-                                    type:"value"
-                             }
-                    },
-                    fields:[{
-                             id:"username",
-                             type:"info",
-                             label:"Username",
-                             selector:'input[id="user-username"]',
-                             value:{
-                                    type:"attribute",
-                                    attributeName:"value"
-                             }
-                           },{
-
-                              id:"password",
-                              label:"New Password",
-                              type:"secret",
-                              selector:'input[id="user-password-new"]',
-                              confirm:{
-                                  selector:'input[id="user-password-repeat"]'
-                               }
-                           },{
-                              id:"oldPassword",
-                              label:"Current Password",
-                              type:"secret",
-                              selector:'input[id="password-settings-password"]'
-                           },{
-                              id:"submit",
-                              label:"Save Changes",
-                              type:"button",
-                              selector:'input[type="submit"][value="Save changes"]'
-                           }]
-
-
-                 },{
-                  title:"Sign Up",
-                  fields:[{
-                            id:"name",
-                            label:"Your name",
-                            type:"text",
-                            selector:'input[id="name"]'
-                        },{
-                            id:"username",
-                            label:"Work Email",
-                            type:"text",
-                            selector:'input[id="email"]'
-                        },{
-                           id:"password",
-                           label:"Password",
-                           type:"secret",
-                           selector:'input[id="password"]'
-
-
-                        },{
-                               id:"register",
-                               label:"Register",
-                               type:"button",
-                               selector:'input[id="register_submit"]',
-                               nextUI:{
-                                        type:"refresh"
-                               }
-                          }]
-               },{
-                  title:"Start Free Account",
-                  fields:[{
-                               id:"signup",
-                               label:"Start Free Account",
-                               type:"button",
-                               selector:'a[id="free"]',
-                               nextUI:{
-                                        type:"refresh"
-                               }
-                          }]
-               },{
-                  title:"Choose Actions",
-                  fields:[{
-                           id:"login",
-                           type:"button",
-                           label:"Log in",
-                           selector:'a[id="nav-login-button"]',
-                           nextUI:{
-                                    type:"refresh"
-                           }
-                       },{
-                               id:"signup",
-                               label:"Sign Up",
-                               type:"button",
-                               selector:'a[id="nav-signup-button"]',
-                               nextUI:{
-                                        type:"refresh"
-                               }
-                          }]
-               },{
-                 title:"Billing Information",
-                 fields:[{
-                   id:"first name",
-                   label:"First Name",
-                   type:"text",
-                   selector:'input[id="FirstName"]'
-
-                 },{
-                   id:"last name",
-                   label:"Last Name",
-                   type:"text",
-                   selector:'input[id="LastName"]'
-
-                 },{
-                   id:"company name",
-                   label:"Company Name",
-                   type:"text",
-                   selector:'input[id="CompanyName"]'
-
-                 },{
-                   id:"email",
-                   label:"Email",
-                   type:"text",
-                   selector:'input[id="Email"]'
-
-                 },{
-                   id:"address1",
-                   label:"Address1",
-                   type:"text",
-                   selector:'input[id="Address1"]'
-
-                 },{
-                   id:"address2",
-                   label:"Address2",
-                   type:"text",
-                   selector:'input[id="Address2"]'
-                 },{
-                   id:"city",
-                   label:"City",
-                   type:"text",
-                   selector:'input[id="City"]'
-                 },{
-                   id:"Postal Code",
-                   label:"Postal Code",
-                   type:"text",
-                   selector:'input[id="PostalCode"]'
-                 },{
-                   id:"phone",
-                   label:"Phone",
-                   type:"text",
-                   selector:'input[id="Phone"]'
-                 },{
-                         id:"pay",
-                         label:"Continue To Payment",
-                         type:"button",
-                         selector:'input[id="btn-continue"]',
-                         nextUI:{
-                                  type:"refresh"
-                         }
-                    }]
-               }]
-
-
-
-          },{
-                hostnames:{
-                      type:"single",
-                      value:"www.dropbox.com"
-                },
-                forms:[{
-                    title:"Sign In",
-                    fields:[{
-                      id:"username",
-                      label:"Email",
-                      type:"text",
-                      selector:'input[name="login_email"]'
-                    },{
-                      id:"password",
-                      label:"Password",
-                      type:"secret",
-                      selector:'input[name="login_password"][type="password"]'
-                    },{
-                      id:"submit",
-                      label:"Sign in",
-                      type:"button",
-                      selector:'button[class="login-button signin-button button-primary"][type="submit"]',
-                      nextUI:{
-                               type:"refresh"
-                      }
-                    }]
-                }]
-
-
-
-          },{
-              hostnames:{
-                    type:"array",
-                    value:["signin.aws.amazon.com","www.amazon.com"]
-              },
-              forms:[{
-                  title:"Sign In",
-                  fields:[{
-                      id:"username",
-                      label:"Email",
-                      type:"text",
-                      selector:'input[id="resolving_input"]'
-                    },{
-                    id:"next",
-                    label:"Next",
-                    type:"button",
-                    selector:'button[id="next_button"]',
-                    nextUI:{
-                             type:"refresh"
-                    }
-                  }]
-              },{
-                  title:"Password for Amazon",
-                  formid:{
-                           selector:'input[id="ap_email"]',
-                           value:{
-                                  type:"value"
-                           }
-                  },
-                  fields:[{
-                           id:"username",
-                           type:"info",
-                           label:"Username",
-                           selector:'input[id="ap_email"]',
-                           value:{
-                               type:"value"
-                           }
-                       },{
-                      id:"password",
-                      label:"Password",
-                      type:"secret",
-                      selector:'input[id="ap_password"]'
-                    },{
-                    id:"signIn",
-                    label:"Sign In",
-                    type:"button",
-                    selector:'input[id="signInSubmit-input"]',
-                    nextUI:{
-                             type:"refresh"
-                    }
-                  }]
-              }]
-
-          },{
-                    hostnames:{
-                          type:"single",
-                          value:"idmsa.apple.com"
-                    },
-                    forms:[{
-                              title:"Sign in to Apple Developer",
-                              type:"iframe",
-                              fields:[{
-                                id:"username",
-                                label:"Apple ID",
-                                type:"text",
-                                selector:'input[id="account_name_text_field"]'
-
-                              },{
-                                id:"password",
-                                label:"Password",
-                                type:"secret",
-                                selector:'input[id="password_text_field"]'
-
-                              },{
-                                id:"next",
-                                label:"Next",
-                                type:"button",
-                                selector:'button[id="sign-in"]',
-                                nextUI:{
-                                         type:"refresh"
-                                }
-
-                              }]
-
-                          },{
-                            title:"Sign in to Apple Developer",
-                            type:"iframe",
+                  hostnames:{type:"single",value:"id.atlassian.com"},
+                  forms:[{
+                            title:"Username for Atlassian",
                             fields:[{
                               id:"username",
-                              label:"Apple ID",
                               type:"text",
-                              selector:'input[id="account_name_text_field"]'
-
+                              selector:'input[id="username"]',
+                              data:{label:"Username"},
                             },{
-                              id:"next",
-                              label:"Next",
+                              id:"continue",
                               type:"button",
-                              selector:'button[id="sign-in"]',
+                              selector:'button[id="login-submit"]',
+                              data:{label:"Continue"},
                               nextUI:{
                                        type:"refresh"
                               }
 
                             }]
-                    }]
+                  },{
+                             title:"Enter Password",
+                             formid:{
+                                selector:'form[id="form-login"] div[tabindex="0"] span',
+                                data:{
+                                       value:{
+                                             type:"textContent"
+                                       }
+                                }
+                              },
+                              fields:[{
+                                   id:"username",
+                                   type:"info",
+                                   selector:'form[id="form-login"] div[tabindex="0"] span',
+                                   data:{
+                                      label:"Username",
+                                      value:{
+                                        type:"textContent"
+                                      }
+                                   }
+                               },{
+                                      id:"password",
+                                      type:"secret",
+                                      selector:'input[id="password"]',
+                                      data:{label:"Password"},
+                                  },{
+                                       id:"submit",
 
+                                       type:"button",
+                                       selector:'button[id="login-submit"]',
+                                       data:{label:"Log in"},
+                                       nextUI:{
+                                                type:"refresh"
+                                       }
+                                  }]
+                      }]
           }],
 
           pagedata:{
@@ -1264,103 +1021,146 @@
                 }
                 return null;
               },
-              buildPickerFieldProperty:function(fieldRule,formContainer){
-                var pickerElement=formContainer.querySelector(fieldRule.selector);
-                if(!pickerElement){
-                    return null;
-                }
-                var items=[];
-                var elements=pickerElement.querySelectorAll(fieldRule.items.selector);
-                if(!elements.length){
-                  return null;
-                }
-                for(var i=0;i<elements.length;i++){
-                      var itemElement=elements[i];
-                      var val=null;
-                      var label=null;
-                      if(fieldRule.items.value.type==='attribute'){
-                          val=itemElement.getAttribute(fieldRule.items.value.attributeName);
-                      }
-                      else if(fieldRule.items.value.type==='textContent'){
-                          val=itemElement.textContent;
-                      }
-                      if(fieldRule.items.label.type==='attribute'){
-                          label=itemElement.getAttribute(fieldRule.items.label.attributeName);
-                      }
-                      else if(fieldRule.items.label.type==='textContent'){
-                          label=itemElement.textContent;
-                      }
-                      if(val && label){
-                        items.push({
-                            value:val,
-                            label:label,
-                            element:itemElement
-                        });
 
+              getItemValue:function(itemRule,itemElement){
+                if(typeof itemRule ==='string'){
+                  return itemRule;
+                }
+                if(itemRule.selector){
+                    itemElement=this.selectElement(itemRule,itemElement);
+                }
+                if(itemRule.type==='attribute'){
+                      val=itemElement.getAttribute(itemRule.attributeName);
+                }
+                else if(itemRule.type==='textContent'){
+                    val=itemElement.textContent;
+                }
+                else  if(itemRule.type==='value'){
+                    val=itemElement.value;
+                }
+                return val;
+              },
+              getData:function(dataRule,itemElement){
+                  if(dataRule.selector){
+                      itemElement=this.selectElement(dataRule,itemElement);
+                      if(!itemElement){
+                          return null;
                       }
-
                   }
-                if(items.length){
+                  var itemLabel=null;
+                  var itemValue=null;
+                  if(dataRule.label){
+                      itemLabel=this.getItemValue(dataRule.label,itemElement);
+                  }
+                  if(dataRule.value){
+                      itemValue=this.getItemValue(dataRule.value,itemElement);
+                  }
                   return {
-                         id:fieldRule.id,
-                         label:fieldRule.label,
-                         type:fieldRule.type,
-                         selectType:fieldRule.selectType,
-                         matchingRule:fieldRule,
-                         items:items
-                  };
+                    label: itemLabel,
+                    value:itemValue
+                  }
+              },
+              selectElement:function(fieldRule,formContainer){
+                var elements=this.selectElements(fieldRule,formContainer);
+                if(elements.length){
+                    return elements[0];
                 }
                 else{
-                      return null;
+                  return null;
                 }
               },
+              selectElements:function(fieldRule,formContainer){
+                         var elementSelector={
+                              select:function(){
+                                  if(typeof fieldRule.selector ==='object'){
+                                      return this.matchElementsByRule(fieldRule.selector,formContainer);
+                                  }
+                                  else{
+                                      return formContainer.querySelectorAll(fieldRule.selector);
+                                  }
+                              },
+                              currentRuleMatchElement:function(elementRule,element){
+                                  if(elementRule.textContent){
+                                        if(element.textContent!==elementRule.textContent){
+                                          return false;
+                                        }
+                                  }
+                                  if(elementRule.attributeName && elementRule.attributeValue){
+                                      if(element.getAttribute(elementRule.attributeName)!==elementRule.attributeValue){
+                                          return false;
+                                      }
+                                  }
+                                  return true;
+                              },
+                              matchElementsByRule:function(elementRule,formContainer){
+                                    var matchingElements=[];
+                                    var elements=formContainer.querySelectorAll(elementRule.element);
+                                    if(elements.length){
+                                          for(var i=0;i<elements.length;i++){
+                                                if(this.currentRuleMatchElement(elementRule,elements[i])){
+                                                      if(elementRule.content){
+                                                          if(this.matchElementsByRule(elementRule.content,elements[i]).length){
+                                                              matchingElements.push(elements[i]);
+                                                          }
+                                                      }
+                                                      else{
+                                                          matchingElements.push(elements[i]);
+                                                      }
+                                                }
+                                          }
+                                    }
+                                    return matchingElements;
+                              }
+                         };
+                         return elementSelector.select();
+              },
+
+
+              addItemToList:function(itemRule, element, items){
+                  var itemData=this.getData(itemRule.data,element);
+                  for(var i=0;i<items.length;i++){
+                      if(items[i].value===itemData.value){
+                          return;
+                      }
+                  }
+                  items.push({
+                      label:itemData.label,
+                      value:itemData.value,
+                      element:element
+                  });
+              },
               buildListFieldProperty:function(fieldRule,formContainer){
-                var elements=formContainer.querySelectorAll(fieldRule.selector);
-                if(!elements.length){
-                    return null;
+
+                var listElement=this.selectElement(fieldRule,formContainer);
+                if(!listElement){
+                  return null;
+                }
+                var listData={
+                }
+                if(fieldRule.data){
+                      listData=this.getData(fieldRule.data,listElement);
+                      if(!listData){
+                        return null;
+                      }
                 }
                 var items=[];
-                for(var i=0;i<elements.length;i++){
-                  var element=elements[i];
 
-                  for(var k=0;k<fieldRule.items.length;k++){
-                    var itemRule=fieldRule.items[k];
-                    var itemElement=element.querySelector(itemRule.selector);
-                    if(itemElement){
-
-                      var val=null;
-                      var label=null;
-                      if(itemRule.value.type==='attribute'){
-                          val=itemElement.getAttribute(itemRule.value.attributeName);
+                for(var i=0;i<fieldRule.items.length;i++){
+                      var itemRule=fieldRule.items[i];
+                      var elements=this.selectElements(itemRule,listElement);
+                      for(var k=0;k<elements.length;k++){
+                            this.addItemToList(itemRule,elements[k],items);
                       }
-                      else if(itemRule.value.type==='textContent'){
-                          val=itemElement.textContent;
-                      }
-                      if(itemRule.label.type==='attribute'){
-                          label=itemElement.getAttribute(itemRule.label.attributeName);
-                      }
-                      else if(itemRule.label.type==='textContent'){
-                          label=itemElement.textContent;
-                      }
-                      if(val && label){
-                        items.push({
-                            value:val,
-                            label:label,
-                            element:element
-                        });
-                        break;
-                      }
-                    }
-                  }
                 }
                 if(items.length){
                   return {
                          id:fieldRule.id,
-                         label:fieldRule.label,
                          type:fieldRule.type,
+                         label:listData.label,
                          selectType:fieldRule.selectType,
                          matchingRule:fieldRule,
-                         items:items
+                         items:items,
+                         formElement:listElement
                   };
                 }
                 else{
@@ -1368,47 +1168,39 @@
                 }
               },
               buildInfoFieldProperty:function(fieldRule,formContainer){
-                var element=formContainer.querySelector(fieldRule.selector);
+                var element=this.selectElement(fieldRule,formContainer);
                 if(!element){
                     return null;
                 }
-                var infoValue=null;
-                if(fieldRule.value.type==='textContent'){
-                  infoValue=element.textContent;
-                }
-                else if(fieldRule.value.type==='attribute'){
-                    var infoValue=element.getAttribute(fieldRule.value.attributeName);
-                }
-                else if(fieldRule.value.type==='value'){
-                    var infoValue=element.value;
-                }
-                if(!infoValue){
-                  infoValue="";
-                }
-                  return {
-                         id:fieldRule.id,
-                         label:fieldRule.label,
-                         type:fieldRule.type,
-                         matchingRule:fieldRule,
-                         value:infoValue,
-                         formElement:element,
-                  };
+                var data=this.getData(fieldRule.data,element);
+                      return {
+                             id:fieldRule.id,
+                             label:data.label,
+                             type:fieldRule.type,
+                             matchingRule:fieldRule,
+                             value:data.value,
+                             formElement:element,
+                      };
+
+
               },
+
               buildFieldProperty:function(fieldRule,formContainer){
-                  var element=formContainer.querySelector(fieldRule.selector);
+                  var element=this.selectElement(fieldRule,formContainer);
                   if(!element){
                       return null;
                   }
                   else{
+                    var data=this.getData(fieldRule.data,element);
                     var fieldProperty={
                       id:fieldRule.id,
-                      label:fieldRule.label,
+                      label:data.label,
                       type:fieldRule.type,
                       matchingRule:fieldRule,
                       formElement:element,
                     };
                     if(fieldRule.confirm){
-                      var confirmElement=document.querySelector(fieldRule.confirm.selector);
+                      var confirmElement=this.selectElement(fieldRule.confirm,formContainer);
                       if(confirmElement){
                         fieldProperty.confirm={
                           formElement:confirmElement
@@ -1431,13 +1223,9 @@
                 var signInForm=formManager.getSignInForm();
                 for(var i=0;i<formRule.fields.length;i++){
                     var fieldProperty=null;
-                    if(formRule.fields[i].type==='list'){
+                    if(formRule.fields[i].type==='list' || formRule.fields[i].type==='picker' ||formRule.fields[i].type==='select'){
                         fieldProperty=this.buildListFieldProperty(formRule.fields[i],formContainer);
                     }
-                    else if(formRule.fields[i].type==='picker' || formRule.fields[i].type==='select'){
-                        fieldProperty=this.buildPickerFieldProperty(formRule.fields[i],formContainer);
-                    }
-
                     else if(formRule.fields[i].type==='info'){
                         fieldProperty=this.buildInfoFieldProperty(formRule.fields[i],formContainer);
                     }
@@ -1453,18 +1241,10 @@
 
                 }
                 if(formRule.formid){
-                      var formidElement=document.querySelector(formRule.formid.selector);
+                      var formidElement=this.selectElement(formRule.formid,formContainer);
+
                       if(formidElement){
-                          var formid=null;
-                          if(formRule.formid.value.type==='textContent'){
-                                formid=formidElement.textContent;
-                          }
-                          else if(formRule.formid.value.type==='attribute'){
-                                formid=formidElement.getAttribute(formRule.formid.value.attributeName);
-                          }
-                          else if(formRule.formid.value.type==='value'){
-                                formid=formidElement.value;
-                          }
+                          var formid=this.getItemValue(formRule.formid.data.value,formidElement);
                           if(formid){
                               signInForm.form.id=signInForm.form.id.replace('###username###',formid);
                           }
@@ -1497,17 +1277,31 @@
                                   this.fields[i].formElement.click();
                               }
                               else if(this.fields[i].type==='list'){
-                                  if(newValue && newValue.length){
-                                    newValue=newValue[0];
-                                      for(var k=0;k<this.fields[i].items.length;k++){
-                                            var vitem=this.fields[i].items[k];
-                                            if(vitem.value===newValue){
-                                                 vitem.element.click();
-                                                 return;
-                                            }
-                                      }
-                                    }
+
+                                  if(Array.isArray(newValue) && newValue.length){
+                                        newValue=newValue[0];
+                                        for(var k=0;k<this.fields[i].items.length;k++){
+                                              var vitem=this.fields[i].items[k];
+                                              if(vitem.value===newValue){
+                                                   vitem.element.click();
+                                                   return;
+                                              }
+                                        }
+                                  }
+
                               }
+                              // else if(this.fields[i].type==='select'){
+                              //         for(var k=0;k<this.fields[i].items.length;k++){
+                              //               var vitem=this.fields[i].items[k];
+                              //               if(vitem.value===newValue){
+                              //                    vitem.selected=true;
+                              //               }
+                              //               else{
+                              //                   vitem.selected=false;
+                              //               }
+                              //         }
+                              //
+                              // }
                               else{
                                   this.fields[i].formElement.value=newValue;
                                   this.fileInputEvent(this.fields[i].formElement);

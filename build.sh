@@ -1,4 +1,31 @@
-cat global-input-comment.txt > extension/global-input-message.js
-curl https://unpkg.com/global-input-message@1.6.2/distribution/globalinputmessage.js >> extension/global-input-message.js
-cat qr-code-comment.txt > extension/qrcode.js
-curl https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@04f46c6a0708418cb7b96fc563eacae0fbf77674/qrcode.min.js >> extension/qrcode.js
+cd extension
+npm install
+rm -rf node_modules/after
+rm -rf node_modules/base64-arraybuffer
+rm -rf node_modules/async-limiter
+rm -rf node_modules/arraybuffer.slice
+rm -rf node_modules/backo2
+rm -rf node_modules/blob
+rm -rf node_modules/callsite
+rm -rf node_modules/better-assert
+rm -rf node_modules/indexof
+rm -rf node_modules/component-inherit
+rm -rf node_modules/has-cors
+rm -rf node_modules/component-bind
+rm -rf node_modules/has-binary2
+rm -rf node_modules/engine.io-parser
+rm -rf node_modules/component-emitter
+rm -rf node_modules/ms
+rm -rf node_modules/isarray
+rm -rf node_modules/parseqs
+rm -rf node_modules/to-array
+rm -rf node_modules/socket.io-parser
+rm -rf node_modules/object-component
+rm -rf node_modules/parseuri
+rm -rf node_modules/xmlhttprequest-ssl
+rm -rf node_modules/yeast
+rm -rf node_modules/crypto-js
+rm -rf node_modules/socket.io-client
+rm -rf node_modules/engine.io-client
+rm -rf node_modules/ws
+rm -rf node_modules/debug

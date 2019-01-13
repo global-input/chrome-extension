@@ -22,6 +22,7 @@
   },
   "homepage": "https://globalinput.co.uk",
   "dependencies": {
-    "global-input-message": "^1.5.5"
+    "davidshimjs-qrcodejs": "0.0.2",
+    "global-input-message": "^1.6.2"
   }
 }

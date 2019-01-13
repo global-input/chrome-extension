@@ -1,4 +1,5 @@
-var globalInputChromeExtension={
+(function(){
+var globalInputAppChromeExtension={
   pagedata:{
       action:null,
       hostname:"",
@@ -15,8 +16,16 @@ var globalInputChromeExtension={
       globalInputApi:null,
       globalInputConnector:null,
   },
+
   setHostName:function(hostname){
     this.pagedata.hostname=hostname;
+  },
+  getHostName:function(){
+    return this.pagedata.hostname;
+  },
+  _getFormSettingLocalStoragePrefix:function(){
+    var formprefix="extension."+this.getHostName()?this.getHostName():'default';
+    return formprefix+".forms.fields";
   },
   setCacheTTL:function(ttl){
     this.pagedata.cacheTTL=ttl;
@@ -79,14 +88,88 @@ var globalInputChromeExtension={
   isFormEditor:function(){
       return this.pagedata.action==='form-editor';
   },
+  getCustomApplicationControlConfig:function(){
+        var applicationConfigString=localStorage.getItem("iterative.globaliputapp.controlConfigs");
+        if(applicationConfigString){
+            try{
+                return applicatoonControlConfig=JSON.parse(applicationConfigString);
+            }
+            catch(error){
+                  console.log("error in loading the applicationConfigString:"+error);
+            }
+
+
+        }
+        return null;
+  },
+
+  getApplicationControlSettings:function(){
+            var chromeExtension=this;
+            var applicationControlSelector={
+
+                    selectApplicationControlConfig:function(hostname, applicationControlConfigs){
+                          for(var i=0;i<applicationControlConfigs.length;i++){
+                                if(applicationControlConfigs[i].hostnames.type==='single'){
+                                      if(applicationControlConfigs[i].hostnames.value===hostname){
+                                        return applicationControlConfigs[i];
+                                      }
+                                }
+                                else if(applicationControlConfigs[i].hostnames.type==='array'){
+                                  for(var k=0;k<applicationControlConfigs[i].hostnames.value.length;k++){
+                                      if(applicationControlConfigs[i].hostnames.value[k]===hostname){
+                                          return applicationControlConfigs[i];
+                                      }
+                                  }
+                                }
+                          }
+                          return null;
+                    },
+                    getConfig:function(){
+                          var hostname=chromeExtension.getHostName();
+                          if(!hostname){
+                            return null;
+                          }
+                          var customApplicationConfigString=chromeExtension.getCustomApplicationControlConfig();
+                          if(customApplicationConfigString){
+                              var selectedApplicationControlConfig=this.selectApplicationControlConfig(hostname,customApplicationConfigString);
+                              if(selectedApplicationControlConfig){
+                              return {
+                                            type:"custom",
+                                            applicationConfigs:selectedApplicationControlConfig
+                                          };
+                              }
+                          }
+                          if(chromeExtension.applicationControlConfigs){
+                              var selectedApplicationControlConfig=this.selectApplicationControlConfig(hostname,chromeExtension.applicationControlConfigs);
+                              if(selectedApplicationControlConfig){
+                                 return {
+                                                  type:"default",
+                                                  applicationConfigs:selectedApplicationControlConfig
+                                        };
+                              }
+                          }
+                          return null;
+
+
+                    }
+
+
+            };
+            return applicationControlSelector.getConfig();
+
+  },
+
+
+
+
 
   buildWindowForm:function(){
     var formSettings=this.getWidowFormSettings();
     this.pagedata.formData.formContainer=document.createElement('div');
-    var title=this.pagedata.hostname;
+    var title=this.getHostName();
     this.pagedata.formData.fields=[];
     this.pagedata.form={
-              id:  "###username###@"+this.pagedata.hostname, // unique id for saving the form content on mobile automating the form-filling process.
+              id:  "###username###@"+this.getHostName(), // unique id for saving the form content on mobile automating the form-filling process.
               title: title,  //Title of the form displayed on the mobile
               label:formSettings.label,
               fields:[],
@@ -146,7 +229,9 @@ var globalInputChromeExtension={
     this.pagedata.contentContainer.appendChild(element);
   },
   appendResetButton:function(message){
-    var buttonElement=this.createOneButton({label:"Reset", onclick:this.resetAll.bind(this)});
+    var buttonElement=this.createButtons({
+      buttons:[{label:"Reset", onclick:this.resetAll.bind(this)}]
+    });
     this.appendElement(buttonElement);
   },
 
@@ -219,8 +304,6 @@ var globalInputChromeExtension={
       formElement.onkeyup=onkeyup.bind(fieldobj);
       this.pagedata.formData.fields.push(fieldobj);
       this.pagedata.formData.formContainer.appendChild(inputContainer);
-
-
   },
 
 
@@ -228,32 +311,40 @@ var globalInputChromeExtension={
 
   /* The entry function for initiasing the extensions script */
     onDocumentLoaded:function(){
+          this.applicationControlConfigs=globalInputApp_applicationControlConfigs,
           this.createContentContainer();
           chrome.runtime.onMessage.addListener(this.onContentMessageReceived.bind(this));
-          this.checkPageStatus();
+          this.main();
     },
 
     appendConnectToMobileButton:function(){
       var that=this;
       var opts={
+        buttons:[{
           label:"Connect to Mobile",
           onclick:function(){
               that.onClickConnectToMobile();
           }
+        }]
+
       };
-      var buttons=this.createOneButton(opts);
+      var buttons=this.createButtons(opts);
       this.appendElement(buttons);
     },
 
     appendSettingsButton:function(){
       var that=this;
-      var inputContainer=this.createButton({
-        label:'Settings',
-        onclick:function(){
-          that.displaySettings();
-        }
-      });
-      this.appendElement(inputContainer);
+      var opts={
+            items:[{
+                label:"Communication Settings",
+                onclick: this.displayProxySettings.bind(this)
+            },{
+                label:"Applications Control Settings",
+                onclick:this.displayApplicationControlSettings.bind(this)
+            }]
+         };
+         var menuContainer=this.createMenu(opts);
+         this.appendElement(menuContainer);
     },
     appendCustomiseWindowFormButton:function(){
       var that=this;
@@ -275,26 +366,33 @@ var globalInputChromeExtension={
       that.appendMessage("Click on the button above to connect to your Global Input App on your mobile.");
       this.appendSettingsButton();
     },
-    checkPageStatus:function(){
+    checkPageStatus:function(onSucess, onFailure){
+          var that=this;
+          this.setAction("check-page-status");
+          this.sendMessageToContent('check-page-status',null, function(message){
+              if(!message){
+                console.log("failed to contact content script at this time");
+                onFailure();
+              }
+              else{
+                  that.setHostName(message.host);
+                  that.setCacheTTL(message.cacheTTL);
+                  onSucess(message);
+              }
+          })
+    },
+    main:function(){
         var that=this;
-        this.setAction("check-page-status");
-        this.sendMessageToContent('check-page-status',null, function(message){
-            if(!message){
-              console.log("failed to contact content script at this time");
-              that.displayMainWindow();
-            }
-            else{
-                that.setHostName(message.host);
-                that.setCacheTTL(message.cacheTTL);
-                if(message.content.cachefields){
-                    that.displayCachedFormPage(message);
-                }
-                else{
-                    that.displayMainWindow();
-                }
-            }
-
-        })
+        this.checkPageStatus(function(message){
+                  if(message.content.cachefields){
+                      that.displayCachedFormPage(message);
+                  }
+                  else{
+                      that.displayMainWindow();
+                  }
+        }, function(){
+            that.displayMainWindow();
+        });
     },
 
     getGlobalInputSettings:function(){
@@ -311,10 +409,7 @@ var globalInputChromeExtension={
       return globalInputSettings;
 
     },
-    _getFormSettingLocalStoragePrefix:function(){
-      var formprefix="extension."+this.pagedata.hostname?this.pagedata.hostname:'default';
-      return formprefix+".forms.fields";
-    },
+
     clearFormFieldsSettings:function(){
         var key=this._getFormSettingLocalStoragePrefix();
         localStorage.removeItem(key);
@@ -374,14 +469,61 @@ var globalInputChromeExtension={
         localStorage.setItem("iterative.globaliputapp.url",globalInputSettings.url);
         localStorage.setItem("iterative.globaliputapp.apikey",globalInputSettings.apikey);
     },
-    displaySettings:function(){
 
-      var that=this;
+    displayApplicationControlSettings:function(){
+            this.setAction("application-control-editor");
+            var chromeExtension=this;
+            var applicationControlEditor={
+                data:{
+
+                },
+                start:function(){
+                      var that=this;
+                      chromeExtension.checkPageStatus(function(message){
+                          that.showMain();
+
+                      }, function(){
+                          chromeExtension.whenEmptyReplyReceived();
+                      });
+                },
+                showMain:function(){
+                      this.data.applicationControlSettings=chromeExtension.getApplicationControlSettings();
+                      if(this.data.applicationControlSettings){
+                          this.displayEditor();
+                      }
+                },
+                getEditContent:function(){
+                  if(this.data.applicationControlSettings && this.data.applicationControlSettings.applicationConfigs){
+                      return JSON.stringify(this.data.applicationControlSettings.applicationConfigs,null,2);
+                  }
+                  else{
+                      return "";
+                  }
+
+                },
+                displayEditor:function(){
+                       chromeExtension.clearContent();
+                       var editContent=this.getEditContent();
+                       var opts={
+                           label:"Control Configs",
+                           id:"controlConfigsContent",
+                           type:"text",
+                           value:editContent,
+                           nLines:10
+                       };
+                       var inputContainer=chromeExtension.createInputField(opts);
+                       chromeExtension.appendElement(inputContainer);
+                }
+
+            }
+            applicationControlEditor.start();
+
+    },
+    displayProxySettings:function(){
+
       var globalInputSettings=this.getGlobalInputSettings();
       this.clearContent();
-      this.appendTitle("Settings");
-
-
+      this.appendTitle("WebSocket Proxy Settings");
       var opts={
           label:"URL:",
           id:"globlaInputURL",
@@ -407,21 +549,22 @@ var globalInputChromeExtension={
 
       this.appendElement(inputContainer);
 
-
+      var that=this;
       opts={
-          label1:"Cancel",
-          label2:"Save",
-          onclick1:function(){
-              that.displayMainWindow();
-          },
-          onclick2:function(){
-              globalInputSettings.url=globlaInputURLelement.value;
-              globalInputSettings.apikey=globlaInputAPIKeyelement.value;
-              that.saveGlobalInputSettings(globalInputSettings);
-              that.displayMainWindow();
-          }
-      }
-      var buttons=this.createTwoButton(opts);
+          buttons:[{
+                label:"Cancel",
+                onclick:that.displayMainWindow.bind(that)
+          },{
+                label:"Save",
+                onclick:function(){
+                      globalInputSettings.url=globlaInputURLelement.value;
+                      globalInputSettings.apikey=globlaInputAPIKeyelement.value;
+                      that.saveGlobalInputSettings(globalInputSettings);
+                      that.displayMainWindow();
+                }
+          }]
+      };
+      var buttons=this.createButtons(opts);
       this.appendElement(buttons);
     },
     displayWindowFormEditor:function(){
@@ -526,11 +669,14 @@ var globalInputChromeExtension={
 
                           inputContainer=chromeExtension.createRadioButtons(newFieldData.linesProperty);
                           chromeExtension.appendElement(inputContainer);
-                          var buttonContainer=chromeExtension.createTwoButton({
-                              label1:"Back",
-                              label2:"Add",
-                              onclick1:newFieldData.onCancel.bind(newFieldData),
-                              onclick2:newFieldData.onOk.bind(newFieldData),
+                          var buttonContainer=chromeExtension.createButtons({
+                              buttons:[{
+                                    label:"Back",
+                                    onclick:newFieldData.onCancel.bind(newFieldData)
+                              },{
+                                    label:'Add',
+                                    onclick: newFieldData.onOk.bind(newFieldData)
+                              }]
                           });
                           chromeExtension.appendElement(buttonContainer);
               },
@@ -568,31 +714,39 @@ var globalInputChromeExtension={
                   chromeExtension.appendElement(inputContainer);
                 }
                 else{
-                  var inputContainer=chromeExtension.createTwoButton({
-                    label1:"Reset to Default",
-                    label2:'Add New Field',
-                    className:"button",
-                    onclick1:this.resetToDefault.bind(this),
-                    onclick2:this.displayAddNewField.bind(this),
+                  var inputContainer=chromeExtension.createButtons({
+                    buttons:[{
+                        label:"Reset to Default",
+                        onclick:this.resetToDefault.bind(this),
+                        className:"button"
+                    },{
+                        label:"Add New Field",
+                        onclick:this.displayAddNewField.bind(this),
+                        className:"button"
+                    }],
+
                   });
                   chromeExtension.appendElement(inputContainer);
                 }
               },
               appendFormEditorButtons:function(){
                 if(this.modified && this.formSettings.fields.length){
-                       var buttonContainer=chromeExtension.createTwoButton({
-                           label1:"Cancel",
-                           label2:"Save",
-                           onclick1:this.cancelEdit.bind(this),
-                           onclick2:this.saveFormEditorData.bind(this)
+                       var buttonContainer=chromeExtension.createButtons({
+                           buttons:[{
+                              label:"Cancel",
+                              onclick:this.cancelEdit.bind(this)
+                           },{
+                              label:"Save",
+                              onclick:this.saveFormEditorData.bind(this)
+                           }]
                        });
                        chromeExtension.appendElement(buttonContainer);
                 }
                 else{
-                  var buttonContainer=chromeExtension.createOneButton({
-                      label:"Cancel",
+                  var buttonContainer=chromeExtension.createButtons({
+                      buttons:[{label:"Cancel",
                       onclick:this.cancelEdit
-                  });
+                  }]});
                   chromeExtension.appendElement(buttonContainer);
                 }
               },
@@ -640,28 +794,81 @@ var globalInputChromeExtension={
     onClickConnectToMobile:function(){
         this.displayInitialising();
         var that=this;
-        this.setAction('get-page-config');
-        this.sendMessageToContent("get-page-config",null,function(message){
+        if(this.getHostName()){
+              this.requestContentFormFromContent();
+        }
+        else{
+                this.checkPageStatus(function(message){
+                  that.requestContentFormFromContent();
+                }, function(){
+                    that.whenEmptyReplyReceived();
+                });
+        }
+    },
+
+
+
+    requestContentFormFromContent(){
+      var request={
+      };
+      var applicationControlSettings=this.getApplicationControlSettings();
+      if(applicationControlSettings){
+            request.applicationControlConfig=applicationControlSettings.applicationConfigs;
+      }
+      var that=this;
+      this.sendMessageToContent("get-page-config",request,function(message){
+            if(!message){
+                that.whenEmptyReplyReceived();
+                return;
+            }
+            that.setHostName(message.host);
+            that.setCacheTTL(message.cacheTTL);
+
+            var globalInputSettings=that.getGlobalInputSettings();
+            var globalinputConfig=that.buildBasicGlobalInputConfig(globalInputSettings);
+            if(message.status==="success"){
+                globalinputConfig.initData.form=that.buildContentGlobalInputForm(message);
+                that.setAction('connect-to-content');
+            }
+            else{
+                that.setAction('connect-to-window');
+                that.buildWindowForm();
+                globalinputConfig.initData.form=that.pagedata.form;
+            }
+            that.connectToGlobalInputApp(globalinputConfig);
+      });
+    },
+    requestNextPageConfig:function(request){
+        var applicationControlSettings=getApplicationControlSettings();
+        if(applicationControlSettings){
+              request.applicationControlConfig=applicationControlSettings.applicationConfigs;
+        }
+        this.setAction('next-page-config');
+        var that=this;
+        this.sendMessageToContent("next-page-config",request,function(message){
               if(!message){
                   that.whenEmptyReplyReceived();
                   return;
               }
               that.setHostName(message.host);
-              that.setCacheTTL(message.cacheTTL);
-
-              var globalInputSettings=that.getGlobalInputSettings();
-              var globalinputConfig=that.buildBasicGlobalInputConfig(globalInputSettings);
+              var initData={
+                action:"input",
+                dataType:"form",
+                form:null,
+              };
               if(message.status==="success"){
-                  globalinputConfig.initData.form=that.buildContentGlobalInputForm(message);
+                  initData.form=that.buildContentGlobalInputForm(message);
                   that.setAction('connect-to-content');
               }
               else{
                   that.setAction('connect-to-window');
                   that.buildWindowForm();
-                  globalinputConfig.initData.form=that.pagedata.form;
+                  initData.form=that.pagedata.form;
+                  that.displayConnectedWindowForm();
               }
-              that.connectToGlobalInputApp(globalinputConfig);
+              that.pagedata.globalInputConnector.sendInitData(initData);
         });
+
     },
     reconnectToWindowForm:function(){
         var globalInputSettings=this.getGlobalInputSettings();
@@ -745,7 +952,7 @@ var globalInputChromeExtension={
       onSenderDisconnected:function(sender, senders){
           this.disconnectGlobalInputApp();
           if(!this.isFormEditor()){
-              this.checkPageStatus();
+              this.main();
           }
       },
       onWebSocketConnect:function(){
@@ -799,34 +1006,7 @@ var globalInputChromeExtension={
 
 
       },
-      requestNextPageConfig:function(request){
-          var that=this;
-          this.setAction('next-page-config');
-          this.sendMessageToContent("next-page-config",request,function(message){
-                if(!message){
-                    that.whenEmptyReplyReceived();
-                    return;
-                }
-                that.setHostName(message.host);
-                var initData={
-                  action:"input",
-                  dataType:"form",
-                  form:null,
-                };
-                if(message.status==="success"){
-                    initData.form=that.buildContentGlobalInputForm(message);
-                    that.setAction('connect-to-content');
-                }
-                else{
-                    that.setAction('connect-to-window');
-                    that.buildWindowForm();
-                    initData.form=that.pagedata.form;
-                    that.displayConnectedWindowForm();
-                }
-                that.pagedata.globalInputConnector.sendInitData(initData);
-          });
 
-      },
 
 
     buildContentGlobalInputForm:function(message){
@@ -1019,52 +1199,37 @@ var globalInputChromeExtension={
        this.appendElement(inputContainer);
        return inputContainer;
     },
-
-
-    createOneButton:function(opts){
-          var that=this;
-          var inputContainer=document.createElement('div');
-          inputContainer.className = "buttonContainer";
-
-           var buttonElement = document.createElement('button');
-           buttonElement.className='controlButton';
-           buttonElement.innerText=opts.label;
-           buttonElement.onclick=function(){
-                opts.onclick();
-           };
-        inputContainer.appendChild(buttonElement);
-        return inputContainer;
+    createMenu:function(opts){
+       var inputContainer=document.createElement('div');
+       inputContainer.className = "menuContainer";
+       for(var i=0;i<opts.items.length;i++){
+         var menuElement = document.createElement('a');
+         menuElement.className='menu';
+         menuElement.innerText=opts.items[i].label;
+         var that=this;
+         menuElement.onclick=opts.items[i].onclick;
+         inputContainer.appendChild(menuElement);
+       }
+       this.appendElement(inputContainer);
+       return inputContainer;
     },
-    createTwoButton:function(opts){
+
+
+    createButtons:function(opts){
           var that=this;
           var inputContainer=document.createElement('div');
           inputContainer.className = "buttonContainer";
 
-           var buttonElement = document.createElement('button');
-           buttonElement.className='controlButton';
-
-           if(opts.className){
-                buttonElement.className=opts.className;
-           }
-
-           buttonElement.innerText=opts.label1;
-           buttonElement.onclick=function(){
-                opts.onclick1();
-           };
-        inputContainer.appendChild(buttonElement);
-
-
-        var buttonElement = document.createElement('button');
-        buttonElement.className='controlButton';
-        if(opts.className){
-             buttonElement.className=opts.className;
-        }
-        buttonElement.innerText=opts.label2;
-        buttonElement.onclick=function(){
-             opts.onclick2();
-        };
-     inputContainer.appendChild(buttonElement);
-
+          for(var i=0;i<opts.buttons.length;i++){
+                var buttonElement = document.createElement('button');
+                buttonElement.className='controlButton';
+                if(opts.buttons[i].className){
+                     buttonElement.className=opts.buttons[i].className;
+                }
+                buttonElement.innerText=opts.buttons[i].label;
+                buttonElement.onclick=opts.buttons[i].onclick;
+                inputContainer.appendChild(buttonElement);
+          }
 
         return inputContainer;
     },
@@ -1109,4 +1274,5 @@ var globalInputChromeExtension={
       }
 
 };
-document.addEventListener('DOMContentLoaded',  globalInputChromeExtension.onDocumentLoaded.bind(globalInputChromeExtension));
+document.addEventListener('DOMContentLoaded',  globalInputAppChromeExtension.onDocumentLoaded.bind(globalInputAppChromeExtension));
+})();

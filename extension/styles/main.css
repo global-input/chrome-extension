@@ -129,6 +129,14 @@ html, body {
   justify-content: flex-start;
   align-items: flex-start;
 }
+.elementgroup {
+  width:100%;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
 .textInput{
   width:100%;
   display: flex;

@@ -1322,13 +1322,15 @@ var globalInputAppChromeExtension={
                   }
                   element.className="textInput";
 
-            inputContainer.appendChild(element);
+
             opts.element=element;
 
-
-
-
             if(opts.clipboard){
+              var elementgroup=document.createElement('div');
+              elementgroup.className="elementgroup";
+              inputContainer.appendChild(elementgroup);
+
+                  elementgroup.appendChild(element);
                   var copyButtonElement = document.createElement('button');
                   copyButtonElement.className="copybutton";
                   copyButtonElement.innerText="Copy";
@@ -1347,16 +1349,23 @@ var globalInputAppChromeExtension={
                               copyButtonElement.disabled=false;
                         },2000);
                   };
-                  inputContainer.appendChild(copyButtonElement);
+                  elementgroup.appendChild(copyButtonElement);
             }
             else if(opts.button){
+                  var elementgroup=document.createElement('div');
+                  elementgroup.className="elementgroup";
+                  inputContainer.appendChild(elementgroup);
+                  elementgroup.appendChild(element);
               var buttonElement = document.createElement('button');
                   buttonElement.className=opts.button.className;
                   buttonElement.innerText=opts.button.label;
                   buttonElement.onclick=function(){
                     opts.clickOnButton();
               };
-              inputContainer.appendChild(buttonElement);
+              elementgroup.appendChild(buttonElement);
+            }
+            else{
+                inputContainer.appendChild(element);
             }
       inputRowContainer.appendChild(inputContainer);
       return inputRowContainer;

@@ -53,42 +53,7 @@
               this.pagedata.cachefieldvalues=cachefields;
           },
 
-          /* find a specific form element from the pageForm
-              @cache: passing the cache object to speed up the search on a same page
-              @matchCriteria:rule for locating the element */
-          findPageFormElement:function(cache,matchCriteria){
-                   var elemmentToSearch="input";
-                   if(matchCriteria.element){
-                         elemmentToSearch=matchCriteria.element;
-                   }
-                   if(!cache[elemmentToSearch]){
-                       cache[elemmentToSearch]={
-                           elements:document.getElementsByTagName(elemmentToSearch)
-                       };
-                   }
-                   var elementsToMatch=cache[elemmentToSearch].elements;
 
-                   if((!elementsToMatch) || (!elementsToMatch.length)){
-                         //if there is no any controllable elements in the page, it will not operate
-                         return null;
-                   }
-                   for(var x=0;x<elementsToMatch.length;x++){
-                         var currentElement=elementsToMatch[x];
-                         var attrData={matched:0};
-                         this.matchAttribute(attrData,currentElement,"id",matchCriteria.id);
-                         this.matchAttribute(attrData,currentElement,"name",matchCriteria.name);
-                         this.matchAttribute(attrData,currentElement,"type",matchCriteria.type);
-                         this.matchAttribute(attrData,currentElement,"class",matchCriteria.className);
-                         this.matchAttribute(attrData,currentElement,"data-callback",matchCriteria.dataCallback);
-                         this.matchAttribute(attrData,currentElement,"value",matchCriteria.value);
-                         this.matchAttribute(attrData,currentElement,".textContent",matchCriteria.textContent);
-                         this.matchChildElement(attrData,currentElement,matchCriteria.childElement);
-                         if(attrData.matched===1){
-                                 return currentElement;
-                         }
-                  }
-               return null;
-          },
     /* The entry function when this script file is loaded */
      init:function(){
             chrome.runtime.onMessage.addListener(this.onExtensionMessageReceived.bind(this));
@@ -207,7 +172,7 @@
      /* find the form element to build a form config data to be used
      to display a similar form on the mobile screen */
      getPageConfig:function(message){
-        var pageForm=this.findFormWithDomainSpecificRule(message);        
+        var pageForm=this.findFormWithDomainSpecificRule(message);
         this.pagedata.pageForm=pageForm; //save it to use to set the value in the form when received input evens from mobile
         if(!pageForm){
               return null;
@@ -353,21 +318,39 @@
                               },
                               matchElementsByRule:function(elementRule,formContainer){
                                     var matchingElements=[];
-                                    var elements=formContainer.querySelectorAll(elementRule.element);
-                                    if(elements.length){
-                                          for(var i=0;i<elements.length;i++){
-                                                if(this.currentRuleMatchElement(elementRule,elements[i])){
-                                                      if(elementRule.content){
-                                                          if(this.matchElementsByRule(elementRule.content,elements[i]).length){
+                                    var that=this;
+
+                                    var collectMatchedElements=function(elements){
+                                        if(elements.length){
+                                              for(var i=0;i<elements.length;i++){
+                                                    if(that.currentRuleMatchElement(elementRule,elements[i])){
+                                                          if(elementRule.content){
+                                                              if(that.matchElementsByRule(elementRule.content,elements[i]).length){
+                                                                  matchingElements.push(elements[i]);
+                                                              }
+                                                          }
+                                                          else{
                                                               matchingElements.push(elements[i]);
                                                           }
-                                                      }
-                                                      else{
-                                                          matchingElements.push(elements[i]);
-                                                      }
-                                                }
-                                          }
+                                                    }
+                                              }
+                                        }
+                                    };
+                                    if(elementRule.element && Array.isArray(elementRule.element)){
+                                      for(var i=0;i<elementRule.element.length;i++){
+                                            var elements=formContainer.querySelectorAll(elementRule.element[i]);
+                                            if(elements.length){
+                                                collectMatchedElements(elements);
+                                                break;
+                                            }
+                                      }
                                     }
+                                    else{
+                                        var elements=formContainer.querySelectorAll(elementRule.element);
+                                        collectMatchedElements(elements);
+                                    }
+
+
                                     return matchingElements;
                               }
                          };
@@ -602,75 +585,6 @@
         };
      },
 
-
-      matchAttribute:function(attrData,currentElement,attributeName,matchValue){
-             if(typeof matchValue === 'undefined'){
-                   return;
-             }
-             if(attrData.matched===2){
-                 return;
-             }
-             var attrValue=null;
-             if(attributeName==='.textContent'){
-                 attrValue=currentElement.textContent;
-             }
-             else{
-                 attrValue=currentElement.getAttribute(attributeName);
-             }
-             if(attrValue){
-               attrValue=attrValue.trim();
-             }
-
-             if(typeof matchValue ==='object' && Array.isArray(matchValue)){
-                     for(var i=0;i<matchValue.length;i++){
-                       if(attrValue === matchValue[i]){
-                            attrData.matched=1;
-                            return;
-                       }
-                     }
-                     attrData.matched=2;
-             }
-             else{
-                   if(attrValue === matchValue){
-                        attrData.matched=1;
-                   }
-                   else{
-                      attrData.matched=2;
-                   }
-             }
-
-      },
-      matchChildElement:function(attrData,currentElement,childElement){
-             if(typeof childElement === 'undefined'){
-                   return;
-             }
-             if(attrData.matched===2){
-                 return;
-             }
-             if((!currentElement.children) || (!currentElement.children.length) ){
-                   attrData.matched=2;
-                   return;
-             }
-             if(childElement.tagName && childElement.textContent){
-                 if(this.matchElementsByTagNameAndTextContent(currentElement.children,childElement.tagName,childElement.textContent)){
-                   attrData.matched=1;
-                 }
-                 else{
-                   attrData.matched=2;
-                 }
-             }
-      },
-      matchElementsByTagNameAndTextContent:function(elements,matchTagName,matchTextContent){
-        matchTagName=matchTagName.toUpperCase();
-        for(var i=0;i<elements.length;i++){
-            if(elements[i].tagName===matchTagName){
-                    if(matchTextContent===elements[i].textContent){
-                       return true;
-                    }
-                }
-       }
-       return false;
-      }
 
  };
 

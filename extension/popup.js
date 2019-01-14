@@ -587,12 +587,14 @@ var globalInputAppChromeExtension={
 
                 },
                 isContentChanged:function(content){
-                    var contentInString=this.getObjectStringForm(content);
+
                     if(!this.data.applicationControlSettings){
                         return true;
                     }
-                    var originalString=this.getEditContent();
-                    return originalString !== contentInString;
+                    if(this.data.applicationControlSettings.type==="new"){
+                        return true;
+                    }
+                    return this.getEditContent() !== this.getObjectStringForm(content);;
                 },
                 deleteRecord:function(){
                     chromeExtension.deleteCustomApplicationControlConfig(this.data.hostname);
@@ -642,18 +644,18 @@ var globalInputAppChromeExtension={
                                             fields:[{
                                                   id:"username",
                                                   type:"text",
-                                                  selector:'input[name="username"]',
+                                                  selector:'input[id="login-form-username"]',
                                                   data:{label:"Username"},
                                             },{
                                                 id:"password",
                                                 type:"secret",
-                                                selector:'input[id="password"][type="password"]',
+                                                selector:'input[id="login-form-password"][type="password"]',
                                                 data:{label:"Password"},
                                             },{
                                                 id:"submit",
                                                 type:"button",
-                                                selector:'button[id="submit"][type="submit"]',
-                                                data:{label:"Sign in"},
+                                                selector:'input[id="login"]',
+                                                data:{label:"Log In"},
                                                 nextUI:{
                                                          type:"refresh"
                                                 }
@@ -1043,7 +1045,7 @@ var globalInputAppChromeExtension={
       });
     },
     requestNextPageConfig:function(request){
-        var applicationControlSettings=getApplicationControlSettings();
+        var applicationControlSettings=this.getApplicationControlSettings();
         if(applicationControlSettings){
               request.applicationControlConfig=applicationControlSettings.applicationConfigs;
         }

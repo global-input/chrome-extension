@@ -1,0 +1,56 @@
+(function(){
+
+  applicationControlConfig={
+            hostnames:{
+                  type:"array",
+                  value:["www.iterativesolution.co.uk","iterativesolution.co.uk"]
+            },
+            forms:[{
+                    title:"Welcome to JIRA",
+                    fields:[{
+                          id:"username",
+                          type:"text",
+                          selector:'input[id="login-form-username"]',
+                          data:{label:"Username"},
+                    },{
+                        id:"password",
+                        type:"secret",
+                        selector:'input[id="login-form-password"][type="password"]',
+                        data:{label:"Password"},
+                    },{
+                        id:"submit",
+                        type:"button",
+                        selector:'input[id="login-form-submit"]',
+                        data:{label:"Log In"},
+                        nextUI:{
+                                 type:"refresh"
+                        }
+                    }]
+            },{
+                    title:"Confluence",
+                    fields:[{
+                          id:"username",
+                          type:"text",
+                          selector:'input[id="os_username"]',
+                          data:{label:"Username"},
+                    },{
+                        id:"password",
+                        type:"secret",
+                        selector:'input[id="os_password"][type="password"]',
+                        data:{label:"Password"},
+                    },{
+                        id:"submit",
+                        type:"button",
+                        selector:'input[id="loginButton"]',
+                        data:{label:"Log In"},
+                        nextUI:{
+                                 type:"refresh"
+                        }
+                    }]
+            }]
+      };
+      if(!window.globalInputApp_applicationControlConfigs){
+              window.globalInputApp_applicationControlConfigs=[];
+      }
+      window.globalInputApp_applicationControlConfigs.push(applicationControlConfig);
+})();

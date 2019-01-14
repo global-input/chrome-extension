@@ -1,6 +1,6 @@
 {
   "name": "global-input-app",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Global Input extension to support the Global Input App ",
   "main": "content.js",
   "scripts": {

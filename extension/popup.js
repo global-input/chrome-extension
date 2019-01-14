@@ -102,28 +102,95 @@ var globalInputAppChromeExtension={
         }
         return null;
   },
+  updateCustomApplicationControlConfig(newContent){
+        var hostname=this.getHostName();
+        if(!hostname){
+          console.error("hostname is null, so it will not save control settings");
+          return;
+        }
+        var customApplicationControlConfig=this.getCustomApplicationControlConfig();
+        var newCustomApplicationControlConfig=[];
+        var notUpdated=true;
+        if(customApplicationControlConfig){
+            for(var i=0;i<customApplicationControlConfig.length;i++){
+                if(notUpdated && this.applicationConfigMatchHostName(customApplicationControlConfig[i], hostname)){
+                       if(newContent){
+                          newCustomApplicationControlConfig.push(newContent);
+                       }
+                       notUpdated=false;
+                }
+                else{
+                  newCustomApplicationControlConfig.push(customApplicationControlConfig[i]);
+                }
+            }
+        }
+        if(notUpdated && newContent){
+            newCustomApplicationControlConfig.push(newContent);
+        }
+        if(newCustomApplicationControlConfig.length){
+            var updateString=JSON.stringify(newCustomApplicationControlConfig);
+            localStorage.setItem("iterative.globaliputapp.controlConfigs",updateString);
+        }
+        else{
+            localStorage.removeItem("iterative.globaliputapp.controlConfigs");
+        }
+  },
+  deleteCustomApplicationControlConfig:function(hostname){
+    var customApplicationControlConfig=this.getCustomApplicationControlConfig();
+    var newCustomApplicationControlConfig=[];
+    var notUpdated=true;
+    if(customApplicationControlConfig){
+        for(var i=0;i<customApplicationControlConfig.length;i++){
+            if(notUpdated && this.applicationConfigMatchHostName(customApplicationControlConfig[i], hostname)){
+                   notUpdated=false;
+            }
+            else{
+              newCustomApplicationControlConfig.push(customApplicationControlConfig[i]);
+            }
+        }
+    }
+
+    if(newCustomApplicationControlConfig.length){
+        var updateString=JSON.stringify(newCustomApplicationControlConfig);
+        localStorage.setItem("iterative.globaliputapp.controlConfigs",updateString);
+    }
+    else{
+        localStorage.removeItem("iterative.globaliputapp.controlConfigs");
+    }
+  },
+  applicationConfigMatchHostName:function(applicationControlConfig, hostname){
+          if(!applicationControlConfig){
+            return false;
+          }
+          if(!applicationControlConfig.hostnames){
+            return false;
+          }
+          if(applicationControlConfig.hostnames.type==='single'){
+                if(applicationControlConfig.hostnames.value===hostname){
+                  return true;
+                }
+          }
+          else if(applicationControlConfig.hostnames.type==='array'){
+            for(var k=0;k<applicationControlConfig.hostnames.value.length;k++){
+                if(applicationControlConfig.hostnames.value[k]===hostname){
+                    return true;
+                }
+            }
+          }
+          return false;
+  },
+  selectApplicationControlConfig:function(hostname, applicationControlConfigs){
+        for(var i=0;i<applicationControlConfigs.length;i++){
+              if(this.applicationConfigMatchHostName(applicationControlConfigs[i],hostname)){
+                  return applicationControlConfigs[i];
+              }
+        }
+        return null;
+  },
 
   getApplicationControlSettings:function(){
             var chromeExtension=this;
             var applicationControlSelector={
-
-                    selectApplicationControlConfig:function(hostname, applicationControlConfigs){
-                          for(var i=0;i<applicationControlConfigs.length;i++){
-                                if(applicationControlConfigs[i].hostnames.type==='single'){
-                                      if(applicationControlConfigs[i].hostnames.value===hostname){
-                                        return applicationControlConfigs[i];
-                                      }
-                                }
-                                else if(applicationControlConfigs[i].hostnames.type==='array'){
-                                  for(var k=0;k<applicationControlConfigs[i].hostnames.value.length;k++){
-                                      if(applicationControlConfigs[i].hostnames.value[k]===hostname){
-                                          return applicationControlConfigs[i];
-                                      }
-                                  }
-                                }
-                          }
-                          return null;
-                    },
                     getConfig:function(){
                           var hostname=chromeExtension.getHostName();
                           if(!hostname){
@@ -131,7 +198,7 @@ var globalInputAppChromeExtension={
                           }
                           var customApplicationConfigString=chromeExtension.getCustomApplicationControlConfig();
                           if(customApplicationConfigString){
-                              var selectedApplicationControlConfig=this.selectApplicationControlConfig(hostname,customApplicationConfigString);
+                              var selectedApplicationControlConfig=chromeExtension.selectApplicationControlConfig(hostname,customApplicationConfigString);
                               if(selectedApplicationControlConfig){
                               return {
                                             type:"custom",
@@ -140,7 +207,7 @@ var globalInputAppChromeExtension={
                               }
                           }
                           if(chromeExtension.applicationControlConfigs){
-                              var selectedApplicationControlConfig=this.selectApplicationControlConfig(hostname,chromeExtension.applicationControlConfigs);
+                              var selectedApplicationControlConfig=chromeExtension.selectApplicationControlConfig(hostname,chromeExtension.applicationControlConfigs);
                               if(selectedApplicationControlConfig){
                                  return {
                                                   type:"default",
@@ -155,7 +222,8 @@ var globalInputAppChromeExtension={
 
 
             };
-            return applicationControlSelector.getConfig();
+
+                return applicationControlSelector.getConfig();
 
   },
 
@@ -477,29 +545,123 @@ var globalInputAppChromeExtension={
                 data:{
 
                 },
+
                 start:function(){
                       var that=this;
-                      chromeExtension.checkPageStatus(function(message){
-                          that.showMain();
+                      if(chromeExtension.getHostName()){
+                          this.data.hostname=chromeExtension.getHostName();
+                          this.showMain();
+                      }
+                      else{
+                            chromeExtension.checkPageStatus(function(message){
+                                that.data.hostname=chromeExtension.getHostName();
+                                that.showMain();
+                            }, function(){
+                                chromeExtension.whenEmptyReplyReceived();
+                            });
+                      }
 
-                      }, function(){
-                          chromeExtension.whenEmptyReplyReceived();
-                      });
                 },
                 showMain:function(){
                       this.data.applicationControlSettings=chromeExtension.getApplicationControlSettings();
                       if(this.data.applicationControlSettings){
                           this.displayEditor();
                       }
+                      else{
+                          this.displayNoControlScreen();
+                      }
+                },
+                setMessageText:function(message){
+                  this.messageElement.innerText=message;
+                },
+                getObjectStringForm:function(obj){
+                  return JSON.stringify(obj,null,2);
                 },
                 getEditContent:function(){
                   if(this.data.applicationControlSettings && this.data.applicationControlSettings.applicationConfigs){
-                      return JSON.stringify(this.data.applicationControlSettings.applicationConfigs,null,2);
+                      return this.getObjectStringForm(this.data.applicationControlSettings.applicationConfigs);
                   }
                   else{
                       return "";
                   }
 
+                },
+                isContentChanged:function(content){
+                    var contentInString=this.getObjectStringForm(content);
+                    if(!this.data.applicationControlSettings){
+                        return true;
+                    }
+                    var originalString=this.getEditContent();
+                    return originalString !== contentInString;
+                },
+                deleteRecord:function(){
+                    chromeExtension.deleteCustomApplicationControlConfig(this.data.hostname);
+                    chromeExtension.displayMainWindow();
+                },
+                saveEditContent:function(){
+                    var content=this.editorElement.value;
+                    try{
+                        content=JSON.parse(content);
+                        if(!chromeExtension.applicationConfigMatchHostName(content,chromeExtension.getHostName())){
+                              this.setMessageText("hostname in the config should match current url");
+                              return;
+                        }
+                        if(!content.forms){
+                          this.setMessageText("forms array is missing");
+                          return;
+                        }
+                        if(!Array.isArray(content.forms)){
+                          this.setMessageText("forms element shoild be array");
+                          return;
+                        }
+                        if(this.isContentChanged(content)){
+                                chromeExtension.updateCustomApplicationControlConfig(content)
+                        }
+                        chromeExtension.displayMainWindow();
+
+                    }
+                    catch(error){
+                        console.error(error);
+                        this.setMessageText("failed to parse the content:"+error);
+                        return;
+                    }
+
+
+                    //chromeExtension.displayMainWindow();
+                },
+                addNewControlSettings:function(){
+                      this.data.applicationControlSettings={
+                        type:"new",
+                        applicationConfigs:{
+                                    hostnames:{
+                                          type:"single",
+                                          value:this.data.hostname
+                                    },
+                                    forms:[{
+                                            title:"Sign In on "+this.data.hostname,
+                                            fields:[{
+                                                  id:"username",
+                                                  type:"text",
+                                                  selector:'input[name="username"]',
+                                                  data:{label:"Username"},
+                                            },{
+                                                id:"password",
+                                                type:"secret",
+                                                selector:'input[id="password"][type="password"]',
+                                                data:{label:"Password"},
+                                            },{
+                                                id:"submit",
+                                                type:"button",
+                                                selector:'button[id="submit"][type="submit"]',
+                                                data:{label:"Sign in"},
+                                                nextUI:{
+                                                         type:"refresh"
+                                                }
+                                            }]
+                                    }]
+                          }
+                      };
+                      this.displayEditor();
                 },
                 displayEditor:function(){
                        chromeExtension.clearContent();
@@ -512,7 +674,49 @@ var globalInputAppChromeExtension={
                            nLines:10
                        };
                        var inputContainer=chromeExtension.createInputField(opts);
+                       this.editorElement=opts.element;
                        chromeExtension.appendElement(inputContainer);
+
+                       opts={
+                           buttons:[{
+                                 label:"Cancel",
+                                 onclick:chromeExtension.displayMainWindow.bind(chromeExtension)
+                           },{
+                                 label:"Save",
+                                 onclick:this.saveEditContent.bind(this)
+                           }]
+                       };
+                       if(this.data.applicationControlSettings.type==="custom"){
+                         opts.buttons.splice(1,0,{
+                            label:"Delete",
+                            onclick:this.deleteRecord.bind(this)
+                         });
+                       }
+                       this.messageElement=chromeExtension.createMessageElement("");
+                       chromeExtension.appendElement(this.messageElement);
+                       var buttons=chromeExtension.createButtons(opts);
+
+                       chromeExtension.appendElement(buttons);
+
+
+
+                },
+                displayNoControlScreen:function(){
+                      chromeExtension.clearContent();
+                      this.messageElement=chromeExtension.createMessageElement("There is control settings set for this web domain, press the 'Add' butt add one");
+                      chromeExtension.appendElement(this.messageElement);
+                      opts={
+                          buttons:[{
+                                label:"Cancel",
+                                onclick:chromeExtension.displayMainWindow.bind(chromeExtension)
+                          },{
+                                label:"Add",
+                                onclick:this.addNewControlSettings.bind(this)
+                          }]
+                      };
+                      var buttons=chromeExtension.createButtons(opts);
+                      chromeExtension.appendElement(buttons);
+
                 }
 
             }
@@ -1101,7 +1305,6 @@ var globalInputAppChromeExtension={
                   if(opts.nLines && opts.nLines>1){
                         element = document.createElement('textarea');
                         element.rows=opts.nLines;
-                        element.cols=30;
                   }
                   else{
                     element = document.createElement('input');
@@ -1115,6 +1318,7 @@ var globalInputAppChromeExtension={
                   if(opts.readonly){
                     element.readOnly=opts.readonly;
                   }
+                  element.className="textInput";
 
             inputContainer.appendChild(element);
             opts.element=element;
@@ -1162,7 +1366,7 @@ var globalInputAppChromeExtension={
       opts.elements=[];
                   for(i=0;i<opts.items.length;i++){
                         var inputContainer=document.createElement('div');
-                        inputContainer.className = "field";
+                        inputContainer.className = "radioContainer";
                             var item=opts.items[i];
                             var element = document.createElement('input');
 

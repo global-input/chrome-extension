@@ -119,7 +119,7 @@ html, body {
   margin-top: 5px;
   margin-bottom: 5px;
   padding-bottom: 5px;
-  border-bottom: 1px solid #888888;
+  border-bottom: 1px solid #eeeeee;
 }
 .field {
   width:100%;
@@ -128,6 +128,17 @@ html, body {
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
+}
+.textInput{
+  width:100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+
+}
+.textInput{
+  width:100%;
 }
 .field label{
     display: flex;

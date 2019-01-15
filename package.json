@@ -4,7 +4,9 @@
   "description": "Global Input extension to support the Global Input App ",
   "main": "content.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "./postinstall.sh",
+    "package": "cd extension && zip -r ../globalinputapp.zip ."
   },
   "repository": {
     "type": "git",

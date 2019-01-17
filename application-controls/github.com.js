@@ -31,7 +31,7 @@
               title:"Two-factor authentication",
               fields:[{
                 id:"twofactorcode",
-                type:"text",
+                type:"secret",
                 selector:'input[id="otp"]',
                 data:{label:"Authentication code"},
               },{

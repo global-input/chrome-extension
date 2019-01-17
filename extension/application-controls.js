@@ -733,7 +733,7 @@
               title:"Two-factor authentication",
               fields:[{
                 id:"twofactorcode",
-                type:"text",
+                type:"secret",
                 selector:'input[id="otp"]',
                 data:{label:"Authentication code"},
               },{
@@ -1013,7 +1013,7 @@
                     fields:[{
                           id:"username",
                           type:"text",
-                          selector:'input[id="login-form-username"]',
+                          selector:'input[id="login-form-username"]',                                              
                           data:{label:"Username"},
                     },{
                         id:"password",
@@ -1023,7 +1023,7 @@
                     },{
                         id:"submit",
                         type:"button",
-                        selector:'input[id="login-form-submit"]',
+                        selector:{element:['input[id="login-form-submit"]','input[id="login"]']},
                         data:{label:"Log In"},
                         nextUI:{
                                  type:"refresh"

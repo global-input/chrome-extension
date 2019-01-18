@@ -705,7 +705,7 @@ var globalInputAppChromeExtension={
                 },
                 displayNoControlScreen:function(){
                       chromeExtension.clearContent();
-                      this.messageElement=chromeExtension.createMessageElement("There is control settings set for this web domain, press the 'Add' butt add one");
+                      this.messageElement=chromeExtension.createMessageElement("There is no control settings set for this web domain, press the 'Add' butt add one");
                       chromeExtension.appendElement(this.messageElement);
                       opts={
                           buttons:[{
@@ -1135,7 +1135,7 @@ var globalInputAppChromeExtension={
      this.clearContent();
      this.appendForm();
      this.appendMessage(this.getSenderTextContent());
-     this.appendElement(this.createHTMLElement('No identifiable form found on this page. Hence, instead of direct operation, you have to copy the content from the form on this window to the target application. In the mean time, you may <a href="https://globalinput.co.uk/global-input-app/contact-us" target="_blank">let us know</a> so we can do the necessary improvement to allow you to operate on this page directly.'));
+     this.appendElement(this.createHTMLElement('A valid Application Control Setting is needed if you need to use your mobile to operate on this page . You can either add an Application Control Settings for this page or you can use copy and paste operation to copy the content from the form on this window to the target application. You may also <a href="https://globalinput.co.uk/global-input-app/contact-us" target="_blank">contact us</a> for assistance.'));
      this.appendCustomiseWindowFormButton();
      this.updateCacheTimer();
    },

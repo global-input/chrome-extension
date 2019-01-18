@@ -1,30 +1,45 @@
 # Global Input Chrome Extension
+This Chrome Extension together with the [Global Input App](https://globalinput.co.uk) allows you to sign in to any websites or any web applications you are visiting in public view without revealing your passwords.  You may watch [this demo video](https://www.youtube.com/watch?v=jLIIrlEoQXM&t=3s) or [this tutorial video](https://www.youtube.com/watch?v=7-vavraSj-s) to find out more information about this feature.
 
+This extension also allows you to transfer content securely between devices. When you type content on the form on the extension, the content will be transferred to your mobile, or vice versa.
 
-This is a Chrome browser extension package that allows you to transfer data from your [Global Input App](https://globalinput.co.uk) to the extension and automate your signing in to the website you are visiting. You can quickly sign in to many popular business applications such as Confluence, JRA, GitHub, GitLab, AWS console, Dropbox, Wordpress websites etc.
+Furthermore, you can also create Application Control Settings in the extension to use your mobile to operate on any web applications, for example, you can use your mobile to control a video player on a website. Again, you can do so by providing the identifier of the HTML elements that you would like to control or input from your mobile.  
 
-This is also an example application of how to use the [global-input-message](https://github.com/global-input/global-input-message) JavaScript library to extend an application to support the Global Input App, so that the application can be operated using an mobile.
+This extension is powered by the [global-input-message](https://github.com/global-input/global-input-message) JavaScript library, which is for extending an application to have a secure mobile input and mobile control.
 
-### Installation
+### Easy Installation
 You can do one-click install from  
- [Global Input from Chrome Store](https://chrome.google.com/webstore/detail/global-input-app/hcklienddlealndjnakkagefaelhnjkp)
+ [Global Input App extension from Chrome Store](https://chrome.google.com/webstore/detail/global-input-app/hcklienddlealndjnakkagefaelhnjkp)
 
-Or you can download the source from this repository,  and then do the manual install:
-Download the [zip file](https://github.com/global-input/chrome-extension/archive/master.zip) and extract it into a folder.  If you have git installed on your computer, you can clone the git repository into a folder on your computer. Then, click on the "Window" menu of your Chrome Browser. Look for the "Extensions" menu item from the menu items listed. Clicking on the "Extensions" menu item will lead you to the Chrome Extensions list.  If you click on the ```Load unpacked extensions...``` button on the top, a file selection window will appear. Please  select the folder, to which you have downloaded the chrome extension. And then click on the ```select``` button in the File Selection Dialog window. This adds the Global Input to the "Extensions" list.  
+### Manual Installation
+You can also download the source code from this repository,  and then do the manual installation:
 
-After the installation, you should be able to see a Global Input Icon at the right hand side of the address bar of your Chrome browser. Please click on it to confirm that it is installed.
+After downloading (git clone) the source code, run the following command in the source folder inside your terminal:
+```
+npm install
+```
+Above command will download the dependencies and append all the configurations files in the ```application-controls``` folder into a single file, which is ```extension/application-controls.js```.
+This file defines the HTML elements of the web page that needs to be controlled from the Global Input App.
 
+Then type the following URL in the address bar of your browser to go to the extension window:
+```
+chrome://extensions
+```
 
+Then, click on the "Load unpacked" button, which is located on the top of the "Extensions" window.  A File dialogue box should pop up to allow you to choose the extension folder. The extension folder is located inside the folder that you have downloaded the source code.
 
+After the installation, you should be able to see a Global Input Icon at the right-hand side of the address bar of your Chrome browser. Please click on it to confirm that it is installed.
 
 ### How To Use
 
-Now you can load your favourite web applications such as Confluence, Jira, Lucidchart, AWS console, Dropbox etc with your Chrome browser and sign in with your mobile.
-
-When the Sign In page is being displayed, click on the "Global Input App" icon,  which is located on the right hand side of the address bar of your browser. Clicking on the icon should pop up a small window. The window contains a title "Global Input App" and a button "Enable For This Page". Clicking on the button should make the current page display a QR Code alongside the Sign In form.
+If a webpage is already loaded in a tab of your browser when you have installed the extension, you need to reload the page. Then click on the "Global Input App" icon,  which is located on the right-hand side of the address bar of your browser. Clicking on the icon should pop up a small window. Clicking on the "Connect to mobile" button should display a QR Code in the extension window.
 
 You can now scan the QR code using the Global Input App (available in [iOS](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4) and [Android](https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4)) with your mobile.
 
-When you scan the QR Code using the Global Input App, a Sign In Form will be displayed on your mobile screen. When you are filling the form on your mobile, the form on the computer screen will be filled in automatically in-time similar to a Remote Desktop session. After finished filling the form, you can save the form content in your mobile device so you can reuse it to automate the process next time.
+When you scan the QR Code using the Global Input App, a form control should be displayed on your mobile screen. Now you can use your mobile to operate on the page loaded on your Chrome browser running on your computer.
 
-This way, you can automate the various processes on the applications running on computer, Smart TV and other devices. If you have any questions or run into any issues, please contact me on dilshat@iterativesolution.co.uk.
+### Application Control Settiongs ###
+
+The example websites that you can sign in without any extra Application Control settings are Google, GitHub, GitLab, Amazon+AWS, Dropbox, Apple, Twitter, Facebook, C9, Digital Ocean, Evernote, Heroku, Atlassian, join.me, JS BIN, JSFiddle, LinkedIn, Microsoft, Wordpress, Lucidchart, NpmJS, ProtonMail, Vultr, Wable, Wisepay, 123-reg etc. You can find the full list from the ```application-controls" folder if you have downloaded the source code. When you have found that the extension does not have Application Control Settings for some website/web applications, you can create one in the Application Control Settings window by specifying the identifier of the HTML elements in the web page.  In the extension window, click on the "Application Control Settings", where you can specify the HTML elements of the page that is currently loaded. In order to find the HTML element, you just need to right mouse click on the form elements and click on "inspect", then you can find the corresponding HTML elements.
+
+If you operate without Application Control settings, you can use copy-paste operation to copy content from the form on the extension window to the website. You can also customise the form on the extension for the website as well. One advantage of using the form on the extension window is that you can also transfer content from your computer to your mobile as well.

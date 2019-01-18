@@ -372,6 +372,45 @@
 
   applicationControlConfig={
 
+          hostnames:{
+                type:"array",
+                value:["adobeid-na1.services.adobe.com"]
+          },
+        forms:[{
+                  title:"Adobe ID",
+                  fields:[{
+                    id:"username",
+                    type:"text",
+                    selector:'input[id="adobeid_username"]',
+                    data:{label:"Email address"},
+                  },{
+
+                    id:"password",
+                    type:"secret",
+                    selector:'input[id="adobeid_password"][type="password"]',
+                    data:{label:"Password"},
+                  },{
+                    id:"next",
+                    type:"button",
+                    selector:'button[id="sign_in"]',
+                    data:{label:"Sign in"},
+                    nextUI:{
+                             type:"refresh"
+                    }
+
+                  }]
+        }]
+
+      };
+      if(!window.globalInputApp_applicationControlConfigs){
+              window.globalInputApp_applicationControlConfigs=[];
+      }
+      window.globalInputApp_applicationControlConfigs.push(applicationControlConfig);
+})();
+(function(){
+
+  applicationControlConfig={
+
             hostnames:{
                   type:"array",
                   value:["signin.aws.amazon.com","www.amazon.com","www.amazon.co.uk"]
@@ -1461,6 +1500,43 @@
 
           hostnames:{
                 type:"single",
+                value:"secure.meetup.com"
+          },
+          forms:[{
+              title:"Meetup",
+              fields:[{
+                id:"username",
+                type:"text",
+                selector:'input[id="email"]',
+                data:{label:"Username"},
+              },{
+                id:"password",
+                type:"secret",
+                selector:'input[id="password"][type="password"]',
+                data:{label:"Password"},
+              },{
+                id:"login",
+                type:"button",
+                selector:'form input[type="submit"][value="Log in"]',
+                data:{label:"Log In"},
+                nextUI:{
+                         type:"refresh"
+                }
+              }]
+          }]
+
+      };
+      if(!window.globalInputApp_applicationControlConfigs){
+              window.globalInputApp_applicationControlConfigs=[];
+      }
+      window.globalInputApp_applicationControlConfigs.push(applicationControlConfig);
+})();
+(function(){
+
+  applicationControlConfig={
+
+          hostnames:{
+                type:"single",
                 value:"www.npmjs.com"
           },
           forms:[{
@@ -1627,6 +1703,46 @@
                     }
                 },
                 data:{label:"Sign In"},
+                nextUI:{
+                         type:"refresh"
+                }
+              }]
+          }]
+
+      };
+      if(!window.globalInputApp_applicationControlConfigs){
+              window.globalInputApp_applicationControlConfigs=[];
+      }
+      window.globalInputApp_applicationControlConfigs.push(applicationControlConfig);
+})();
+(function(){
+
+  applicationControlConfig={
+
+          hostnames:{
+                type:"array",
+                value:["twitter.com"]
+          },
+          forms:[{
+              title:"Twitter",
+              fields:[{
+                id:"username",
+                type:"text",
+                selector:'div[id="page-container"] input[name="session[username_or_email]"]',
+                data:{label:"Email address"},
+              },{
+                id:"password",
+                type:"secret",
+                selector:'div[id="page-container"]  input[name="session[password]"][type="password"]',
+                data:{label:"Password"},
+              },{
+                id:"login",
+                type:"button",
+                selector:{
+                    element:'div[id="page-container"] button[type="submit"]',
+                    textContent:"Log In"
+                },
+                data:{label:"Log In"},
                 nextUI:{
                          type:"refresh"
                 }

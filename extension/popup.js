@@ -102,7 +102,19 @@ var globalInputAppChromeExtension={
         }
         return null;
   },
-  updateCustomApplicationControlConfig(newContent){
+  isApplicationControlDisabled:function(){
+      var applicationConfigString=localStorage.getItem("iterative.globaliputapp.controlDisabled");
+      if(applicationConfigString){
+          return true;
+      }
+  },
+  disableApplicationControl:function(){
+      localStorage.setItem("iterative.globaliputapp.controlDisabled","true");
+  },
+  enableApplicationControl:function(){
+      localStorage.removeItem("iterative.globaliputapp.controlDisabled");
+  },
+  updateCustomApplicationControlConfig:function(newContent){
         var hostname=this.getHostName();
         if(!hostname){
           console.error("hostname is null, so it will not save control settings");
@@ -564,11 +576,12 @@ var globalInputAppChromeExtension={
                 },
                 showMain:function(){
                       this.data.applicationControlSettings=chromeExtension.getApplicationControlSettings();
-                      if(this.data.applicationControlSettings){
-                          this.displayEditor();
+
+                      if((!chromeExtension.isApplicationControlDisabled()) && this.data.applicationControlSettings){
+                            this.displayEditor();
                       }
                       else{
-                          this.displayNoControlScreen();
+                            this.displayApplicationControlDisabledScreen();
                       }
                 },
                 setMessageText:function(message){
@@ -598,6 +611,11 @@ var globalInputAppChromeExtension={
                 },
                 deleteRecord:function(){
                     chromeExtension.deleteCustomApplicationControlConfig(this.data.hostname);
+                    chromeExtension.disableApplicationControl();
+                    chromeExtension.displayMainWindow();
+                },
+                disableApplicationControl(){
+                    chromeExtension.disableApplicationControl();
                     chromeExtension.displayMainWindow();
                 },
                 saveEditContent:function(){
@@ -620,7 +638,6 @@ var globalInputAppChromeExtension={
                                 chromeExtension.updateCustomApplicationControlConfig(content)
                         }
                         chromeExtension.displayMainWindow();
-
                     }
                     catch(error){
                         console.error(error);
@@ -631,45 +648,51 @@ var globalInputAppChromeExtension={
 
                     //chromeExtension.displayMainWindow();
                 },
-                addNewControlSettings:function(){
-                      this.data.applicationControlSettings={
-                        type:"new",
-                        applicationConfigs:{
-                                    hostnames:{
-                                          type:"single",
-                                          value:this.data.hostname
-                                    },
-                                    forms:[{
-                                            title:"Sign In on "+this.data.hostname,
-                                            fields:[{
-                                                  id:"username",
-                                                  type:"text",
-                                                  selector:'input[id="login-form-username"]',
-                                                  data:{label:"Username"},
-                                            },{
-                                                id:"password",
-                                                type:"secret",
-                                                selector:'input[id="login-form-password"][type="password"]',
-                                                data:{label:"Password"},
-                                            },{
-                                                id:"submit",
-                                                type:"button",
-                                                selector:'input[id="login"]',
-                                                data:{label:"Log In"},
-                                                nextUI:{
-                                                         type:"refresh"
-                                                }
-                                            }]
-                                    }]
-                          }
-                      };
-                      this.displayEditor();
+                createNewApplicationControlSetting:function(){
+                    return {
+                            type:"new",
+                            applicationConfigs:{
+                                        hostnames:{
+                                              type:"single",
+                                              value:this.data.hostname
+                                        },
+                                        forms:[{
+                                                title:"Sign In on "+this.data.hostname,
+                                                fields:[{
+                                                      id:"username",
+                                                      type:"text",
+                                                      selector:'input[id="login-form-username"]',
+                                                      data:{label:"Username"},
+                                                },{
+                                                    id:"password",
+                                                    type:"secret",
+                                                    selector:'input[id="login-form-password"][type="password"]',
+                                                    data:{label:"Password"},
+                                                },{
+                                                    id:"submit",
+                                                    type:"button",
+                                                    selector:'input[id="login"]',
+                                                    data:{label:"Log In"},
+                                                    nextUI:{
+                                                             type:"refresh"
+                                                    }
+                                                }]
+                                        }]
+                              }
+                          };
+                },
+                enableApplicationControl:function(){
+                  chromeExtension.enableApplicationControl();
+                  if(!this.data.applicationControlSettings){
+                      this.data.applicationControlSettings=this.createNewApplicationControlSetting();
+                  }
+                  this.displayEditor();
                 },
                 displayEditor:function(){
                        chromeExtension.clearContent();
                        var editContent=this.getEditContent();
                        var opts={
-                           label:"Control Configs",
+                           label:"Application Control Settings for this Website",
                            id:"controlConfigsContent",
                            type:"text",
                            value:editContent,
@@ -690,10 +713,17 @@ var globalInputAppChromeExtension={
                        };
                        if(this.data.applicationControlSettings.type==="custom"){
                          opts.buttons.splice(1,0,{
-                            label:"Delete",
+                            label:"Disable",
                             onclick:this.deleteRecord.bind(this)
                          });
                        }
+                       else if(!chromeExtension.isApplicationControlDisabled()){
+                         opts.buttons.splice(1,0,{
+                             label:"Disable",
+                             onclick:this.disableApplicationControl.bind(this)
+                         });
+                       }
+
                        this.messageElement=chromeExtension.createMessageElement("");
                        chromeExtension.appendElement(this.messageElement);
                        var buttons=chromeExtension.createButtons(opts);
@@ -703,17 +733,17 @@ var globalInputAppChromeExtension={
 
 
                 },
-                displayNoControlScreen:function(){
+                displayApplicationControlDisabledScreen:function(){
                       chromeExtension.clearContent();
-                      this.messageElement=chromeExtension.createMessageElement("There is no control settings set for this web domain, press the 'Add' butt add one");
+                      this.messageElement=chromeExtension.createMessageElement('The Application Control is not enabled for this website.  This means that you cannot directly communicate with this page. However, you can transfer data to/from this extension from your mobile and use copy-and-paste operation. If you would like to enable Application Control for this website, please click on "Enable"  button.');
                       chromeExtension.appendElement(this.messageElement);
                       opts={
                           buttons:[{
                                 label:"Cancel",
                                 onclick:chromeExtension.displayMainWindow.bind(chromeExtension)
                           },{
-                                label:"Add",
-                                onclick:this.addNewControlSettings.bind(this)
+                                label:"Enable",
+                                onclick:this.enableApplicationControl.bind(this)
                           }]
                       };
                       var buttons=chromeExtension.createButtons(opts);
@@ -721,7 +751,7 @@ var globalInputAppChromeExtension={
 
                 }
 
-            }
+            };
             applicationControlEditor.start();
 
     },
@@ -1018,7 +1048,7 @@ var globalInputAppChromeExtension={
       var request={
       };
       var applicationControlSettings=this.getApplicationControlSettings();
-      if(applicationControlSettings){
+      if(applicationControlSettings && (!this.isApplicationControlDisabled())){
             request.applicationControlConfig=applicationControlSettings.applicationConfigs;
       }
       var that=this;
@@ -1135,7 +1165,7 @@ var globalInputAppChromeExtension={
      this.clearContent();
      this.appendForm();
      this.appendMessage(this.getSenderTextContent());
-     this.appendElement(this.createHTMLElement('A valid Application Control Setting is needed if you need to use your mobile to operate on this page . You can either add an Application Control Settings for this page or you can use copy and paste operation to copy the content from the form on this window to the target application. You may also <a href="https://globalinput.co.uk/global-input-app/contact-us" target="_blank">contact us</a> for assistance.'));
+     this.appendElement(this.createHTMLElement('The Application Control is not enabled for the direct operation on this website. You can still transfer data securely from/to this extension window using your mobile and do copy and paste operation.  You may enable the application control for this website in the application control settings window. Please <a href="https://globalinput.co.uk/global-input-app/contact-us" target="_blank">contact us</a> for more information.'));
      this.appendCustomiseWindowFormButton();
      this.updateCacheTimer();
    },

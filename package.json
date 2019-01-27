@@ -5,7 +5,7 @@
   "main": "content.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "./postinstall.sh",
+    "postinstall": "node ./postinstall.js",
     "package": "cd extension && zip -r ../globalinputapp.zip ."
   },
   "repository": {
@@ -26,5 +26,10 @@
   "dependencies": {
     "davidshimjs-qrcodejs": "0.0.2",
     "global-input-message": "^1.6.4"
+  },
+  "devDependencies": {
+    "concat": "^1.0.3",
+    "copyfiles": "^2.1.0",
+    "replace": "^1.0.1"
   }
 }

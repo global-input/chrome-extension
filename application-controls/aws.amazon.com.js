@@ -4,10 +4,10 @@
 
             hostnames:{
                   type:"array",
-                  value:["signin.aws.amazon.com","www.amazon.com","www.amazon.co.uk"]
+                  value:["signin.aws.amazon.com","www.amazon.com","www.amazon.co.uk", "us-east-1.signin.aws.amazon.com", "eu-west-1.signin.aws.amazon.com","eu-west-2.signin.aws.amazon.com"]
             },
             forms:[{
-                      title:"Sign In",
+                      title:"AWS Sign In",
                       fields:[{
                         id:"username",
                         type:"text",
@@ -80,6 +80,33 @@
                                               type:"refresh"
                                      }
                                 }]
+                    },{
+                              title:"AWS Sign In",
+                              fields:[{
+                                id:"account",
+                                type:"text",
+                                selector:'input[id="account"]',
+                                data:{label:"Account Id or alias"},
+                              },{
+                                id:"username",
+                                type:"text",
+                                selector:'input[id="username"]',
+                                data:{label:"IAM user name"},
+                              },{
+                                id:"password",
+                                type:"secret",
+                                selector:'input[id="password"]',
+                                data:{label:"Password"},
+                              },{
+                                id:"submit",
+                                type:"button",
+                                selector:'a[id="signin_button"]',
+                                data:{label:"Sign In"},
+                                nextUI:{
+                                         type:"refresh"
+                                }
+
+                              }]
                     },{
 
                           title:"Verifying that it's you",

@@ -77,6 +77,28 @@
                                      }]
 
                  },{
+                      title:"Log in",
+                      fields:[{
+                                id:"username",
+                                type:"text",
+                                selector:'input[id="username"]',
+                                data:{label:"Username"},
+                              },{
+                                 id:"password",
+                                 type:"secret",
+                                 selector:'input[id="password"]',
+                                 data:{label:"Password"},
+                               },{
+                                 id:"signin",
+                                 type:"button",
+                                 selector:'input[id="signin"][type="submit"]',
+                                 data:{label:"Login"},
+                                 nextUI:{
+                                          type:"refresh"
+                                 }
+                               }]
+
+                 },{
                               title:"Choose Actions",
                               fields:[{
                                    id:"login",

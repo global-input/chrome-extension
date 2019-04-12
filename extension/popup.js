@@ -95,7 +95,7 @@ var globalInputAppChromeExtension={
                 return applicatoonControlConfig=JSON.parse(applicationConfigString);
             }
             catch(error){
-                  console.log("error in loading the applicationConfigString:"+error);
+                  console.log("error in loading the applicationConfig:"+error);
             }
 
 
@@ -321,13 +321,10 @@ var globalInputAppChromeExtension={
         this.appendElement(qrCodeContainerElement);
   },
   appendGlobalInputAppAvailable:function(){
-        var element=this.createHTMLElement('Scan the QR Code above with your Global Input App. Global Input App is available in <a href="https://itunes.apple.com/us/app/global-input-app/id1269541616?mt=8&ign-mpt=uo%3D4" target="_blank">App Store</a> and <a href="https://play.google.com/store/apps/details?id=uk.co.globalinput&hl=en_GB" target="_blank">Google Play Store</a>. Please visit <a href="https://globalinput.co.uk" target="_blank">our website</a> for more information.');
+        var element=this.createHTMLElement('Scan the QR Code with <a href="https://globalinput.co.uk/" target="_blank">Global Input App</a>.');
         this.appendElement(element);
   },
-  appendSeparateWebApplication:function(){
-        var element=this.createHTMLElement('You can also use <a href="https://globalinput.co.uk/global-input-app/form-data-transfer" target="_blank">this separate web application</a> to transfer content');
-        this.appendElement(element);
-  },
+
 
 
   displayInitialising:function(){
@@ -443,7 +440,6 @@ var globalInputAppChromeExtension={
       var that=this;
       this.clearContent();
       this.appendConnectToMobileButton();
-      that.appendMessage("Click on the button above to connect to your Global Input App on your mobile.");
       this.appendSettingsButton();
     },
     checkPageStatus:function(onSucess, onFailure){
@@ -623,15 +619,15 @@ var globalInputAppChromeExtension={
                     try{
                         content=JSON.parse(content);
                         if(!chromeExtension.applicationConfigMatchHostName(content,chromeExtension.getHostName())){
-                              this.setMessageText("hostname in the config should match current url");
+                              this.setMessageText("hostname in the config should match the current url");
                               return;
                         }
                         if(!content.forms){
-                          this.setMessageText("forms array is missing");
+                          this.setMessageText("form array is missing");
                           return;
                         }
                         if(!Array.isArray(content.forms)){
-                          this.setMessageText("forms element shoild be array");
+                          this.setMessageText("form element should be array");
                           return;
                         }
                         if(this.isContentChanged(content)){
@@ -657,7 +653,7 @@ var globalInputAppChromeExtension={
                                               value:this.data.hostname
                                         },
                                         forms:[{
-                                                title:"Sign In on "+this.data.hostname,
+                                                title:this.data.hostname,
                                                 fields:[{
                                                       id:"username",
                                                       type:"text",
@@ -802,6 +798,7 @@ var globalInputAppChromeExtension={
       };
       var buttons=this.createButtons(opts);
       this.appendElement(buttons);
+      this.appendElement(this.createHTMLElement('The <a href="https://github.com/global-input/global-input-node" target="_blank">WebSocket server</a> is responsible for routing the encrypted messages between the extension and the <a href="https://globalinput.co.uk/" target="_blank">Global Input App'));
     },
     displayWindowFormEditor:function(){
         var chromeExtension=this;
@@ -1120,9 +1117,8 @@ var globalInputAppChromeExtension={
       this.setWindowHeight(50);
       this.setAction("content-not-available");
       this.clearContent();
-      this.appendMessage("Unable to obtain the page status. Please check the URL on the web adress bar and then reload/refresh the page, and try again after the page is fully loaded.");
-      this.appendSeparateWebApplication();
-
+      var element=this.createHTMLElement('Check to make sure that the URL on the web adress bar is correct, and then reload/refresh the page and try again. If the problem persist, you may temporarily use <a href="https://globalinput.co.uk/global-input-app/form-data-transfer" target="_blank">this web application</a> for the time being for this website.');
+      this.appendElement(element);
     },
     buildBasicGlobalInputConfig:function(globalInputSettings){
       var that=this;
@@ -1165,7 +1161,7 @@ var globalInputAppChromeExtension={
      this.clearContent();
      this.appendForm();
      this.appendMessage(this.getSenderTextContent());
-     this.appendElement(this.createHTMLElement('The Application Control is not enabled for the direct operation on this website. You can still transfer data securely from/to this extension window using your mobile and do copy and paste operation.  You may enable the application control for this website in the application control settings window. Please <a href="https://globalinput.co.uk/global-input-app/contact-us" target="_blank">contact us</a> for more information.'));
+     this.appendElement(this.createHTMLElement('You can now transfer content from/to mobile using the form above. You can copy and paste content across devices.'));
      this.appendCustomiseWindowFormButton();
      this.updateCacheTimer();
    },

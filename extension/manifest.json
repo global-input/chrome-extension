@@ -8,9 +8,9 @@
       "24":"images/globalInput24.png",
       "16":"images/globalInput16.png"
   },
-  "version": "2.0.5",
+  "version": "2.0.7",
   "manifest_version": 2,
-  "description": "Store your credentials in the Global Input App on your mobile and use it to sign in to the web applications running on computers.",
+  "description": "Mobile authentication, mobile input & control, transfer content securely between your mobile and your computer.",
   "homepage_url": "https://globalinput.co.uk/",
   "browser_action":{
         "default_icon":{

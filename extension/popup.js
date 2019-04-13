@@ -688,7 +688,7 @@ var globalInputAppChromeExtension={
                        chromeExtension.clearContent();
                        var editContent=this.getEditContent();
                        var opts={
-                           label:"Application Control Settings for this Website",
+                           label:'Application Control Settings for this URL',
                            id:"controlConfigsContent",
                            type:"text",
                            value:editContent,
@@ -697,6 +697,7 @@ var globalInputAppChromeExtension={
                        var inputContainer=chromeExtension.createInputField(opts);
                        this.editorElement=opts.element;
                        chromeExtension.appendElement(inputContainer);
+
 
                        opts={
                            buttons:[{
@@ -725,13 +726,12 @@ var globalInputAppChromeExtension={
                        var buttons=chromeExtension.createButtons(opts);
 
                        chromeExtension.appendElement(buttons);
-
-
+                       chromeExtension.appendElement(chromeExtension.createHTMLElement('<a href="https://github.com/global-input/chrome-extension/tree/master/application-controls" target="_blank">example settings</a>'));
 
                 },
                 displayApplicationControlDisabledScreen:function(){
                       chromeExtension.clearContent();
-                      this.messageElement=chromeExtension.createMessageElement('The Application Control is not enabled for this website.  This means that you cannot directly communicate with this page. However, you can transfer data to/from this extension from your mobile and use copy-and-paste operation. If you would like to enable Application Control for this website, please click on "Enable"  button.');
+                      this.messageElement=chromeExtension.createMessageElement('The Application Control is not enabled for this URL. You can still securely transfer content between your mobile and the form on the extension window and then copy and paste the content to the form on the page. Press "Enable" button to enable the Application Control for this URL so that you can directly operate on the page.');
                       chromeExtension.appendElement(this.messageElement);
                       opts={
                           buttons:[{
@@ -798,7 +798,7 @@ var globalInputAppChromeExtension={
       };
       var buttons=this.createButtons(opts);
       this.appendElement(buttons);
-      this.appendElement(this.createHTMLElement('The <a href="https://github.com/global-input/global-input-node" target="_blank">WebSocket server</a> is responsible for routing the encrypted messages between the extension and the <a href="https://globalinput.co.uk/" target="_blank">Global Input App'));
+      this.appendElement(this.createHTMLElement('The <a href="https://github.com/global-input/global-input-node" target="_blank">GIA WebSocket Server</a> is responsible for routing the encrypted messages between the extension and the <a href="https://globalinput.co.uk/" target="_blank">Global Input App</a>.'));
     },
     displayWindowFormEditor:function(){
         var chromeExtension=this;

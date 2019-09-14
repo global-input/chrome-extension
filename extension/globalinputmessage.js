@@ -1,25 +1,28 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports["default"] = void 0;
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _socket = require("socket.io-client");
-
-var _socket2 = _interopRequireDefault(_socket);
+var _socket = _interopRequireDefault(require("socket.io-client"));
 
 var _util = require("./util");
 
 var _codedataUtil = require("./codedataUtil");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var GlobalInputMessageConnector = function () {
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var GlobalInputMessageConnector =
+/*#__PURE__*/
+function () {
   _createClass(GlobalInputMessageConnector, [{
     key: "logError",
     value: function logError(message, error) {
@@ -58,6 +61,7 @@ var GlobalInputMessageConnector = function () {
         this.socket.disconnect();
         this.socket = null;
       }
+
       this.targetSession = null;
     }
   }, {
@@ -69,15 +73,16 @@ var GlobalInputMessageConnector = function () {
     key: "connect",
     value: function connect() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
       this.disconnect();
 
       if (options.apikey) {
         this.apikey = options.apikey;
       }
+
       if (options.securityGroup) {
         this.securityGroup = options.securityGroup;
       }
+
       if (options.client) {
         this.client = options.client;
       }
@@ -85,20 +90,23 @@ var GlobalInputMessageConnector = function () {
       if (options.url) {
         this.url = options.url;
       }
+
       if (options.connectSession) {
         this._connectToSocket(options);
       } else {
         var url = this.url + "/global-input/request-socket-url?apikey=" + this.apikey;
         var that = this;
-        console.log("url:" + url);
         (0, _util.basicGetURL)(url, function (application) {
           that.url = application.url;
+
           if (application.apikey) {
             that.apikey = application.apikey;
           }
+
           that._connectToSocket(options);
         }, function () {
           console.warn("failed to get the socket server url");
+
           if (options.onError) {
             options.onError("failed to get the socket server url");
           }
@@ -109,7 +117,7 @@ var GlobalInputMessageConnector = function () {
     key: "_connectToSocket",
     value: function _connectToSocket(options) {
       console.log("Copyright © 2017-2022 by Dilshat Hewzulla");
-      this.socket = (0, _socket2.default)(this.url);
+      this.socket = (0, _socket["default"])(this.url);
       var that = this;
       this.socket.on("registerPermission", function (data) {
         that.onRegisterPermission(JSON.parse(data), options);
@@ -122,6 +130,7 @@ var GlobalInputMessageConnector = function () {
         var that = this;
         this.socket.on("registered", function (data) {
           var registeredMessage = JSON.parse(data);
+
           if (registeredMessage.result === "ok") {
             if (options.onRegistered) {
               options.onRegistered(function () {
@@ -142,7 +151,6 @@ var GlobalInputMessageConnector = function () {
           client: this.client,
           apikey: this.apikey
         };
-
         this.socket.emit("register", JSON.stringify(registerMessage));
       } else {
         this.logError("failed to get register permission");
@@ -153,9 +161,9 @@ var GlobalInputMessageConnector = function () {
     value: function onRegistered(registeredMessage, options) {
       var that = this;
       this.socket.on(this.session + "/inputPermission", function (data) {
-
         that.processInputPermission(JSON.parse(data), options);
       });
+
       if (options.connectSession) {
         that.socket.on(options.connectSession + "/inputPermissionResult", function (data) {
           that.onInputPermissionResult(JSON.parse(data), options);
@@ -171,12 +179,12 @@ var GlobalInputMessageConnector = function () {
           time: new Date().getTime()
         };
         requestInputPermissionMessage.data = JSON.stringify(requestInputPermissionMessage.data);
+
         if (options.aes) {
           requestInputPermissionMessage.data = (0, _util.encrypt)(requestInputPermissionMessage.data, options.aes);
         }
 
         var data = JSON.stringify(requestInputPermissionMessage);
-
         this.socket.emit("inputPermision", data);
       }
     }
@@ -187,17 +195,20 @@ var GlobalInputMessageConnector = function () {
         this.sendInputPermissionDeniedMessage(inputPermissionMessage, "data is missing in the permision request");
         return;
       }
+
       try {
         inputPermissionMessage.data = (0, _util.decrypt)(inputPermissionMessage.data, this.aes);
       } catch (error) {
         this.sendInputPermissionDeniedMessage(inputPermissionMessage, "failed to decrypt");
         return;
       }
+
       if (!inputPermissionMessage.data) {
         this.logError(" failed to decrypt the data in the permission request");
         this.sendInputPermissionDeniedMessage(inputPermissionMessage, "failed to decrypt");
         return;
       }
+
       try {
         inputPermissionMessage.data = JSON.parse(inputPermissionMessage.data);
       } catch (error) {
@@ -205,11 +216,13 @@ var GlobalInputMessageConnector = function () {
         this.sendInputPermissionDeniedMessage(inputPermissionMessage, "data format error in the permisson request");
         return;
       }
+
       if (inputPermissionMessage.data.client !== inputPermissionMessage.client) {
         this.logError("***the client id mis match in the permission");
         this.sendInputPermissionDeniedMessage(inputPermissionMessage, "client id mismatch");
         return;
       }
+
       var that = this;
 
       if (options.onInputPermission) {
@@ -233,21 +246,30 @@ var GlobalInputMessageConnector = function () {
         this.grantPermissionQueue = this.grantPermissionQueue.filter(function (s) {
           return s.inputPermissionMessage.client !== inputPermissionMessage.client;
         });
-        this.grantPermissionQueue.push({ inputPermissionMessage: inputPermissionMessage, options: options });
+        this.grantPermissionQueue.push({
+          inputPermissionMessage: inputPermissionMessage,
+          options: options
+        });
         this.grantPermissionQueueLastModified = new Date();
         return;
       }
+
       var existingSameSenders = this.connectedSenders.filter(function (s) {
         return s.client === inputPermissionMessage.client;
       });
+
       if (existingSameSenders.length > 0) {
         existingSameSenders.forEach(function (s) {
           console.log("Disconnect from the same client");
+
           _this.disconnectSender(s);
         });
         console.log("the client is  connected previously");
         this.grantPermissionQueue = [];
-        this.grantPermissionQueue.push({ inputPermissionMessage: inputPermissionMessage, options: options });
+        this.grantPermissionQueue.push({
+          inputPermissionMessage: inputPermissionMessage,
+          options: options
+        });
         this.grantPermissionQueueLastModified = new Date();
         setTimeout(this.processGrantInputPermissionQueue.bind(this), 300);
       } else {
@@ -260,6 +282,7 @@ var GlobalInputMessageConnector = function () {
       var _this2 = this;
 
       var currentTime = new Date();
+
       if (currentTime.getTime() - this.grantPermissionQueueLastModified.getTime() < 200) {
         setTimeout(this.processGrantInputPermissionQueue.bind(this), 300);
       } else {
@@ -276,9 +299,11 @@ var GlobalInputMessageConnector = function () {
       var inputSender = this.buildInputSender(inputPermissionMessage, options);
       this.connectedSenders.push(inputSender);
       console.log("connectedSenders:" + this.connectedSenders.length);
+
       if (options.onSenderConnected) {
         options.onSenderConnected(inputSender, this.connectedSenders);
       }
+
       this.socket.on(this.session + "/input", inputSender.onInput);
       this.socket.on(this.session + "/leave", inputSender.onLeave);
       this.sendInputPermissionGrantedMessage(inputPermissionMessage, options);
@@ -287,13 +312,16 @@ var GlobalInputMessageConnector = function () {
     key: "sendInputPermissionGrantedMessage",
     value: function sendInputPermissionGrantedMessage(inputPermissionMessage, options) {
       var inputPermissionResult = Object.assign({}, inputPermissionMessage);
+
       if (options.initData) {
         inputPermissionResult.initData = options.initData;
         var inputPermissionResultInString = JSON.stringify(inputPermissionResult.initData);
+
         if (this.aes) {
           inputPermissionResult.initData = (0, _util.encrypt)(inputPermissionResultInString, this.aes);
         }
       }
+
       inputPermissionResult.allow = true;
       this.sendInputPermissionResult(inputPermissionResult);
     }
@@ -315,8 +343,10 @@ var GlobalInputMessageConnector = function () {
     value: function onInputPermissionResult(inputPermissionResultMessage, options) {
       this.connectSession = options.connectSession;
       this.inputAES = options.aes;
+
       if (this.inputAES && inputPermissionResultMessage.initData && typeof inputPermissionResultMessage.initData === "string") {
         var descryptedInitData = (0, _util.decrypt)(inputPermissionResultMessage.initData, this.inputAES);
+
         if (descryptedInitData) {
           try {
             inputPermissionResultMessage.initData = JSON.parse(descryptedInitData);
@@ -335,13 +365,16 @@ var GlobalInputMessageConnector = function () {
       if (this.socket) {
         var receveiverDisconnected = function receveiverDisconnected() {
           var currentTime = new Date().getTime();
+
           if (!this.latTimeReceiverDisconnected || currentTime - this.latTimeReceiverDisconnected < 200) {
             if (options.onReceiverDisconnected) {
               options.onReceiverDisconnected();
             }
           }
+
           this.latTimeReceiverDisconnected = currentTime;
         };
+
         this.socket.on(options.connectSession + "/leave", receveiverDisconnected);
         var inputSender = this.buildInputSender(inputPermissionResultMessage, options);
         this.socket.on(options.connectSession + "/input", inputSender.onInput);
@@ -350,6 +383,7 @@ var GlobalInputMessageConnector = function () {
           that.onOutputMessageReceived(outputmessage, options);
         });
       }
+
       if (options.onInputPermissionResult) {
         options.onInputPermissionResult(inputPermissionResultMessage);
       }
@@ -360,12 +394,15 @@ var GlobalInputMessageConnector = function () {
       if (options.onOutputMessageReceived) {
         var message = JSON.parse(messagedata);
         var aes = this.aes;
+
         if (this.inputAES) {
           aes = this.inputAES;
         }
+
         if (aes && message.data) {
           message.data = (0, _util.decrypt)(message.data, aes);
         }
+
         options.onOutputMessageReceived(message);
       } else {
         console.log("output message is ignored");
@@ -378,6 +415,7 @@ var GlobalInputMessageConnector = function () {
         console.log("not connected yet");
         return;
       }
+
       var encryptedMessagedata = (0, _util.encrypt)(JSON.stringify(outputMessage), this.aes);
       var outputMessage = {
         client: this.client,
@@ -394,24 +432,29 @@ var GlobalInputMessageConnector = function () {
         client: inputPermissionMessage.client,
         session: inputPermissionMessage.session,
         onInput: function onInput(data) {
-
           try {
             var inputMessage = JSON.parse(data);
+
             if (inputMessage.client === that.client) {
               return;
             }
+
             var aes = that.aes;
+
             if (that.inputAES) {
               aes = that.inputAES;
             }
+
             if (inputMessage.data) {
               var dataDecrypted = null;
+
               try {
                 dataDecrypted = (0, _util.decrypt)(inputMessage.data, aes);
               } catch (error) {
                 that.logError(error + ", failed to decrypt the input content");
                 return;
               }
+
               if (!dataDecrypted) {
                 that.logError("failed to decrypt the content");
                 return;
@@ -424,16 +467,19 @@ var GlobalInputMessageConnector = function () {
               }
             } else if (inputMessage.initData) {
               var dataDecrypted = null;
+
               try {
                 dataDecrypted = (0, _util.decrypt)(inputMessage.initData, aes);
               } catch (error) {
                 that.logError(error + ", failed to decrypt the initData content");
                 return;
               }
+
               if (!dataDecrypted) {
                 that.logError("failed to decrypt the content");
                 return;
               }
+
               try {
                 inputMessage.initData = JSON.parse(dataDecrypted);
               } catch (error) {
@@ -442,6 +488,7 @@ var GlobalInputMessageConnector = function () {
             } else {
               that.logError("received input data is not encrypted");
             }
+
             if (options.onInput) {
               options.onInput(inputMessage);
               return;
@@ -457,6 +504,7 @@ var GlobalInputMessageConnector = function () {
           var matchedSenders = that.connectedSenders.filter(function (s) {
             return s.client === leaveMessage.client;
           });
+
           if (matchedSenders.length > 0) {
             var inputSenderToLeave = matchedSenders[0];
             that.disconnectSender(inputSenderToLeave);
@@ -466,7 +514,6 @@ var GlobalInputMessageConnector = function () {
             }
           }
         }
-
       };
       return inputSender;
     }
@@ -479,6 +526,7 @@ var GlobalInputMessageConnector = function () {
       } catch (error) {
         console.error(error);
       }
+
       this.connectedSenders = this.connectedSenders.filter(function (s) {
         return s.client !== inputSender.client;
       });
@@ -489,9 +537,11 @@ var GlobalInputMessageConnector = function () {
     value: function _onInput(inputMessage, options) {
       if (inputMessage.initData) {
         console.log("initData is received");
+
         if (options.initData && options.initData.operations && options.initData.operations.onInitData) {
           options.initData.operations.onInitData(inputMessage);
         }
+
         return;
       }
 
@@ -499,19 +549,24 @@ var GlobalInputMessageConnector = function () {
         console.log("data field is missing in the input message");
         return;
       }
+
       var initData = options.initData;
+
       if (this.activeInitData) {
         initData = this.activeInitData;
       }
+
       if (!initData.form || !initData.form.fields) {
         console.log("field is missing in the initData");
         return;
       }
+
       if (typeof inputMessage.data.index != 'undefined') {
         if (inputMessage.data.index < 0 || initData.form.fields.length <= inputMessage.data.index) {
           console.log("index data is too big in the input message");
           return;
         }
+
         if (initData.form.fields[inputMessage.data.index].operations && initData.form.fields[inputMessage.data.index].operations.onInput) {
           initData.form.fields[inputMessage.data.index].operations.onInput(inputMessage.data.value);
         } else {
@@ -521,8 +576,10 @@ var GlobalInputMessageConnector = function () {
         var matchedFields = initData.form.fields.filter(function (f) {
           return f.id === inputMessage.data.fieldId;
         });
+
         if (matchedFields.length) {
           var matchedField = matchedFields[0];
+
           if (matchedField.operations && matchedField.operations.onInput) {
             matchedField.operations.onInput(inputMessage.data.value);
           } else {
@@ -542,22 +599,26 @@ var GlobalInputMessageConnector = function () {
         console.log("not connected yet");
         return;
       }
+
       var aes = this.aes;
+
       if (this.inputAES) {
         aes = this.inputAES;
       }
+
       var contentToEncrypt = JSON.stringify(initData);
       var contentEcrypted = (0, _util.encrypt)(contentToEncrypt, aes);
-
       var message = {
         client: this.client,
         initData: contentEcrypted
       };
       var content = JSON.stringify(message);
       var session = this.session;
+
       if (this.connectSession) {
         session = this.connectSession;
       }
+
       this.socket.emit(session + '/input', content);
       this.activeInitData = initData;
     }
@@ -568,19 +629,24 @@ var GlobalInputMessageConnector = function () {
         console.log("not connected yet");
         return;
       }
+
       var data = {
         id: (0, _util.generatateRandomString)(10),
         value: value
       };
+
       if (fieldId) {
         data.fieldId = fieldId;
       } else {
         data.index = index;
       }
+
       var aes = this.aes;
+
       if (this.inputAES) {
         aes = this.inputAES;
       }
+
       var contentToEncrypt = JSON.stringify(data);
       var contentEcrypted = (0, _util.encrypt)(contentToEncrypt, aes);
       data = contentEcrypted;
@@ -590,9 +656,11 @@ var GlobalInputMessageConnector = function () {
       };
       var content = JSON.stringify(message);
       var session = this.session;
+
       if (this.connectSession) {
         session = this.connectSession;
       }
+
       this.socket.emit(session + '/input', content);
     }
   }, {
@@ -602,11 +670,13 @@ var GlobalInputMessageConnector = function () {
         console.log(" because globalInputdata is empty");
         return globalInputdata;
       }
+
       if (data.fieldId) {
         globalInputdata = globalInputdata.map(function (f) {
           if (f.id === data.fieldId) {
             f.value = data.value;
           }
+
           return f;
         });
       } else if (typeof data.index !== 'undefined' && data.index < globalInputdata.length) {
@@ -615,6 +685,7 @@ var GlobalInputMessageConnector = function () {
       } else {
         console.warn("receied the data index is bigger that that of initData");
       }
+
       return globalInputdata;
     }
   }, {
@@ -626,14 +697,12 @@ var GlobalInputMessageConnector = function () {
     key: "buildInputCodeData",
     value: function buildInputCodeData() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
       return _codedataUtil.codedataUtil.buildInputCodeData(this, data);
     }
   }, {
     key: "buildPairingData",
     value: function buildPairingData() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
       return _codedataUtil.codedataUtil.buildPairingData(this, data);
     }
   }, {
@@ -646,21 +715,19 @@ var GlobalInputMessageConnector = function () {
   return GlobalInputMessageConnector;
 }();
 
-exports.default = GlobalInputMessageConnector;
+exports["default"] = GlobalInputMessageConnector;
 },{"./codedataUtil":2,"./util":3,"socket.io-client":67}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.codedataUtil = undefined;
+exports.codedataUtil = void 0;
 
 var _util = require("./util");
 
 var sharedKey = "50SUB39ctEKzd6Uv2a84lFK";
-
-var codedataUtil = exports.codedataUtil = {
-
+var codedataUtil = {
   buildOptionsFromInputCodedata: function buildOptionsFromInputCodedata(connector, codedata, options) {
     var buildOptions = {
       connectSession: codedata.session,
@@ -668,9 +735,11 @@ var codedataUtil = exports.codedataUtil = {
       aes: codedata.aes,
       apikey: codedata.apikey
     };
+
     if (codedata.securityGroup) {
       buildOptions.securityGroup = codedata.securityGroup;
     }
+
     if (!options) {
       return buildOptions;
     } else {
@@ -679,7 +748,6 @@ var codedataUtil = exports.codedataUtil = {
   },
   buildInputCodeData: function buildInputCodeData(connector) {
     var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
     var codedata = Object.assign({}, data, {
       url: connector.url,
       session: connector.session,
@@ -694,10 +762,8 @@ var codedataUtil = exports.codedataUtil = {
       return "NJ" + JSON.stringify(codedata);
     }
   },
-
   buildPairingData: function buildPairingData(connector) {
     var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
     var codedata = Object.assign({}, {
       securityGroup: connector.securityGroup,
       codeAES: connector.codeAES,
@@ -725,6 +791,7 @@ var codedataUtil = exports.codedataUtil = {
     var encryptionType = encryptedcodedata.substring(0, 1);
     var encryptedContent = encryptedcodedata.substring(1);
     var decryptedContent = null;
+
     if (encryptionType === "C") {
       try {
         decryptedContent = (0, _util.decrypt)(encryptedContent, sharedKey);
@@ -734,9 +801,11 @@ var codedataUtil = exports.codedataUtil = {
       }
     } else if (encryptionType === "A") {
       var codeAES = connector.codeAES;
+
       if (options.codeAES) {
         codeAES = options.codeAES;
       }
+
       try {
         decryptedContent = (0, _util.decrypt)(encryptedContent, codeAES);
       } catch (error) {
@@ -754,6 +823,7 @@ var codedataUtil = exports.codedataUtil = {
       this.onError(options, "Not a global Input code (E)");
       return;
     }
+
     var dataFormat = decryptedContent.substring(0, 1);
     var dataContent = decryptedContent.substring(1);
     var codedata = null;
@@ -769,6 +839,7 @@ var codedataUtil = exports.codedataUtil = {
       this.onError(options, "unrecognized format decrypted");
       return;
     }
+
     if (codedata.action == 'input') {
       if (options.onInputCodeData) {
         options.onInputCodeData(codedata);
@@ -780,75 +851,80 @@ var codedataUtil = exports.codedataUtil = {
     }
   }
 };
+exports.codedataUtil = codedataUtil;
 },{"./util":3}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-      value: true
+  value: true
 });
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 exports.generatateRandomString = generatateRandomString;
 exports.encrypt = encrypt;
 exports.decrypt = decrypt;
 exports.basicGetURL = basicGetURL;
 
-var _cryptoJs = require("crypto-js");
+var _cryptoJs = _interopRequireDefault(require("crypto-js"));
 
-var _cryptoJs2 = _interopRequireDefault(_cryptoJs);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function generatateRandomString() {
-      var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+  var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+  var randPassword = Array(length).fill("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@£$&*:;").map(function (x) {
+    var indexString = _cryptoJs["default"].enc.Hex.stringify(_cryptoJs["default"].lib.WordArray.random(1));
 
-
-      var randPassword = Array(length).fill("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@£$&*:;").map(function (x) {
-            var indexString = _cryptoJs2.default.enc.Hex.stringify(_cryptoJs2.default.lib.WordArray.random(1));
-            var indexValue = parseInt(indexString, 16);
-            return x[indexValue % x.length];
-      }).join('');
-      return randPassword;
+    var indexValue = parseInt(indexString, 16);
+    return x[indexValue % x.length];
+  }).join('');
+  return randPassword;
 }
+
 function encrypt(content, password) {
-      return escape(_cryptoJs2.default.AES.encrypt(content, password).toString());
+  return escape(_cryptoJs["default"].AES.encrypt(content, password).toString());
 }
+
 function decrypt(content, password) {
-      return _cryptoJs2.default.AES.decrypt(unescape(content), password).toString(_cryptoJs2.default.enc.Utf8);
+  return _cryptoJs["default"].AES.decrypt(unescape(content), password).toString(_cryptoJs["default"].enc.Utf8);
 }
+
 function basicGetURL(url, onSuccess, onError) {
-      var request = new XMLHttpRequest();
-      request.ontimeout = function (e) {
-            console.warn("requesting socket server url timeout");
-            onError();
-      };
-      request.onreadystatechange = function (e) {
-            if (e) {
-                  var cache = [];
-                  console.log(JSON.stringify(e, function (key, value) {
-                        if ((typeof value === "undefined" ? "undefined" : _typeof(value)) === 'object' && value != null) {
-                              if (cache.indexOf(value) != -1) {
-                                    return;
-                              }
-                              cache.push(value);
-                        }
-                        return value;
-                  }));
-            }
-            if (request.readyState !== 4) {
-                  return;
-            }
-            if (request.status === 200) {
-                  onSuccess(JSON.parse(request.responseText));
-            } else {
-                  onError();
-            }
-      };
+  var request = new XMLHttpRequest();
 
-      request.open('GET', url, true);
+  request.ontimeout = function (e) {
+    console.warn("requesting socket server url timeout");
+    onError();
+  };
 
-      request.send();
+  request.onreadystatechange = function (e) {
+    if (e) {
+      var cache = [];
+      console.log(JSON.stringify(e, function (key, value) {
+        if (_typeof(value) === 'object' && value != null) {
+          if (cache.indexOf(value) != -1) {
+            return;
+          }
+
+          cache.push(value);
+        }
+
+        return value;
+      }));
+    }
+
+    if (request.readyState !== 4) {
+      return;
+    }
+
+    if (request.status === 200) {
+      onSuccess(JSON.parse(request.responseText));
+    } else {
+      onError();
+    }
+  };
+
+  request.open('GET', url, true);
+  request.send();
 }
 },{"crypto-js":20}],4:[function(require,module,exports){
 module.exports = after
@@ -7980,6 +8056,432 @@ module.exports = function(a, b){
 
 }));
 },{"./core":14}],46:[function(require,module,exports){
+(function (process){
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  '#0000CC', '#0000FF', '#0033CC', '#0033FF', '#0066CC', '#0066FF', '#0099CC',
+  '#0099FF', '#00CC00', '#00CC33', '#00CC66', '#00CC99', '#00CCCC', '#00CCFF',
+  '#3300CC', '#3300FF', '#3333CC', '#3333FF', '#3366CC', '#3366FF', '#3399CC',
+  '#3399FF', '#33CC00', '#33CC33', '#33CC66', '#33CC99', '#33CCCC', '#33CCFF',
+  '#6600CC', '#6600FF', '#6633CC', '#6633FF', '#66CC00', '#66CC33', '#9900CC',
+  '#9900FF', '#9933CC', '#9933FF', '#99CC00', '#99CC33', '#CC0000', '#CC0033',
+  '#CC0066', '#CC0099', '#CC00CC', '#CC00FF', '#CC3300', '#CC3333', '#CC3366',
+  '#CC3399', '#CC33CC', '#CC33FF', '#CC6600', '#CC6633', '#CC9900', '#CC9933',
+  '#CCCC00', '#CCCC33', '#FF0000', '#FF0033', '#FF0066', '#FF0099', '#FF00CC',
+  '#FF00FF', '#FF3300', '#FF3333', '#FF3366', '#FF3399', '#FF33CC', '#FF33FF',
+  '#FF6600', '#FF6633', '#FF9900', '#FF9933', '#FFCC00', '#FFCC33'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // NB: In an Electron preload script, document will be defined but not fully
+  // initialized. Since we know we're in Chrome, we'll just detect this case
+  // explicitly
+  if (typeof window !== 'undefined' && window.process && window.process.type === 'renderer') {
+    return true;
+  }
+
+  // Internet Explorer and Edge do not support colors.
+  if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+    return false;
+  }
+
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  // document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
+  return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31) ||
+    // double check webkit in userAgent just in case we are in a worker
+    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  try {
+    return JSON.stringify(v);
+  } catch (err) {
+    return '[UnexpectedJSONParseError]: ' + err.message;
+  }
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs(args) {
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return;
+
+  var c = 'color: ' + this.color;
+  args.splice(1, 0, c, 'color: inherit')
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-zA-Z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+
+  // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
+  if (!r && typeof process !== 'undefined' && 'env' in process) {
+    r = process.env.DEBUG;
+  }
+
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage() {
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).call(this,require('_process'))
+},{"./debug":47,"_process":81}],47:[function(require,module,exports){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = createDebug.debug = createDebug['default'] = createDebug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * Active `debug` instances.
+ */
+exports.instances = [];
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
+ */
+
+exports.formatters = {};
+
+/**
+ * Select a color.
+ * @param {String} namespace
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor(namespace) {
+  var hash = 0, i;
+
+  for (i in namespace) {
+    hash  = ((hash << 5) - hash) + namespace.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+
+  return exports.colors[Math.abs(hash) % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function createDebug(namespace) {
+
+  var prevTime;
+
+  function debug() {
+    // disabled?
+    if (!debug.enabled) return;
+
+    var self = debug;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // turn the `arguments` into a proper Array
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %O
+      args.unshift('%O');
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    // apply env-specific formatting (colors, etc.)
+    exports.formatArgs.call(self, args);
+
+    var logFn = debug.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+
+  debug.namespace = namespace;
+  debug.enabled = exports.enabled(namespace);
+  debug.useColors = exports.useColors();
+  debug.color = selectColor(namespace);
+  debug.destroy = destroy;
+
+  // env-specific initialization logic for debug instances
+  if ('function' === typeof exports.init) {
+    exports.init(debug);
+  }
+
+  exports.instances.push(debug);
+
+  return debug;
+}
+
+function destroy () {
+  var index = exports.instances.indexOf(this);
+  if (index !== -1) {
+    exports.instances.splice(index, 1);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  exports.names = [];
+  exports.skips = [];
+
+  var i;
+  var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+
+  for (i = 0; i < exports.instances.length; i++) {
+    var instance = exports.instances[i];
+    instance.enabled = exports.enabled(instance.namespace);
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  if (name[name.length - 1] === '*') {
+    return true;
+  }
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+},{"ms":64}],48:[function(require,module,exports){
 
 module.exports = require('./socket');
 
@@ -7991,7 +8493,7 @@ module.exports = require('./socket');
  */
 module.exports.parser = require('engine.io-parser');
 
-},{"./socket":47,"engine.io-parser":57}],47:[function(require,module,exports){
+},{"./socket":49,"engine.io-parser":57}],49:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -8739,7 +9241,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
   return filteredUpgrades;
 };
 
-},{"./transport":48,"./transports/index":49,"component-emitter":10,"debug":55,"engine.io-parser":57,"indexof":63,"parseqs":65,"parseuri":66}],48:[function(require,module,exports){
+},{"./transport":50,"./transports/index":51,"component-emitter":10,"debug":46,"engine.io-parser":57,"indexof":62,"parseqs":65,"parseuri":66}],50:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -8901,7 +9403,7 @@ Transport.prototype.onClose = function () {
   this.emit('close');
 };
 
-},{"component-emitter":10,"engine.io-parser":57}],49:[function(require,module,exports){
+},{"component-emitter":10,"engine.io-parser":57}],51:[function(require,module,exports){
 /**
  * Module dependencies
  */
@@ -8956,7 +9458,7 @@ function polling (opts) {
   }
 }
 
-},{"./polling-jsonp":50,"./polling-xhr":51,"./websocket":53,"xmlhttprequest-ssl":54}],50:[function(require,module,exports){
+},{"./polling-jsonp":52,"./polling-xhr":53,"./websocket":55,"xmlhttprequest-ssl":56}],52:[function(require,module,exports){
 (function (global){
 /**
  * Module requirements.
@@ -9199,7 +9701,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":52,"component-inherit":11}],51:[function(require,module,exports){
+},{"./polling":54,"component-inherit":11}],53:[function(require,module,exports){
 /* global attachEvent */
 
 /**
@@ -9616,7 +10118,7 @@ function unloadHandler () {
   }
 }
 
-},{"./polling":52,"component-emitter":10,"component-inherit":11,"debug":55,"xmlhttprequest-ssl":54}],52:[function(require,module,exports){
+},{"./polling":54,"component-emitter":10,"component-inherit":11,"debug":46,"xmlhttprequest-ssl":56}],54:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -9863,7 +10365,7 @@ Polling.prototype.uri = function () {
   return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
 };
 
-},{"../transport":48,"component-inherit":11,"debug":55,"engine.io-parser":57,"parseqs":65,"xmlhttprequest-ssl":54,"yeast":81}],53:[function(require,module,exports){
+},{"../transport":50,"component-inherit":11,"debug":46,"engine.io-parser":57,"parseqs":65,"xmlhttprequest-ssl":56,"yeast":76}],55:[function(require,module,exports){
 (function (Buffer){
 /**
  * Module dependencies.
@@ -10160,7 +10662,7 @@ WS.prototype.check = function () {
 };
 
 }).call(this,require("buffer").Buffer)
-},{"../transport":48,"buffer":84,"component-inherit":11,"debug":55,"engine.io-parser":57,"parseqs":65,"ws":83,"yeast":81}],54:[function(require,module,exports){
+},{"../transport":50,"buffer":79,"component-inherit":11,"debug":46,"engine.io-parser":57,"parseqs":65,"ws":78,"yeast":76}],56:[function(require,module,exports){
 // browser shim for xmlhttprequest module
 
 var hasCORS = require('has-cors');
@@ -10199,433 +10701,7 @@ module.exports = function (opts) {
   }
 };
 
-},{"has-cors":62}],55:[function(require,module,exports){
-(function (process){
-/**
- * This is the web browser implementation of `debug()`.
- *
- * Expose `debug()` as the module.
- */
-
-exports = module.exports = require('./debug');
-exports.log = log;
-exports.formatArgs = formatArgs;
-exports.save = save;
-exports.load = load;
-exports.useColors = useColors;
-exports.storage = 'undefined' != typeof chrome
-               && 'undefined' != typeof chrome.storage
-                  ? chrome.storage.local
-                  : localstorage();
-
-/**
- * Colors.
- */
-
-exports.colors = [
-  '#0000CC', '#0000FF', '#0033CC', '#0033FF', '#0066CC', '#0066FF', '#0099CC',
-  '#0099FF', '#00CC00', '#00CC33', '#00CC66', '#00CC99', '#00CCCC', '#00CCFF',
-  '#3300CC', '#3300FF', '#3333CC', '#3333FF', '#3366CC', '#3366FF', '#3399CC',
-  '#3399FF', '#33CC00', '#33CC33', '#33CC66', '#33CC99', '#33CCCC', '#33CCFF',
-  '#6600CC', '#6600FF', '#6633CC', '#6633FF', '#66CC00', '#66CC33', '#9900CC',
-  '#9900FF', '#9933CC', '#9933FF', '#99CC00', '#99CC33', '#CC0000', '#CC0033',
-  '#CC0066', '#CC0099', '#CC00CC', '#CC00FF', '#CC3300', '#CC3333', '#CC3366',
-  '#CC3399', '#CC33CC', '#CC33FF', '#CC6600', '#CC6633', '#CC9900', '#CC9933',
-  '#CCCC00', '#CCCC33', '#FF0000', '#FF0033', '#FF0066', '#FF0099', '#FF00CC',
-  '#FF00FF', '#FF3300', '#FF3333', '#FF3366', '#FF3399', '#FF33CC', '#FF33FF',
-  '#FF6600', '#FF6633', '#FF9900', '#FF9933', '#FFCC00', '#FFCC33'
-];
-
-/**
- * Currently only WebKit-based Web Inspectors, Firefox >= v31,
- * and the Firebug extension (any Firefox version) are known
- * to support "%c" CSS customizations.
- *
- * TODO: add a `localStorage` variable to explicitly enable/disable colors
- */
-
-function useColors() {
-  // NB: In an Electron preload script, document will be defined but not fully
-  // initialized. Since we know we're in Chrome, we'll just detect this case
-  // explicitly
-  if (typeof window !== 'undefined' && window.process && window.process.type === 'renderer') {
-    return true;
-  }
-
-  // Internet Explorer and Edge do not support colors.
-  if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
-    return false;
-  }
-
-  // is webkit? http://stackoverflow.com/a/16459606/376773
-  // document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
-  return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
-    // is firebug? http://stackoverflow.com/a/398120/376773
-    (typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
-    // is firefox >= v31?
-    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31) ||
-    // double check webkit in userAgent just in case we are in a worker
-    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
-}
-
-/**
- * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
- */
-
-exports.formatters.j = function(v) {
-  try {
-    return JSON.stringify(v);
-  } catch (err) {
-    return '[UnexpectedJSONParseError]: ' + err.message;
-  }
-};
-
-
-/**
- * Colorize log arguments if enabled.
- *
- * @api public
- */
-
-function formatArgs(args) {
-  var useColors = this.useColors;
-
-  args[0] = (useColors ? '%c' : '')
-    + this.namespace
-    + (useColors ? ' %c' : ' ')
-    + args[0]
-    + (useColors ? '%c ' : ' ')
-    + '+' + exports.humanize(this.diff);
-
-  if (!useColors) return;
-
-  var c = 'color: ' + this.color;
-  args.splice(1, 0, c, 'color: inherit')
-
-  // the final "%c" is somewhat tricky, because there could be other
-  // arguments passed either before or after the %c, so we need to
-  // figure out the correct index to insert the CSS into
-  var index = 0;
-  var lastC = 0;
-  args[0].replace(/%[a-zA-Z%]/g, function(match) {
-    if ('%%' === match) return;
-    index++;
-    if ('%c' === match) {
-      // we only are interested in the *last* %c
-      // (the user may have provided their own)
-      lastC = index;
-    }
-  });
-
-  args.splice(lastC, 0, c);
-}
-
-/**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
- *
- * @api public
- */
-
-function log() {
-  // this hackery is required for IE8/9, where
-  // the `console.log` function doesn't have 'apply'
-  return 'object' === typeof console
-    && console.log
-    && Function.prototype.apply.call(console.log, console, arguments);
-}
-
-/**
- * Save `namespaces`.
- *
- * @param {String} namespaces
- * @api private
- */
-
-function save(namespaces) {
-  try {
-    if (null == namespaces) {
-      exports.storage.removeItem('debug');
-    } else {
-      exports.storage.debug = namespaces;
-    }
-  } catch(e) {}
-}
-
-/**
- * Load `namespaces`.
- *
- * @return {String} returns the previously persisted debug modes
- * @api private
- */
-
-function load() {
-  var r;
-  try {
-    r = exports.storage.debug;
-  } catch(e) {}
-
-  // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
-  if (!r && typeof process !== 'undefined' && 'env' in process) {
-    r = process.env.DEBUG;
-  }
-
-  return r;
-}
-
-/**
- * Enable namespaces listed in `localStorage.debug` initially.
- */
-
-exports.enable(load());
-
-/**
- * Localstorage attempts to return the localstorage.
- *
- * This is necessary because safari throws
- * when a user disables cookies/localstorage
- * and you attempt to access it.
- *
- * @return {LocalStorage}
- * @api private
- */
-
-function localstorage() {
-  try {
-    return window.localStorage;
-  } catch (e) {}
-}
-
-}).call(this,require('_process'))
-},{"./debug":56,"_process":86}],56:[function(require,module,exports){
-
-/**
- * This is the common logic for both the Node.js and web browser
- * implementations of `debug()`.
- *
- * Expose `debug()` as the module.
- */
-
-exports = module.exports = createDebug.debug = createDebug['default'] = createDebug;
-exports.coerce = coerce;
-exports.disable = disable;
-exports.enable = enable;
-exports.enabled = enabled;
-exports.humanize = require('ms');
-
-/**
- * Active `debug` instances.
- */
-exports.instances = [];
-
-/**
- * The currently active debug mode names, and names to skip.
- */
-
-exports.names = [];
-exports.skips = [];
-
-/**
- * Map of special "%n" handling functions, for the debug "format" argument.
- *
- * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
- */
-
-exports.formatters = {};
-
-/**
- * Select a color.
- * @param {String} namespace
- * @return {Number}
- * @api private
- */
-
-function selectColor(namespace) {
-  var hash = 0, i;
-
-  for (i in namespace) {
-    hash  = ((hash << 5) - hash) + namespace.charCodeAt(i);
-    hash |= 0; // Convert to 32bit integer
-  }
-
-  return exports.colors[Math.abs(hash) % exports.colors.length];
-}
-
-/**
- * Create a debugger with the given `namespace`.
- *
- * @param {String} namespace
- * @return {Function}
- * @api public
- */
-
-function createDebug(namespace) {
-
-  var prevTime;
-
-  function debug() {
-    // disabled?
-    if (!debug.enabled) return;
-
-    var self = debug;
-
-    // set `diff` timestamp
-    var curr = +new Date();
-    var ms = curr - (prevTime || curr);
-    self.diff = ms;
-    self.prev = prevTime;
-    self.curr = curr;
-    prevTime = curr;
-
-    // turn the `arguments` into a proper Array
-    var args = new Array(arguments.length);
-    for (var i = 0; i < args.length; i++) {
-      args[i] = arguments[i];
-    }
-
-    args[0] = exports.coerce(args[0]);
-
-    if ('string' !== typeof args[0]) {
-      // anything else let's inspect with %O
-      args.unshift('%O');
-    }
-
-    // apply any `formatters` transformations
-    var index = 0;
-    args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
-      // if we encounter an escaped % then don't increase the array index
-      if (match === '%%') return match;
-      index++;
-      var formatter = exports.formatters[format];
-      if ('function' === typeof formatter) {
-        var val = args[index];
-        match = formatter.call(self, val);
-
-        // now we need to remove `args[index]` since it's inlined in the `format`
-        args.splice(index, 1);
-        index--;
-      }
-      return match;
-    });
-
-    // apply env-specific formatting (colors, etc.)
-    exports.formatArgs.call(self, args);
-
-    var logFn = debug.log || exports.log || console.log.bind(console);
-    logFn.apply(self, args);
-  }
-
-  debug.namespace = namespace;
-  debug.enabled = exports.enabled(namespace);
-  debug.useColors = exports.useColors();
-  debug.color = selectColor(namespace);
-  debug.destroy = destroy;
-
-  // env-specific initialization logic for debug instances
-  if ('function' === typeof exports.init) {
-    exports.init(debug);
-  }
-
-  exports.instances.push(debug);
-
-  return debug;
-}
-
-function destroy () {
-  var index = exports.instances.indexOf(this);
-  if (index !== -1) {
-    exports.instances.splice(index, 1);
-    return true;
-  } else {
-    return false;
-  }
-}
-
-/**
- * Enables a debug mode by namespaces. This can include modes
- * separated by a colon and wildcards.
- *
- * @param {String} namespaces
- * @api public
- */
-
-function enable(namespaces) {
-  exports.save(namespaces);
-
-  exports.names = [];
-  exports.skips = [];
-
-  var i;
-  var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
-  var len = split.length;
-
-  for (i = 0; i < len; i++) {
-    if (!split[i]) continue; // ignore empty strings
-    namespaces = split[i].replace(/\*/g, '.*?');
-    if (namespaces[0] === '-') {
-      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
-    } else {
-      exports.names.push(new RegExp('^' + namespaces + '$'));
-    }
-  }
-
-  for (i = 0; i < exports.instances.length; i++) {
-    var instance = exports.instances[i];
-    instance.enabled = exports.enabled(instance.namespace);
-  }
-}
-
-/**
- * Disable debug output.
- *
- * @api public
- */
-
-function disable() {
-  exports.enable('');
-}
-
-/**
- * Returns true if the given mode name is enabled, false otherwise.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-function enabled(name) {
-  if (name[name.length - 1] === '*') {
-    return true;
-  }
-  var i, len;
-  for (i = 0, len = exports.skips.length; i < len; i++) {
-    if (exports.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (i = 0, len = exports.names.length; i < len; i++) {
-    if (exports.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Coerce `val`.
- *
- * @param {Mixed} val
- * @return {Mixed}
- * @api private
- */
-
-function coerce(val) {
-  if (val instanceof Error) return val.stack || val.message;
-  return val;
-}
-
-},{"ms":64}],57:[function(require,module,exports){
+},{"has-cors":61}],57:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -11533,14 +11609,7 @@ function hasBinary (obj) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":84,"isarray":61}],61:[function(require,module,exports){
-var toString = {}.toString;
-
-module.exports = Array.isArray || function (arr) {
-  return toString.call(arr) == '[object Array]';
-};
-
-},{}],62:[function(require,module,exports){
+},{"buffer":79,"isarray":63}],61:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -11559,7 +11628,7 @@ try {
   module.exports = false;
 }
 
-},{}],63:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -11570,6 +11639,13 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
+},{}],63:[function(require,module,exports){
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
+
 },{}],64:[function(require,module,exports){
 /**
  * Helpers.
@@ -11900,7 +11976,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":68,"./socket":70,"./url":71,"debug":72,"socket.io-parser":75}],68:[function(require,module,exports){
+},{"./manager":68,"./socket":70,"./url":71,"debug":46,"socket.io-parser":73}],68:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -12475,7 +12551,7 @@ Manager.prototype.onreconnect = function () {
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":69,"./socket":70,"backo2":6,"component-bind":9,"component-emitter":10,"debug":72,"engine.io-client":46,"indexof":63,"socket.io-parser":75}],69:[function(require,module,exports){
+},{"./on":69,"./socket":70,"backo2":6,"component-bind":9,"component-emitter":10,"debug":46,"engine.io-client":48,"indexof":62,"socket.io-parser":73}],69:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -12941,7 +13017,7 @@ Socket.prototype.binary = function (binary) {
   return this;
 };
 
-},{"./on":69,"component-bind":9,"component-emitter":10,"debug":72,"has-binary2":60,"parseqs":65,"socket.io-parser":75,"to-array":80}],71:[function(require,module,exports){
+},{"./on":69,"component-bind":9,"component-emitter":10,"debug":46,"has-binary2":60,"parseqs":65,"socket.io-parser":73,"to-array":75}],71:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -13018,11 +13094,7 @@ function url (uri, loc) {
   return obj;
 }
 
-},{"debug":72,"parseuri":66}],72:[function(require,module,exports){
-arguments[4][55][0].apply(exports,arguments)
-},{"./debug":73,"_process":86,"dup":55}],73:[function(require,module,exports){
-arguments[4][56][0].apply(exports,arguments)
-},{"dup":56,"ms":64}],74:[function(require,module,exports){
+},{"debug":46,"parseuri":66}],72:[function(require,module,exports){
 /*global Blob,File*/
 
 /**
@@ -13165,7 +13237,7 @@ exports.removeBlobs = function(data, callback) {
   }
 };
 
-},{"./is-buffer":76,"isarray":79}],75:[function(require,module,exports){
+},{"./is-buffer":74,"isarray":63}],73:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -13582,7 +13654,7 @@ function error(msg) {
   };
 }
 
-},{"./binary":74,"./is-buffer":76,"component-emitter":10,"debug":77,"isarray":79}],76:[function(require,module,exports){
+},{"./binary":72,"./is-buffer":74,"component-emitter":10,"debug":46,"isarray":63}],74:[function(require,module,exports){
 (function (Buffer){
 
 module.exports = isBuf;
@@ -13606,13 +13678,7 @@ function isBuf(obj) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":84}],77:[function(require,module,exports){
-arguments[4][55][0].apply(exports,arguments)
-},{"./debug":78,"_process":86,"dup":55}],78:[function(require,module,exports){
-arguments[4][56][0].apply(exports,arguments)
-},{"dup":56,"ms":64}],79:[function(require,module,exports){
-arguments[4][61][0].apply(exports,arguments)
-},{"dup":61}],80:[function(require,module,exports){
+},{"buffer":79}],75:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -13627,7 +13693,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],81:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 'use strict';
 
 var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
@@ -13697,7 +13763,7 @@ yeast.encode = encode;
 yeast.decode = decode;
 module.exports = yeast;
 
-},{}],82:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -13714,68 +13780,103 @@ for (var i = 0, len = code.length; i < len; ++i) {
   revLookup[code.charCodeAt(i)] = i
 }
 
+// Support decoding URL-safe base64 strings, as Node.js does.
+// See: https://en.wikipedia.org/wiki/Base64#URL_applications
 revLookup['-'.charCodeAt(0)] = 62
 revLookup['_'.charCodeAt(0)] = 63
 
-function placeHoldersCount (b64) {
+function getLens (b64) {
   var len = b64.length
+
   if (len % 4 > 0) {
     throw new Error('Invalid string. Length must be a multiple of 4')
   }
 
-  // the number of equal signs (place holders)
-  // if there are two placeholders, than the two characters before it
-  // represent one byte
-  // if there is only one, then the three characters before it represent 2 bytes
-  // this is just a cheap hack to not do indexOf twice
-  return b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0
+  // Trim off extra bytes after placeholder bytes are found
+  // See: https://github.com/beatgammit/base64-js/issues/42
+  var validLen = b64.indexOf('=')
+  if (validLen === -1) validLen = len
+
+  var placeHoldersLen = validLen === len
+    ? 0
+    : 4 - (validLen % 4)
+
+  return [validLen, placeHoldersLen]
 }
 
+// base64 is 4/3 + up to two characters of the original data
 function byteLength (b64) {
-  // base64 is 4/3 + up to two characters of the original data
-  return b64.length * 3 / 4 - placeHoldersCount(b64)
+  var lens = getLens(b64)
+  var validLen = lens[0]
+  var placeHoldersLen = lens[1]
+  return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
+}
+
+function _byteLength (b64, validLen, placeHoldersLen) {
+  return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
 }
 
 function toByteArray (b64) {
-  var i, j, l, tmp, placeHolders, arr
-  var len = b64.length
-  placeHolders = placeHoldersCount(b64)
+  var tmp
+  var lens = getLens(b64)
+  var validLen = lens[0]
+  var placeHoldersLen = lens[1]
 
-  arr = new Arr(len * 3 / 4 - placeHolders)
+  var arr = new Arr(_byteLength(b64, validLen, placeHoldersLen))
+
+  var curByte = 0
 
   // if there are placeholders, only get up to the last complete 4 chars
-  l = placeHolders > 0 ? len - 4 : len
+  var len = placeHoldersLen > 0
+    ? validLen - 4
+    : validLen
 
-  var L = 0
-
-  for (i = 0, j = 0; i < l; i += 4, j += 3) {
-    tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
-    arr[L++] = (tmp >> 16) & 0xFF
-    arr[L++] = (tmp >> 8) & 0xFF
-    arr[L++] = tmp & 0xFF
+  var i
+  for (i = 0; i < len; i += 4) {
+    tmp =
+      (revLookup[b64.charCodeAt(i)] << 18) |
+      (revLookup[b64.charCodeAt(i + 1)] << 12) |
+      (revLookup[b64.charCodeAt(i + 2)] << 6) |
+      revLookup[b64.charCodeAt(i + 3)]
+    arr[curByte++] = (tmp >> 16) & 0xFF
+    arr[curByte++] = (tmp >> 8) & 0xFF
+    arr[curByte++] = tmp & 0xFF
   }
 
-  if (placeHolders === 2) {
-    tmp = (revLookup[b64.charCodeAt(i)] << 2) | (revLookup[b64.charCodeAt(i + 1)] >> 4)
-    arr[L++] = tmp & 0xFF
-  } else if (placeHolders === 1) {
-    tmp = (revLookup[b64.charCodeAt(i)] << 10) | (revLookup[b64.charCodeAt(i + 1)] << 4) | (revLookup[b64.charCodeAt(i + 2)] >> 2)
-    arr[L++] = (tmp >> 8) & 0xFF
-    arr[L++] = tmp & 0xFF
+  if (placeHoldersLen === 2) {
+    tmp =
+      (revLookup[b64.charCodeAt(i)] << 2) |
+      (revLookup[b64.charCodeAt(i + 1)] >> 4)
+    arr[curByte++] = tmp & 0xFF
+  }
+
+  if (placeHoldersLen === 1) {
+    tmp =
+      (revLookup[b64.charCodeAt(i)] << 10) |
+      (revLookup[b64.charCodeAt(i + 1)] << 4) |
+      (revLookup[b64.charCodeAt(i + 2)] >> 2)
+    arr[curByte++] = (tmp >> 8) & 0xFF
+    arr[curByte++] = tmp & 0xFF
   }
 
   return arr
 }
 
 function tripletToBase64 (num) {
-  return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F]
+  return lookup[num >> 18 & 0x3F] +
+    lookup[num >> 12 & 0x3F] +
+    lookup[num >> 6 & 0x3F] +
+    lookup[num & 0x3F]
 }
 
 function encodeChunk (uint8, start, end) {
   var tmp
   var output = []
   for (var i = start; i < end; i += 3) {
-    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
+    tmp =
+      ((uint8[i] << 16) & 0xFF0000) +
+      ((uint8[i + 1] << 8) & 0xFF00) +
+      (uint8[i + 2] & 0xFF)
     output.push(tripletToBase64(tmp))
   }
   return output.join('')
@@ -13785,41 +13886,45 @@ function fromByteArray (uint8) {
   var tmp
   var len = uint8.length
   var extraBytes = len % 3 // if we have 1 byte left, pad 2 bytes
-  var output = ''
   var parts = []
   var maxChunkLength = 16383 // must be multiple of 3
 
   // go through the array every three bytes, we'll deal with trailing stuff later
   for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
+    parts.push(encodeChunk(
+      uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)
+    ))
   }
 
   // pad the end with zeros, but make sure to not forget the extra bytes
   if (extraBytes === 1) {
     tmp = uint8[len - 1]
-    output += lookup[tmp >> 2]
-    output += lookup[(tmp << 4) & 0x3F]
-    output += '=='
+    parts.push(
+      lookup[tmp >> 2] +
+      lookup[(tmp << 4) & 0x3F] +
+      '=='
+    )
   } else if (extraBytes === 2) {
-    tmp = (uint8[len - 2] << 8) + (uint8[len - 1])
-    output += lookup[tmp >> 10]
-    output += lookup[(tmp >> 4) & 0x3F]
-    output += lookup[(tmp << 2) & 0x3F]
-    output += '='
+    tmp = (uint8[len - 2] << 8) + uint8[len - 1]
+    parts.push(
+      lookup[tmp >> 10] +
+      lookup[(tmp >> 4) & 0x3F] +
+      lookup[(tmp << 2) & 0x3F] +
+      '='
+    )
   }
-
-  parts.push(output)
 
   return parts.join('')
 }
 
-},{}],83:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 
-},{}],84:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
+(function (Buffer){
 /*!
  * The buffer module from node.js, for the browser.
  *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @author   Feross Aboukhadijeh <https://feross.org>
  * @license  MIT
  */
 /* eslint-disable no-proto */
@@ -13828,6 +13933,10 @@ function fromByteArray (uint8) {
 
 var base64 = require('base64-js')
 var ieee754 = require('ieee754')
+var customInspectSymbol =
+  (typeof Symbol === 'function' && typeof Symbol.for === 'function')
+    ? Symbol.for('nodejs.util.inspect.custom')
+    : null
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -13864,20 +13973,38 @@ function typedArraySupport () {
   // Can typed array instances can be augmented?
   try {
     var arr = new Uint8Array(1)
-    arr.__proto__ = {__proto__: Uint8Array.prototype, foo: function () { return 42 }}
+    var proto = { foo: function () { return 42 } }
+    Object.setPrototypeOf(proto, Uint8Array.prototype)
+    Object.setPrototypeOf(arr, proto)
     return arr.foo() === 42
   } catch (e) {
     return false
   }
 }
 
+Object.defineProperty(Buffer.prototype, 'parent', {
+  enumerable: true,
+  get: function () {
+    if (!Buffer.isBuffer(this)) return undefined
+    return this.buffer
+  }
+})
+
+Object.defineProperty(Buffer.prototype, 'offset', {
+  enumerable: true,
+  get: function () {
+    if (!Buffer.isBuffer(this)) return undefined
+    return this.byteOffset
+  }
+})
+
 function createBuffer (length) {
   if (length > K_MAX_LENGTH) {
-    throw new RangeError('Invalid typed array length')
+    throw new RangeError('The value "' + length + '" is invalid for option "size"')
   }
   // Return an augmented `Uint8Array` instance
   var buf = new Uint8Array(length)
-  buf.__proto__ = Buffer.prototype
+  Object.setPrototypeOf(buf, Buffer.prototype)
   return buf
 }
 
@@ -13895,8 +14022,8 @@ function Buffer (arg, encodingOrOffset, length) {
   // Common case.
   if (typeof arg === 'number') {
     if (typeof encodingOrOffset === 'string') {
-      throw new Error(
-        'If encoding is specified then the first argument must be a string'
+      throw new TypeError(
+        'The "string" argument must be of type string. Received type number'
       )
     }
     return allocUnsafe(arg)
@@ -13905,7 +14032,7 @@ function Buffer (arg, encodingOrOffset, length) {
 }
 
 // Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
-if (typeof Symbol !== 'undefined' && Symbol.species &&
+if (typeof Symbol !== 'undefined' && Symbol.species != null &&
     Buffer[Symbol.species] === Buffer) {
   Object.defineProperty(Buffer, Symbol.species, {
     value: null,
@@ -13918,19 +14045,51 @@ if (typeof Symbol !== 'undefined' && Symbol.species &&
 Buffer.poolSize = 8192 // not used by this implementation
 
 function from (value, encodingOrOffset, length) {
-  if (typeof value === 'number') {
-    throw new TypeError('"value" argument must not be a number')
-  }
-
-  if (value instanceof ArrayBuffer) {
-    return fromArrayBuffer(value, encodingOrOffset, length)
-  }
-
   if (typeof value === 'string') {
     return fromString(value, encodingOrOffset)
   }
 
-  return fromObject(value)
+  if (ArrayBuffer.isView(value)) {
+    return fromArrayLike(value)
+  }
+
+  if (value == null) {
+    throw new TypeError(
+      'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
+      'or Array-like Object. Received type ' + (typeof value)
+    )
+  }
+
+  if (isInstance(value, ArrayBuffer) ||
+      (value && isInstance(value.buffer, ArrayBuffer))) {
+    return fromArrayBuffer(value, encodingOrOffset, length)
+  }
+
+  if (typeof value === 'number') {
+    throw new TypeError(
+      'The "value" argument must not be of type number. Received type number'
+    )
+  }
+
+  var valueOf = value.valueOf && value.valueOf()
+  if (valueOf != null && valueOf !== value) {
+    return Buffer.from(valueOf, encodingOrOffset, length)
+  }
+
+  var b = fromObject(value)
+  if (b) return b
+
+  if (typeof Symbol !== 'undefined' && Symbol.toPrimitive != null &&
+      typeof value[Symbol.toPrimitive] === 'function') {
+    return Buffer.from(
+      value[Symbol.toPrimitive]('string'), encodingOrOffset, length
+    )
+  }
+
+  throw new TypeError(
+    'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
+    'or Array-like Object. Received type ' + (typeof value)
+  )
 }
 
 /**
@@ -13947,14 +14106,14 @@ Buffer.from = function (value, encodingOrOffset, length) {
 
 // Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
 // https://github.com/feross/buffer/pull/148
-Buffer.prototype.__proto__ = Uint8Array.prototype
-Buffer.__proto__ = Uint8Array
+Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype)
+Object.setPrototypeOf(Buffer, Uint8Array)
 
 function assertSize (size) {
   if (typeof size !== 'number') {
-    throw new TypeError('"size" argument must be a number')
+    throw new TypeError('"size" argument must be of type number')
   } else if (size < 0) {
-    throw new RangeError('"size" argument must not be negative')
+    throw new RangeError('The value "' + size + '" is invalid for option "size"')
   }
 }
 
@@ -14006,7 +14165,7 @@ function fromString (string, encoding) {
   }
 
   if (!Buffer.isEncoding(encoding)) {
-    throw new TypeError('"encoding" must be a valid string encoding')
+    throw new TypeError('Unknown encoding: ' + encoding)
   }
 
   var length = byteLength(string, encoding) | 0
@@ -14035,11 +14194,11 @@ function fromArrayLike (array) {
 
 function fromArrayBuffer (array, byteOffset, length) {
   if (byteOffset < 0 || array.byteLength < byteOffset) {
-    throw new RangeError('\'offset\' is out of bounds')
+    throw new RangeError('"offset" is outside of buffer bounds')
   }
 
   if (array.byteLength < byteOffset + (length || 0)) {
-    throw new RangeError('\'length\' is out of bounds')
+    throw new RangeError('"length" is outside of buffer bounds')
   }
 
   var buf
@@ -14052,7 +14211,8 @@ function fromArrayBuffer (array, byteOffset, length) {
   }
 
   // Return an augmented `Uint8Array` instance
-  buf.__proto__ = Buffer.prototype
+  Object.setPrototypeOf(buf, Buffer.prototype)
+
   return buf
 }
 
@@ -14069,20 +14229,16 @@ function fromObject (obj) {
     return buf
   }
 
-  if (obj) {
-    if (isArrayBufferView(obj) || 'length' in obj) {
-      if (typeof obj.length !== 'number' || numberIsNaN(obj.length)) {
-        return createBuffer(0)
-      }
-      return fromArrayLike(obj)
+  if (obj.length !== undefined) {
+    if (typeof obj.length !== 'number' || numberIsNaN(obj.length)) {
+      return createBuffer(0)
     }
-
-    if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
-      return fromArrayLike(obj.data)
-    }
+    return fromArrayLike(obj)
   }
 
-  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.')
+  if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
+    return fromArrayLike(obj.data)
+  }
 }
 
 function checked (length) {
@@ -14103,12 +14259,17 @@ function SlowBuffer (length) {
 }
 
 Buffer.isBuffer = function isBuffer (b) {
-  return b != null && b._isBuffer === true
+  return b != null && b._isBuffer === true &&
+    b !== Buffer.prototype // so Buffer.isBuffer(Buffer.prototype) will be false
 }
 
 Buffer.compare = function compare (a, b) {
+  if (isInstance(a, Uint8Array)) a = Buffer.from(a, a.offset, a.byteLength)
+  if (isInstance(b, Uint8Array)) b = Buffer.from(b, b.offset, b.byteLength)
   if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
-    throw new TypeError('Arguments must be Buffers')
+    throw new TypeError(
+      'The "buf1", "buf2" arguments must be one of type Buffer or Uint8Array'
+    )
   }
 
   if (a === b) return 0
@@ -14169,6 +14330,9 @@ Buffer.concat = function concat (list, length) {
   var pos = 0
   for (i = 0; i < list.length; ++i) {
     var buf = list[i]
+    if (isInstance(buf, Uint8Array)) {
+      buf = Buffer.from(buf)
+    }
     if (!Buffer.isBuffer(buf)) {
       throw new TypeError('"list" argument must be an Array of Buffers')
     }
@@ -14182,15 +14346,19 @@ function byteLength (string, encoding) {
   if (Buffer.isBuffer(string)) {
     return string.length
   }
-  if (isArrayBufferView(string) || string instanceof ArrayBuffer) {
+  if (ArrayBuffer.isView(string) || isInstance(string, ArrayBuffer)) {
     return string.byteLength
   }
   if (typeof string !== 'string') {
-    string = '' + string
+    throw new TypeError(
+      'The "string" argument must be one of type string, Buffer, or ArrayBuffer. ' +
+      'Received type ' + typeof string
+    )
   }
 
   var len = string.length
-  if (len === 0) return 0
+  var mustMatch = (arguments.length > 2 && arguments[2] === true)
+  if (!mustMatch && len === 0) return 0
 
   // Use a for loop to avoid recursion
   var loweredCase = false
@@ -14202,7 +14370,6 @@ function byteLength (string, encoding) {
         return len
       case 'utf8':
       case 'utf-8':
-      case undefined:
         return utf8ToBytes(string).length
       case 'ucs2':
       case 'ucs-2':
@@ -14214,7 +14381,9 @@ function byteLength (string, encoding) {
       case 'base64':
         return base64ToBytes(string).length
       default:
-        if (loweredCase) return utf8ToBytes(string).length // assume utf8
+        if (loweredCase) {
+          return mustMatch ? -1 : utf8ToBytes(string).length // assume utf8
+        }
         encoding = ('' + encoding).toLowerCase()
         loweredCase = true
     }
@@ -14350,6 +14519,8 @@ Buffer.prototype.toString = function toString () {
   return slowToString.apply(this, arguments)
 }
 
+Buffer.prototype.toLocaleString = Buffer.prototype.toString
+
 Buffer.prototype.equals = function equals (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
   if (this === b) return true
@@ -14359,16 +14530,23 @@ Buffer.prototype.equals = function equals (b) {
 Buffer.prototype.inspect = function inspect () {
   var str = ''
   var max = exports.INSPECT_MAX_BYTES
-  if (this.length > 0) {
-    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ')
-    if (this.length > max) str += ' ... '
-  }
+  str = this.toString('hex', 0, max).replace(/(.{2})/g, '$1 ').trim()
+  if (this.length > max) str += ' ... '
   return '<Buffer ' + str + '>'
+}
+if (customInspectSymbol) {
+  Buffer.prototype[customInspectSymbol] = Buffer.prototype.inspect
 }
 
 Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
+  if (isInstance(target, Uint8Array)) {
+    target = Buffer.from(target, target.offset, target.byteLength)
+  }
   if (!Buffer.isBuffer(target)) {
-    throw new TypeError('Argument must be a Buffer')
+    throw new TypeError(
+      'The "target" argument must be one of type Buffer or Uint8Array. ' +
+      'Received type ' + (typeof target)
+    )
   }
 
   if (start === undefined) {
@@ -14447,7 +14625,7 @@ function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
   } else if (byteOffset < -0x80000000) {
     byteOffset = -0x80000000
   }
-  byteOffset = +byteOffset  // Coerce to Number.
+  byteOffset = +byteOffset // Coerce to Number.
   if (numberIsNaN(byteOffset)) {
     // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
     byteOffset = dir ? 0 : (buffer.length - 1)
@@ -14484,7 +14662,7 @@ function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
         return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
       }
     }
-    return arrayIndexOf(buffer, [ val ], byteOffset, encoding, dir)
+    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir)
   }
 
   throw new TypeError('val must be string, number or Buffer')
@@ -14570,9 +14748,7 @@ function hexWrite (buf, string, offset, length) {
     }
   }
 
-  // must be an even number of digits
   var strLen = string.length
-  if (strLen % 2 !== 0) throw new TypeError('Invalid hex string')
 
   if (length > strLen / 2) {
     length = strLen / 2
@@ -14701,8 +14877,8 @@ function utf8Slice (buf, start, end) {
     var codePoint = null
     var bytesPerSequence = (firstByte > 0xEF) ? 4
       : (firstByte > 0xDF) ? 3
-      : (firstByte > 0xBF) ? 2
-      : 1
+        : (firstByte > 0xBF) ? 2
+          : 1
 
     if (i + bytesPerSequence <= end) {
       var secondByte, thirdByte, fourthByte, tempCodePoint
@@ -14852,7 +15028,8 @@ Buffer.prototype.slice = function slice (start, end) {
 
   var newBuf = this.subarray(start, end)
   // Return an augmented `Uint8Array` instance
-  newBuf.__proto__ = Buffer.prototype
+  Object.setPrototypeOf(newBuf, Buffer.prototype)
+
   return newBuf
 }
 
@@ -15265,6 +15442,7 @@ Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert
 
 // copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
 Buffer.prototype.copy = function copy (target, targetStart, start, end) {
+  if (!Buffer.isBuffer(target)) throw new TypeError('argument should be a Buffer')
   if (!start) start = 0
   if (!end && end !== 0) end = this.length
   if (targetStart >= target.length) targetStart = target.length
@@ -15279,7 +15457,7 @@ Buffer.prototype.copy = function copy (target, targetStart, start, end) {
   if (targetStart < 0) {
     throw new RangeError('targetStart out of bounds')
   }
-  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
+  if (start < 0 || start >= this.length) throw new RangeError('Index out of range')
   if (end < 0) throw new RangeError('sourceEnd out of bounds')
 
   // Are we oob?
@@ -15289,22 +15467,19 @@ Buffer.prototype.copy = function copy (target, targetStart, start, end) {
   }
 
   var len = end - start
-  var i
 
-  if (this === target && start < targetStart && targetStart < end) {
+  if (this === target && typeof Uint8Array.prototype.copyWithin === 'function') {
+    // Use built-in when available, missing from IE11
+    this.copyWithin(targetStart, start, end)
+  } else if (this === target && start < targetStart && targetStart < end) {
     // descending copy from end
-    for (i = len - 1; i >= 0; --i) {
-      target[i + targetStart] = this[i + start]
-    }
-  } else if (len < 1000) {
-    // ascending copy from start
-    for (i = 0; i < len; ++i) {
+    for (var i = len - 1; i >= 0; --i) {
       target[i + targetStart] = this[i + start]
     }
   } else {
     Uint8Array.prototype.set.call(
       target,
-      this.subarray(start, start + len),
+      this.subarray(start, end),
       targetStart
     )
   }
@@ -15327,20 +15502,24 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
       encoding = end
       end = this.length
     }
-    if (val.length === 1) {
-      var code = val.charCodeAt(0)
-      if (code < 256) {
-        val = code
-      }
-    }
     if (encoding !== undefined && typeof encoding !== 'string') {
       throw new TypeError('encoding must be a string')
     }
     if (typeof encoding === 'string' && !Buffer.isEncoding(encoding)) {
       throw new TypeError('Unknown encoding: ' + encoding)
     }
+    if (val.length === 1) {
+      var code = val.charCodeAt(0)
+      if ((encoding === 'utf8' && code < 128) ||
+          encoding === 'latin1') {
+        // Fast path: If `val` fits into a single byte, use that numeric value.
+        val = code
+      }
+    }
   } else if (typeof val === 'number') {
     val = val & 255
+  } else if (typeof val === 'boolean') {
+    val = Number(val)
   }
 
   // Invalid ranges are not set to a default, so can range check early.
@@ -15365,8 +15544,12 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
   } else {
     var bytes = Buffer.isBuffer(val)
       ? val
-      : new Buffer(val, encoding)
+      : Buffer.from(val, encoding)
     var len = bytes.length
+    if (len === 0) {
+      throw new TypeError('The value "' + val +
+        '" is invalid for argument "value"')
+    }
     for (i = 0; i < end - start; ++i) {
       this[i + start] = bytes[i % len]
     }
@@ -15381,6 +15564,8 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
 var INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g
 
 function base64clean (str) {
+  // Node takes equal signs as end of the Base64 encoding
+  str = str.split('=')[0]
   // Node strips out invalid characters like \n and \t from the string, base64-js does not
   str = str.trim().replace(INVALID_BASE64_RE, '')
   // Node converts strings with length < 2 to ''
@@ -15514,19 +15699,24 @@ function blitBuffer (src, dst, offset, length) {
   return i
 }
 
-// Node 0.10 supports `ArrayBuffer` but lacks `ArrayBuffer.isView`
-function isArrayBufferView (obj) {
-  return (typeof ArrayBuffer.isView === 'function') && ArrayBuffer.isView(obj)
+// ArrayBuffer or Uint8Array objects from other contexts (i.e. iframes) do not pass
+// the `instanceof` check but they should be treated as of that type.
+// See: https://github.com/feross/buffer/issues/166
+function isInstance (obj, type) {
+  return obj instanceof type ||
+    (obj != null && obj.constructor != null && obj.constructor.name != null &&
+      obj.constructor.name === type.name)
 }
-
 function numberIsNaN (obj) {
+  // For IE11 support
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-},{"base64-js":82,"ieee754":85}],85:[function(require,module,exports){
+}).call(this,require("buffer").Buffer)
+},{"base64-js":77,"buffer":79,"ieee754":80}],80:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
-  var eLen = nBytes * 8 - mLen - 1
+  var eLen = (nBytes * 8) - mLen - 1
   var eMax = (1 << eLen) - 1
   var eBias = eMax >> 1
   var nBits = -7
@@ -15539,12 +15729,12 @@ exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   e = s & ((1 << (-nBits)) - 1)
   s >>= (-nBits)
   nBits += eLen
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+  for (; nBits > 0; e = (e * 256) + buffer[offset + i], i += d, nBits -= 8) {}
 
   m = e & ((1 << (-nBits)) - 1)
   e >>= (-nBits)
   nBits += mLen
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+  for (; nBits > 0; m = (m * 256) + buffer[offset + i], i += d, nBits -= 8) {}
 
   if (e === 0) {
     e = 1 - eBias
@@ -15559,7 +15749,7 @@ exports.read = function (buffer, offset, isLE, mLen, nBytes) {
 
 exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   var e, m, c
-  var eLen = nBytes * 8 - mLen - 1
+  var eLen = (nBytes * 8) - mLen - 1
   var eMax = (1 << eLen) - 1
   var eBias = eMax >> 1
   var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
@@ -15592,7 +15782,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
       m = 0
       e = eMax
     } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen)
+      m = ((value * c) - 1) * Math.pow(2, mLen)
       e = e + eBias
     } else {
       m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
@@ -15609,7 +15799,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],86:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -15801,21 +15991,35 @@ process.umask = function() { return 0; };
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createMessageConnector = exports.decrypt = exports.encrypt = exports.generatateRandomString = undefined;
+Object.defineProperty(exports, "generatateRandomString", {
+  enumerable: true,
+  get: function get() {
+    return _util.generatateRandomString;
+  }
+});
+Object.defineProperty(exports, "encrypt", {
+  enumerable: true,
+  get: function get() {
+    return _util.encrypt;
+  }
+});
+Object.defineProperty(exports, "decrypt", {
+  enumerable: true,
+  get: function get() {
+    return _util.decrypt;
+  }
+});
+exports.createMessageConnector = void 0;
 
-var _GlobalInputMessageConnector = require("./GlobalInputMessageConnector");
-
-var _GlobalInputMessageConnector2 = _interopRequireDefault(_GlobalInputMessageConnector);
+var _GlobalInputMessageConnector = _interopRequireDefault(require("./GlobalInputMessageConnector"));
 
 var _util = require("./util");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var createMessageConnector = function createMessageConnector() {
-  return new _GlobalInputMessageConnector2.default();
+  return new _GlobalInputMessageConnector["default"]();
 };
-exports.generatateRandomString = _util.generatateRandomString;
-exports.encrypt = _util.encrypt;
-exports.decrypt = _util.decrypt;
+
 exports.createMessageConnector = createMessageConnector;
 },{"./GlobalInputMessageConnector":1,"./util":3}]},{},[]);

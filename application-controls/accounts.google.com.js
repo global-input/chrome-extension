@@ -161,7 +161,7 @@
                                               selector:{
                                                         element:'div[role="button"]',
                                                         content:{
-                                                            element:"content span",
+                                                            element:"span",
                                                             textContent:"Create account"
                                                         }
                                               },

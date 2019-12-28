@@ -10,7 +10,9 @@ var _socket = _interopRequireDefault(require("socket.io-client"));
 
 var _util = require("./util");
 
-var _codedataUtil = require("./codedataUtil");
+var codedataUtil = _interopRequireWildcard(require("./codedataUtil"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj["default"] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -691,24 +693,24 @@ function () {
   }, {
     key: "buildOptionsFromInputCodedata",
     value: function buildOptionsFromInputCodedata(codedata, options) {
-      return _codedataUtil.codedataUtil.buildOptionsFromInputCodedata(this, codedata, options);
+      return codedataUtil.buildOptionsFromInputCodedata(this, codedata, options);
     }
   }, {
     key: "buildInputCodeData",
     value: function buildInputCodeData() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return _codedataUtil.codedataUtil.buildInputCodeData(this, data);
+      return codedataUtil.buildInputCodeData(this, data);
     }
   }, {
     key: "buildPairingData",
     value: function buildPairingData() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return _codedataUtil.codedataUtil.buildPairingData(this, data);
+      return codedataUtil.buildPairingData(this, data);
     }
   }, {
     key: "processCodeData",
     value: function processCodeData(encryptedcodedata, options) {
-      return _codedataUtil.codedataUtil.processCodeData(this, encryptedcodedata, options);
+      return codedataUtil.processCodeData(this, encryptedcodedata, options);
     }
   }]);
 
@@ -722,146 +724,166 @@ exports["default"] = GlobalInputMessageConnector;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.codedataUtil = void 0;
+exports.processCodeData = exports.buildPairingData = exports.buildInputCodeData = exports.buildOptionsFromInputCodedata = void 0;
 
 var _util = require("./util");
 
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 var sharedKey = "50SUB39ctEKzd6Uv2a84lFK";
-var codedataUtil = {
-  buildOptionsFromInputCodedata: function buildOptionsFromInputCodedata(connector, codedata, options) {
-    var buildOptions = {
-      connectSession: codedata.session,
-      url: codedata.url,
-      aes: codedata.aes,
-      apikey: codedata.apikey
-    };
 
-    if (codedata.securityGroup) {
-      buildOptions.securityGroup = codedata.securityGroup;
-    }
+var buildOptionsFromInputCodedata = function buildOptionsFromInputCodedata(connector, codedata, options) {
+  var session = codedata.session,
+      url = codedata.url,
+      aes = codedata.aes,
+      apikey = codedata.apikey,
+      securityGroup = codedata.securityGroup;
+  return _objectSpread({
+    connectSession: session,
+    url: url,
+    aes: aes,
+    apikey: apikey,
+    securityGroup: securityGroup
+  }, options);
+};
 
-    if (!options) {
-      return buildOptions;
-    } else {
-      return Object.assign(buildOptions, options);
-    }
-  },
-  buildInputCodeData: function buildInputCodeData(connector) {
-    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var codedata = Object.assign({}, data, {
-      url: connector.url,
-      session: connector.session,
-      apikey: connector.apikey,
-      action: "input",
-      aes: connector.aes
-    });
+exports.buildOptionsFromInputCodedata = buildOptionsFromInputCodedata;
 
-    if (connector.codeAES) {
-      return "A" + (0, _util.encrypt)("J" + JSON.stringify(codedata), connector.codeAES);
-    } else {
-      return "NJ" + JSON.stringify(codedata);
-    }
-  },
-  buildPairingData: function buildPairingData(connector) {
-    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var codedata = Object.assign({}, {
-      securityGroup: connector.securityGroup,
-      codeAES: connector.codeAES,
-      action: "pairing"
-    }, data);
-    return "C" + (0, _util.encrypt)("J" + JSON.stringify(codedata), sharedKey);
-  },
-  onError: function onError(options, message, error) {
-    if (options.onError) {
-      options.onError(message);
-    } else {
-      console.warn(message);
-    }
+var buildInputCodeData = function buildInputCodeData(connector) {
+  var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var url = connector.url,
+      session = connector.session,
+      apikey = connector.apikey,
+      aes = connector.aes,
+      codeAES = connector.codeAES;
 
-    if (error) {
-      console.warn(error);
-    }
-  },
-  processCodeData: function processCodeData(connector, encryptedcodedata, options) {
-    if (!encryptedcodedata) {
-      console.log("empty codedata");
-      return;
-    }
+  var codedata = _objectSpread({}, data, {
+    url: url,
+    session: session,
+    apikey: apikey,
+    aes: aes,
+    action: 'input'
+  });
 
-    var encryptionType = encryptedcodedata.substring(0, 1);
-    var encryptedContent = encryptedcodedata.substring(1);
-    var decryptedContent = null;
+  if (codeAES) {
+    return "A" + (0, _util.encrypt)("J" + JSON.stringify(codedata), codeAES);
+  } else {
+    return "NJ" + JSON.stringify(codedata);
+  }
+};
 
-    if (encryptionType === "C") {
+exports.buildInputCodeData = buildInputCodeData;
+
+var buildPairingData = function buildPairingData(connector) {
+  var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var securityGroup = connector.securityGroup,
+      codeAES = connector.codeAES;
+
+  var codedata = _objectSpread({
+    securityGroup: securityGroup,
+    codeAES: codeAES,
+    action: 'pairing'
+  }, data);
+
+  return "C" + (0, _util.encrypt)("J" + JSON.stringify(codedata), sharedKey);
+};
+
+exports.buildPairingData = buildPairingData;
+
+var onError = function onError(options, message, error) {
+  if (options.onError) {
+    options.onError(message);
+  } else {
+    console.warn(message);
+  }
+
+  if (error) {
+    console.warn(error);
+  }
+};
+
+var processCodeData = function processCodeData(connector, encryptedcodedata, options) {
+  if (!encryptedcodedata) {
+    console.log("empty codedata");
+    return;
+  }
+
+  var encryptionType = encryptedcodedata.substring(0, 1);
+  var encryptedContent = encryptedcodedata.substring(1);
+  var decryptedContent = null;
+
+  switch (encryptionType) {
+    case 'C':
       try {
         decryptedContent = (0, _util.decrypt)(encryptedContent, sharedKey);
+        break;
       } catch (error) {
-        this.onError(options, "May not ne a global Input code (C) ", error);
+        onError(options, "May not ne a global Input code (C) ", error);
         return;
       }
-    } else if (encryptionType === "A") {
-      var codeAES = connector.codeAES;
 
-      if (options.codeAES) {
-        codeAES = options.codeAES;
-      }
-
+    case 'A':
       try {
-        decryptedContent = (0, _util.decrypt)(encryptedContent, codeAES);
+        decryptedContent = (0, _util.decrypt)(encryptedContent, options.codeAES ? options.codeAES : connector.codeAES);
+        break;
       } catch (error) {
-        this.onError(options, "May not be glbal input code (A)", error);
+        onError(options, "May not be glbal input code (A)", error);
         return;
       }
-    } else if (encryptionType === "N") {
+
+    case 'N':
       decryptedContent = encryptedContent;
-    } else {
-      this.onError(options, "Not a Global Input code (N)  ");
+      break;
+
+    default:
+      onError(options, "Not a Global Input code (N)  ");
+      return;
+  }
+
+  if (!decryptedContent) {
+    onError(options, "Not a global Input code (E)");
+    return;
+  }
+
+  var dataFormat = decryptedContent.substring(0, 1);
+  var dataContent = decryptedContent.substring(1);
+  var codedata = null;
+
+  if (dataFormat === "J") {
+    try {
+      codedata = JSON.parse(dataContent);
+    } catch (error) {
+      onError(options, " incorrect format decrypted", error);
       return;
     }
+  } else {
+    onError(options, "unrecognized format decrypted");
+    return;
+  }
 
-    if (!decryptedContent) {
-      this.onError(options, "Not a global Input code (E)");
-      return;
+  if (codedata.action == 'input') {
+    if (options.onInputCodeData) {
+      options.onInputCodeData(codedata);
     }
-
-    var dataFormat = decryptedContent.substring(0, 1);
-    var dataContent = decryptedContent.substring(1);
-    var codedata = null;
-
-    if (dataFormat === "J") {
-      try {
-        codedata = JSON.parse(dataContent);
-      } catch (error) {
-        this.onError(options, " incorrect format decrypted", error);
-        return;
-      }
-    } else {
-      this.onError(options, "unrecognized format decrypted");
-      return;
-    }
-
-    if (codedata.action == 'input') {
-      if (options.onInputCodeData) {
-        options.onInputCodeData(codedata);
-      }
-    } else if (codedata.action == 'pairing') {
-      if (options.onPairing) {
-        options.onPairing(codedata);
-      }
+  } else if (codedata.action == 'pairing') {
+    if (options.onPairing) {
+      options.onPairing(codedata);
     }
   }
 };
-exports.codedataUtil = codedataUtil;
+
+exports.processCodeData = processCodeData;
 },{"./util":3}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.generatateRandomString = generatateRandomString;
-exports.encrypt = encrypt;
-exports.decrypt = decrypt;
-exports.basicGetURL = basicGetURL;
+exports.basicGetURL = exports.decrypt = exports.encrypt = exports.generatateRandomString = void 0;
 
 var _cryptoJs = _interopRequireDefault(require("crypto-js"));
 
@@ -869,7 +891,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function generatateRandomString() {
+var generatateRandomString = function generatateRandomString() {
   var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
   var randPassword = Array(length).fill("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@£$&*:;").map(function (x) {
     var indexString = _cryptoJs["default"].enc.Hex.stringify(_cryptoJs["default"].lib.WordArray.random(1));
@@ -878,17 +900,23 @@ function generatateRandomString() {
     return x[indexValue % x.length];
   }).join('');
   return randPassword;
-}
+};
 
-function encrypt(content, password) {
+exports.generatateRandomString = generatateRandomString;
+
+var encrypt = function encrypt(content, password) {
   return escape(_cryptoJs["default"].AES.encrypt(content, password).toString());
-}
+};
 
-function decrypt(content, password) {
+exports.encrypt = encrypt;
+
+var decrypt = function decrypt(content, password) {
   return _cryptoJs["default"].AES.decrypt(unescape(content), password).toString(_cryptoJs["default"].enc.Utf8);
-}
+};
 
-function basicGetURL(url, onSuccess, onError) {
+exports.decrypt = decrypt;
+
+var basicGetURL = function basicGetURL(url, onSuccess, onError) {
   var request = new XMLHttpRequest();
 
   request.ontimeout = function (e) {
@@ -925,7 +953,9 @@ function basicGetURL(url, onSuccess, onError) {
 
   request.open('GET', url, true);
   request.send();
-}
+};
+
+exports.basicGetURL = basicGetURL;
 },{"crypto-js":20}],4:[function(require,module,exports){
 module.exports = after
 

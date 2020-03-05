@@ -1,35 +1,35 @@
 {
-  "name": "global-input-app",
-  "version": "2.0.0",
-  "description": "Global Input extension to support the Global Input App ",
-  "main": "content.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "node ./postinstall.js",
-    "package": "cd extension && zip -r ../globalinputapp.zip ."
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/global-input/chrome-extension.git"
-  },
-  "keywords": [
-    "chrome",
-    "globalinput",
-    "extension"
-  ],
-  "author": "Dilshat Hewzulla",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/global-input/chrome-extension/issues"
-  },
-  "homepage": "https://globalinput.co.uk",
+  "name": "browser-extension",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "davidshimjs-qrcodejs": "0.0.2",
-    "global-input-message": "^1.7.3"
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "global-input-react": "^3.1.19",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "react-scripts": "3.4.0"
   },
-  "devDependencies": {
-    "concat": "^1.0.3",
-    "copyfiles": "^2.1.0",
-    "replace": "^1.0.1"
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "env INLINE_RUNTIME_CHUNK=false react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

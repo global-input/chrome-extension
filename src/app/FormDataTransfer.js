@@ -4,6 +4,7 @@ import React, {useState, useEffect } from "react";
 import * as formUtil from './formUtil';
 import {DisplayInputCopyField,TextButton,FormContainer} from './app-layout';
 import AddNewField from './AddNewField';
+import DeleteFields  from './DeleteFields';
 
 
 const ACTIONS={
@@ -19,15 +20,21 @@ export default ({globalInputApp, hostname,goBackToHome})=>{
     const gotoAddField=()=>{
          setAction(ACTIONS.ADD_NEW_FIELD);
     };
+    const gotDeleteFileds=()=>{
+     setAction(ACTIONS.DELETE_FIELDS);
+    };
     const gotoHome= (fields=formFields)=>{
           setAction(ACTIONS.HOME);
           globalInputApp.setInitData(buildInitData(fields));
     }
-    const addNewField=(label,multiLine)=>{
-          console.log("-------label:"+label);
+    const addNewField=(label,multiLine)=>{          
           const newFields=formUtil.createNewFormNewField({formFields,label, multiLine});
           onFormFieldsModified(newFields)
     }
+    const deleteFields=items=>{
+     const newFields=formUtil.deleteSelectedFields(formFields,items);                
+     onFormFieldsModified(newFields);
+    };
     const onFormFieldsModified=newFields=>{
           setFormFields(newFields);     
           if(newFields.length){
@@ -53,7 +60,11 @@ export default ({globalInputApp, hostname,goBackToHome})=>{
                     onToggleShowHide();
                     break;
                case  addNewFieldControl.id:
-                    gotoAddField();    
+                    gotoAddField(); 
+                    break;
+               case deleteFieldsControl.id:
+                    gotDeleteFileds();
+                    break;
                default:
                     setFormFields(formUtil.updateFields(formFields,field.id, field.value));
           }             
@@ -84,7 +95,10 @@ switch(action){
           );
      case ACTIONS.ADD_NEW_FIELD:
           return (<AddNewField globalInputApp={globalInputApp} gotoHome={gotoHome} addNewField={addNewField}/>);
-                         
+     
+     case ACTIONS.DELETE_FIELDS:
+               return (<DeleteFields globalInputApp={globalInputApp} gotoHome={gotoHome} formFields={formFields} deleteFields={deleteFields}/>);
+                              
   }
     
 };

@@ -66,3 +66,49 @@ export const createNewFormNewField = ({formFields,label, multiLine}) => {
     }
     return [...formFields,{id,label:newLabel,value:'',nLines}];    
 };
+
+
+
+export const updateSelection = (items, values) => {
+    const newItems=items.map(itm=>{
+        if(values && values.length>0){
+            for(let value of values){
+                if(itm.value===value){
+                    return {...itm, selected:true};
+                }
+            }
+        }            
+        return {...itm, selected:false};            
+    });
+    return newItems;
+};
+
+
+export const toggleSelect = (items, item) => {
+    const newItems=items.map(itm=>{
+        if(itm.value===item.value){
+            return {...itm, selected:!itm.selected};
+        }else{
+            return itm;
+        }
+    });
+    return newItems;
+};
+
+export const getSelectedValues=items=>{
+    const values=[];        
+    items.forEach(itm=>{
+            if(itm.selected){
+                values.push(itm.value);
+            }
+    });
+    return values;
+};
+
+
+export const deleteSelectedFields = (formFields,items) => {
+    if(!items||!items.length){
+        return formFields;            
+    }            
+    return formFields.filter(f=>items.filter(itm=>itm.value===f.id && itm.selected).length===0);    
+};

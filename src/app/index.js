@@ -10,7 +10,7 @@ import FormDataTransfer from './FormDataTransfer';
 export default ()=>{        
     const globalInputApp = useGlobalInputApp({initData});
     const [action, setAction]=useState(ACTIONS.HOME);
-    const [hostname, setHostname]=useState(null);
+    const [domain, setDomain]=useState(null);
     const [browserError, setBrowserError]=useState(null)
     const [cacheTTL, setCacheTTL]=useState(60000);
     const [cachedFieldValues, setCachedFieldValue]=useState(null);
@@ -22,7 +22,7 @@ export default ()=>{
     }
      useEffect(()=>{          
           chromeExtensionUtil.checkPageStatus(message=>{
-               setHostname(message.host); 
+               setDomain(message.host); 
                setCacheTTL(message.cacheTTL);
                setCachedFieldValue(message.content.cachefields);
           },message=>{
@@ -32,7 +32,7 @@ export default ()=>{
 
      useEffect(()=>{
           const {field}=globalInputApp;
-          if(!field){
+          if(!field || action!==ACTIONS.HOME){
                return;
           }
           switch(field.id){
@@ -46,7 +46,7 @@ export default ()=>{
      
      const props={
           globalInputApp,
-          hostname,
+          setDomain,
           goBackToHome
      };
     const switchByAction=()=>{

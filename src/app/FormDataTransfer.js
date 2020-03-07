@@ -12,22 +12,23 @@ const ACTIONS={
      ADD_NEW_FIELD:'add_new_field',
      DELETE_FIELDS:'delete_fields'     
  };
-export default ({globalInputApp, hostname,goBackToHome})=>{
+export default ({globalInputApp, domain,goBackToHome})=>{
      const [action, setAction]=useState(ACTIONS.HOME);
      const [visibility, setVisibility]=useState(fieldVisibilityControl.options[0]); 
-    const [formFields,setFormFields]=useState(getFormFields(hostname));
+     const [formFields,setFormFields]=useState(()=>getFormFields(domain));
+    
 
     const gotoAddField=()=>{
          setAction(ACTIONS.ADD_NEW_FIELD);
     };
-    const gotDeleteFileds=()=>{
+    const gotDeleteFields=()=>{
      setAction(ACTIONS.DELETE_FIELDS);
     };
     const gotoHome= (fields=formFields)=>{
           setAction(ACTIONS.HOME);
           globalInputApp.setInitData(buildInitData(fields));
     }
-    const addNewField=(label,multiLine)=>{          
+    const addNewField=(label,multiLine)=>{                    
           const newFields=formUtil.createNewFormNewField({formFields,label, multiLine});
           onFormFieldsModified(newFields)
     }
@@ -36,9 +37,10 @@ export default ({globalInputApp, hostname,goBackToHome})=>{
      onFormFieldsModified(newFields);
     };
     const onFormFieldsModified=newFields=>{
-          setFormFields(newFields);     
+          setFormFields(newFields);          
           if(newFields.length){
-               gotoHome(newFields);             
+               gotoHome(newFields); 
+               formUtil.saveFormFields(domain, newFields);            
           }
           else{
                gotoAddField();
@@ -49,7 +51,7 @@ export default ({globalInputApp, hostname,goBackToHome})=>{
     },[]);
     useEffect(()=>{
          const {field}=globalInputApp;
-          if(!field){
+          if(!field || action!==ACTIONS.HOME){
                return;
           }
           switch(field.id){
@@ -63,10 +65,13 @@ export default ({globalInputApp, hostname,goBackToHome})=>{
                     gotoAddField(); 
                     break;
                case deleteFieldsControl.id:
-                    gotDeleteFileds();
+                    gotDeleteFields();
                     break;
-               default:
-                    setFormFields(formUtil.updateFields(formFields,field.id, field.value));
+               default:                    
+                    const matchedFields=formFields.filter(f=>f.id===field.id);
+                    if(matchedFields.length){
+                         setFormFields(formUtil.updateFields(formFields,field.id, field.value));
+                    }
           }             
           
     },[globalInputApp.field]);
@@ -85,7 +90,7 @@ const onToggleShowHide=()=>{
 switch(action){
      case ACTIONS.HOME:
           return (
-               <FormContainer title="Form Data Transfer">              
+               <FormContainer title="Form Data Transfer" domain={domain}>              
                      {formFields.map((formField,index)=>(<DisplayInputCopyField 
                   field={formField} 
                   key={formField.id} 
@@ -148,8 +153,8 @@ const defaultFormFields=[{
           nLines:5, value:'',
 }];
 
-const getFormFields =hostname=>{
-     const formFields=formUtil.getSavedFormFields(hostname);         
+const getFormFields =domain=>{
+     const formFields=formUtil.loadSavedFormFields(domain);         
      if(formFields){
           return  formFields;
      }

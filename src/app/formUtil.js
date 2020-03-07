@@ -1,10 +1,10 @@
-const getFormFieldsPrefix= hostname => {
-    const formprefix="extension."+hostname?hostname:'default';
+const getFormFieldsPrefix= domain => {
+    const formprefix="extension."+domain?domain:'default';
     return formprefix+".forms.fields";
 };
 
-export const getSavedFormFields= hostname => {
-    var fieldString=localStorage.getItem(getFormFieldsPrefix(hostname));
+export const loadSavedFormFields= domain => {
+    var fieldString=localStorage.getItem(getFormFieldsPrefix(domain));
     if(!fieldString){
         return null;
     }            
@@ -19,6 +19,12 @@ export const getSavedFormFields= hostname => {
     }
     return null;
 };
+
+export const saveFormFields= (domain,formFields) => {
+    var fieldString=JSON.stringify(formFields);
+    localStorage.setItem(getFormFieldsPrefix(domain),fieldString);    
+};
+
 
 
 export const updateFields= (formFields,fieldsId, value)=>{
@@ -58,6 +64,7 @@ export const createNewFormNewField = ({formFields,label, multiLine}) => {
         return formFields;
     }
     const nLines=multiLine?5:1;
+    console.log("----nLine:"+nLines);
     const id=newLabel.replace(' ',"_").toLowerCase();
     for(let f of formFields){
         if(f.id===id){

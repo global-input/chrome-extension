@@ -32,4 +32,3 @@ export const checkPageStatus = (onSuccess, onFailure) => {
         }
     })
 };
-//{"messageType":"check-page-status","host":"localhost:3000","cacheTTL":60000,"status":"success","content":{"cachefields":null}}

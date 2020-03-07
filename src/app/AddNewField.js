@@ -5,7 +5,7 @@ import * as formUtil from './formUtil';
 export default ({globalInputApp,gotoHome,addNewField}) => {    
     
     const [label,setLabel]=useState('');
-    const [multiLine,setMultiLine]=useState(fieldMultiLine.items[0]);    
+    const [multiLine,setMultiLine]=useState(fieldMultiLine.items[0].value);    
     
     const setFormLabel=label=>{
         setLabel(label);
@@ -15,9 +15,8 @@ export default ({globalInputApp,gotoHome,addNewField}) => {
     const onAddNewField=()=>{        
       if(!label.trim().length){
           return;
-      }
-
-      addNewField(label,multiLine.value===fieldMultiLine.items[1].value);
+      }      
+      addNewField(label,multiLine===fieldMultiLine.items[1].value);
     }
     useEffect(()=>{
         globalInputApp.setInitData(initData);    
@@ -35,12 +34,9 @@ export default ({globalInputApp,gotoHome,addNewField}) => {
 
             case fieldMultiLine.id:
                 const multiLineIndex=formUtil.getItemIndexByField(fieldMultiLine.items,field);                
-                if(multiLineIndex===0){                        
-                            setMultiLine(false);
-                    }
-                    else if(multiLineIndex===1){
-                            setMultiLine(true);            
-                    }
+                if(multiLineIndex>=0){                        
+                            setMultiLine(fieldMultiLine.items[multiLineIndex].value);
+                }                    
                     break;    
             
             case fieldCancel.id:
@@ -60,12 +56,12 @@ export default ({globalInputApp,gotoHome,addNewField}) => {
                             onChange={setFormLabel}
                             value={label}/>              
             
-            <RadioButton name="singleMultiLine" checked={!multiLine} label="Single-line" onChange={()=>{
-                          setMultiLine(false);
+            <RadioButton name="singleMultiLine" checked={multiLine===fieldMultiLine.items[0].value} label="Single-line" onChange={()=>{
+                          setMultiLine(fieldMultiLine.items[0].value);
                           globalInputApp.setFieldValueById(fieldMultiLine.id,fieldMultiLine.items[0].value);                         
                           }}/>
-            <RadioButton name="singleMultiLine" checked={multiLine} label="Multi-line" onChange={()=>{
-                          setMultiLine(true);
+            <RadioButton name="singleMultiLine" checked={multiLine===fieldMultiLine.items[1].value} label="Multi-line" onChange={()=>{
+                          setMultiLine(fieldMultiLine.items[1].value);
                           globalInputApp.setFieldValueById(fieldMultiLine.id,fieldMultiLine.items[1].value);                         
             }}/>
 

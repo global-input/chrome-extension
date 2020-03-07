@@ -57,10 +57,11 @@ export const MessageContainer = ({children,title})=>{
 };
 
 
-export const FormContainer = ({children,title})=>{
+export const FormContainer = ({children,domain,title})=>{
 
     return (<div style={styles.form.container}>
                 <AppTitle>{title}</AppTitle>
+                <div>{domain}</div>
                 <div style={styles.form.fields}>
                         {children}
                 </div>

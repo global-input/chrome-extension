@@ -6,6 +6,7 @@ export var styles={
           justifyContent:"flex-start",
           alignItems:"flex-start",
           width:"100%",
+          marginTop:10
     },
     field:{
         get:styleMatchingScreenSize,
@@ -47,11 +48,12 @@ export var styles={
               display:"flex",
               flexDirection:"row",
               justifyContent:"flex-start",
-              alignItems:"center",
-              paddingLeft:10
+              alignItems:"flex-end",
+              paddingLeft:10,
+              transform: 'translateY(5px)',              
           },
           placeholder:{
-              transform: 'translateY(50px)',
+              transform: 'translateY(30px)'              
           }
 
 

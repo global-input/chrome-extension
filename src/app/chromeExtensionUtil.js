@@ -1,12 +1,30 @@
+////main////
 
-const sendMessageToContent = (messageType, content,callback) => {        
-    if(!window.chrome || !window.chrome.tabs){
-        console.log("chrome is not available");
+const callChromeAPI = ({callback,messageType,content})=>{
+    if(!window.chrome || !window.chrome.tabs){            
+        callback({status:'failure', content:'chrome is not available'}); 
         return;
     }
     window.chrome.tabs.query({active: true, currentWindow: true}, tabs =>{
-        window.chrome.tabs.sendMessage(tabs[0].id, {messageType:messageType,content:content}, callback);
+        window.chrome.tabs.sendMessage(tabs[0].id, {messageType,content},callback);
     });
+}
+
+const sendMessageToContent = async (messageType, content) => {        
+    return new Promise((resolve,reject)=>{
+        const callback=message=>{
+            if(!message){
+                reject({status:'failure', content:'empty'});                    
+            }
+            else if(message.status!=='success'){
+                reject(message);
+            }
+            else{
+                resolve(message);                
+            }            
+        };
+        callChromeAPI({callback,messageType,content});////call ChromeAPI////
+    });    
 };
 
 const registerContentListener = () =>{
@@ -21,14 +39,13 @@ const registerContentListener = () =>{
 };
 
 
-export const checkPageStatus = (onSuccess, onFailure) => {        
-    sendMessageToContent('check-page-status',null, message => {
-        if(!message){          
-          onFailure({messageType:"check-page-status",status:'failure'});
-        }
-        else{
-            console.log("-------replied:"+JSON.stringify(message));             
-            onSuccess(message);            
-        }
-    })
+export const checkPageStatus = async () => {      
+        return sendMessageToContent('check-page-status',null);
 };
+
+export const sendFormFieldForCache = async (fieldId,fieldValue) =>{
+    return sendMessageToContent('set-cache-field',{fieldId,fieldValue});
+};
+export const clearCacheFields = async () =>{
+    return sendMessageToContent('set-all-cache-fields',{cachefields:[]});
+}; 

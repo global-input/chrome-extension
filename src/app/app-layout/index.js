@@ -61,7 +61,7 @@ export const FormContainer = ({children,domain,title})=>{
 
     return (<div style={styles.form.container}>
                 <AppTitle>{title}</AppTitle>
-                <div>{domain}</div>
+                <div style={styles.domain}>{domain}</div>
                 <div style={styles.form.fields}>
                         {children}
                 </div>

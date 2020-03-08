@@ -20,7 +20,7 @@ export default ({globalInputApp,gotoHome,addNewField}) => {
     }
     useEffect(()=>{
         globalInputApp.setInitData(initData);    
-  },[]);
+  },[globalInputApp]);
   useEffect(()=>{
       const {field}=globalInputApp;
       if(!field){
@@ -47,7 +47,7 @@ export default ({globalInputApp,gotoHome,addNewField}) => {
                 onAddNewField();
                 break;
       }
-  },[globalInputApp.field]);
+  },[globalInputApp,globalInputApp.field]);
 
       return(
           <FormContainer title="Adding New Field">              

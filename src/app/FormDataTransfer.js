@@ -2,6 +2,7 @@ import React, {useState, useEffect } from "react";
 
 
 import * as formUtil from './formUtil';
+import * as chromeExtensionUtil from './chromeExtensionUtil'
 import {DisplayInputCopyField,TextButton,FormContainer} from './app-layout';
 import AddNewField from './AddNewField';
 import DeleteFields  from './DeleteFields';
@@ -26,7 +27,7 @@ export default ({globalInputApp, domain,goBackToHome})=>{
     };
     const gotoHome= (fields=formFields)=>{
           setAction(ACTIONS.HOME);
-          globalInputApp.setInitData(buildInitData(fields));
+          globalInputApp.setInitData(buildInitData(fields,domain));
     }
     const addNewField=(label,multiLine)=>{                    
           const newFields=formUtil.createNewFormNewField({formFields,label, multiLine});
@@ -71,6 +72,7 @@ export default ({globalInputApp, domain,goBackToHome})=>{
                     const matchedFields=formFields.filter(f=>f.id===field.id);
                     if(matchedFields.length){
                          setFormFields(formUtil.updateFields(formFields,field.id, field.value));
+                         chromeExtensionUtil.sendFormFieldForCache(field.id,field.value);
                     }
           }             
           
@@ -79,7 +81,7 @@ export default ({globalInputApp, domain,goBackToHome})=>{
     const onFieldChanged=(formField,value) => {
           setFormFields(formUtil.updateFields(formFields,formField.id, value));
           globalInputApp.setFieldValueById(formField.id,value);
-          
+          chromeExtensionUtil.sendFormFieldForCache(formField.id,value);         
     };
 const onToggleShowHide=()=>{
      const nextVisibility=formUtil.toggleOption(fieldVisibilityControl.options,visibility.value);                
@@ -161,15 +163,17 @@ const getFormFields =domain=>{
      return defaultFormFields;  
 }
 
-const buildInitData = formFields=>{
-
+const buildInitData = (formFields,domain)=>{
+     const idField= ()=>formFields.length?'###'+formFields[0].id+'###':'credential';
+     const formId=idField()+'@'+domain;          
      return {
           action: "input",
           dataType: "form",
           form: {    
-          id:"###username###@general",
-          title:"Transfer Form Data",
-          label:"general",
+          id:formId,
+          title:domain,
+          label:"web",
+          domain,
           fields:[addNewFieldControl,
                   deleteFieldsControl,
                   backToHomeControl,

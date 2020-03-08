@@ -23,6 +23,20 @@ export default {
         minWidth:100,
         minHeight:100,        
      },
+     domain:{
+         width:"100%",
+         fontFamily: "Avenir",
+         fontSize: 16,
+         paddingTop:10,
+         fontWeight: 100,        
+         color:"#153E85",
+         whiteSpace: 'nowrap',
+         display:"flex",
+         flexDirection:"row",
+         justifyContent:"center",
+        
+        
+     },
     
      paragraph:{
             fontSize: 16,      

@@ -1,4 +1,4 @@
-import React, {useState, useEffect } from "react";
+import React, {useState, useEffect, useRef} from "react";
 
 
 import * as formUtil from './formUtil';
@@ -17,8 +17,10 @@ export default ({globalInputApp, domain,goBackToHome})=>{
      const [action, setAction]=useState(ACTIONS.HOME);
      const [visibility, setVisibility]=useState(fieldVisibilityControl.options[0]); 
      const [formFields,setFormFields]=useState(()=>getFormFields(domain));
-    
+     
+     
 
+     
     const gotoAddField=()=>{
          setAction(ACTIONS.ADD_NEW_FIELD);
     };
@@ -46,10 +48,18 @@ export default ({globalInputApp, domain,goBackToHome})=>{
           else{
                gotoAddField();
           }
-    }
-    useEffect(()=>{
+    };
+    
+    
+    
+    useEffect(()=>{          
           gotoHome();
+          return()=>{
+               chromeExtensionUtil.resetCache();               
+          }
     },[]);
+
+
     useEffect(()=>{
          const {field}=globalInputApp;
           if(!field || action!==ACTIONS.HOME){
@@ -71,20 +81,19 @@ export default ({globalInputApp, domain,goBackToHome})=>{
                default:                    
                     const matchedFields=formFields.filter(f=>f.id===field.id);
                     if(matchedFields.length){
-                         setFormFields(formUtil.updateFields(formFields,field.id, field.value));
-                         chromeExtensionUtil.sendFormFieldForCache(field.id,field.value);
+                         onFieldChanged(field.id,field.value);                         
                     }
           }             
           
     },[globalInputApp.field]);
 
-    const onFieldChanged=(formField,value) => {
-          setFormFields(formUtil.updateFields(formFields,formField.id, value));
-          globalInputApp.setFieldValueById(formField.id,value);
-          chromeExtensionUtil.sendFormFieldForCache(formField.id,value);         
+    const onFieldChanged=(fieldId,value) => {
+          setFormFields(formUtil.updateFields(formFields,fieldId, value));          
+          chromeExtensionUtil.sendFormFieldForCache(fieldId,value);                   
+          chromeExtensionUtil.updateCacheTimer();
     };
 const onToggleShowHide=()=>{
-     const nextVisibility=formUtil.toggleOption(fieldVisibilityControl.options,visibility.value);                
+     const nextVisibility = formUtil.toggleOption(fieldVisibilityControl.options,visibility.value);                
      setVisibility(nextVisibility);
      globalInputApp.setFieldValueById(fieldVisibilityControl.id,nextVisibility.value);
 }
@@ -96,7 +105,11 @@ switch(action){
                      {formFields.map((formField,index)=>(<DisplayInputCopyField 
                   field={formField} 
                   key={formField.id} 
-                  hideValue={visibility.value===0} onChange={value=>onFieldChanged(formField,value)}/>))}
+                  hideValue={visibility.value===0} onChange={value=>{
+                       onFieldChanged(formField.id,value);
+                       globalInputApp.setFieldValueById(formField.id,value);
+                    }
+                    }/>))}
                   <TextButton onClick={onToggleShowHide} label={visibility.label}/>
                </FormContainer>
           );

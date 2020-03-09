@@ -5,14 +5,23 @@ import * as chromeExtensionUtil from './chromeExtensionUtil'
 import {AppContainer,MessageContainer,P} from './app-layout';
 
 import FormDataTransfer from './FormDataTransfer';
+import PageControl from './PageControl';
 
+
+const ACTIONS={
+     HOME:'home', 
+     FORM_DATA_TRANSFER:'form_data_transfer',
+     PAGE_CONTROL:'page_control'
+ };
+
+ 
 
 export default ({domain})=>{        
-    const globalInputApp = useGlobalInputApp({initData});
+    const globalInputApp = useGlobalInputApp({initData:()=>getInitData(domain)});
     const [action, setAction]=useState(ACTIONS.HOME);
     const goBackToHome=()=>{
           setAction(ACTIONS.HOME);
-          globalInputApp.setInitData(initData);     
+          globalInputApp.setInitData(getInitData(domain));     
     }
     
 
@@ -25,6 +34,11 @@ export default ({domain})=>{
                     case ACTIONS.FORM_DATA_TRANSFER:
                               setAction(ACTIONS.FORM_DATA_TRANSFER);
                               break;
+                    case ACTIONS.PAGE_CONTROL:
+                              setAction(ACTIONS.PAGE_CONTROL);
+                              break;
+                    default:
+
 
           }
 
@@ -45,6 +59,8 @@ export default ({domain})=>{
                          );
                case ACTIONS.FORM_DATA_TRANSFER:
                     return (<FormDataTransfer {...props}/>);
+               case ACTIONS.PAGE_CONTROL:
+                    return (<PageControl {...props}/>);
           }
     }    
     return (
@@ -54,18 +70,24 @@ export default ({domain})=>{
     );
 };
 
-const ACTIONS={
-    HOME:'home', 
-    FORM_DATA_TRANSFER:'form_data_transfer'    
-};
+const getInitData=domain=>{
+     const initData={
+          action: "input",
+          dataType: "form",
+          form: {    
+               title:"Please Select",
+               fields:[{id:ACTIONS.FORM_DATA_TRANSFER,
+                    type:"button",
+                    label:"Transfer Form Data"}]
+          }   
+     };
+     if(domain){
+          initData.form.fields.push({
+               id:ACTIONS.PAGE_CONTROL,
+               type:'button',
+               label:'Page Control'
+          });
+     }
+     return initData;
 
-const initData={
-     action: "input",
-     dataType: "form",
-     form: {    
-          title:"Please Select",
-          fields:[{id:ACTIONS.FORM_DATA_TRANSFER,
-               type:"button",
-               label:"Transfer Form Data"}]
-     }   
-};
+}

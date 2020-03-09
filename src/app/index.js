@@ -13,41 +13,44 @@ const ACTIONS = {
 export default () => {
      const [action, setAction] = useState(ACTIONS.LOADING);
      const [domain, setDomain] = useState(null);
-     const [browserError, setBrowserError] = useState(null)
-     const [cacheTTL, setCacheTTL] = useState(60000);
+     const [browserError, setBrowserError] = useState(null)               
      const [cachedFieldValues, setCachedFieldValue] = useState(null);
-     useEffect(() => {
-          const checkStatus = async () => {
-               try {
-                    const message = await chromeExtensionUtil.checkPageStatus();
-                    setDomain(message.host);
-                    setCacheTTL(message.cacheTTL);
-                    setCachedFieldValue(message.content.cachefields);
-                    if(message.content.cachefields && message.content.cachefields.length){
-                         setAction(ACTIONS.DISPLAY_CACHED_FORM);
-                    }
-                    else{
-                        setAction(ACTIONS.MOBILE_INTEGRATION); 
-                    }
-               }
-               catch (error) {
-                    console.log('failed:' + JSON.stringify(error))
-                    setBrowserError('failed:' + error && error.content);
-                    setAction(ACTIONS.MOBILE_INTEGRATION); 
-               }
-          }
-          checkStatus();
-     }, []);
-     const goBackToHome=()=>{
+     
+     const gotoMobileIntegration=()=>{
+          chromeExtensionUtil.generatedEncryptionKey();
           chromeExtensionUtil.clearCacheFields();
           setAction(ACTIONS.MOBILE_INTEGRATION); 
+     };
+     const checkStatus = async () => {
+          try {
+               const message = await chromeExtensionUtil.checkPageStatus();               
+               setDomain(message.host);                    
+               
+               if(message.content && message.content.cachefields && message.content.cachefields.length){                         
+                    setCachedFieldValue(message.content.cachefields);
+                    setAction(ACTIONS.DISPLAY_CACHED_FORM);
+               }
+               else{
+                    gotoMobileIntegration();
+               }
+          }
+          catch (error) {
+               console.error('failed:' + JSON.stringify(error))                    
+               setBrowserError('failed:' + error && error.content);
+               gotoMobileIntegration();
+          }
+         chromeExtensionUtil.registerContentListener();
      }
+     useEffect(() => {          
+          checkStatus();          
+     }, []);
+     
      const props = {
           domain,
-          browserError,
-          cacheTTL,
+          browserError,          
           cachedFieldValues,
-          goBackToHome
+          gotoMobileIntegration,
+          cachedFieldValues
      }
      switch (action) {
           case ACTIONS.LOADING:
@@ -55,7 +58,7 @@ export default () => {
           case ACTIONS.MOBILE_INTEGRATION:
                return (<MobileIntegration {...props}/>);          
           case ACTIONS.DISPLAY_CACHED_FORM:
-               return <DisplayCachedForm {...props} formFields={cachedFieldValues} goBackToHome={goBackToHome}/>
+               return <DisplayCachedForm {...props}/>
           default:
                return (<MessageContainer title="Global Input App">Unknown state</MessageContainer>);          
      }

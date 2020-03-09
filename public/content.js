@@ -1,5 +1,15 @@
 (function(){
 
+ const sendMessageToExtension=(message,callback)=>{    
+      chrome.runtime.sendMessage(null,message, function(response) {
+        callback(response);      
+      });    
+ } 
+  
+
+
+
+
   var globalInputFormManager={
 
           pagedata:{
@@ -32,7 +42,10 @@
                    clearTimeout(timer);
               }
             },
-          updateClearCacheTime:function(){
+          updateClearCacheTime:function(cacheTTL){
+            if(cacheTTL && cacheTTL>1000){
+              this.pagedata.clearachefieldvalues.ttl=cacheTTL;
+            }
             var that=this;
             this.clearClearCacheTimer();
             this.pagedata.clearachefieldvalues.timer=setTimeout(function(){
@@ -41,6 +54,8 @@
             },this.pagedata.clearachefieldvalues.ttl);
           },
           setFieldCacheValue:function(fieldId, fieldValue){
+
+
                 for(var i=0;i<this.pagedata.cachefieldvalues.length;i++){
                     if(this.pagedata.cachefieldvalues[i].id===fieldId){
                         this.pagedata.cachefieldvalues[i].value=fieldValue;
@@ -57,6 +72,7 @@
     /* The entry function when this script file is loaded */
      init:function(){
             chrome.runtime.onMessage.addListener(this.onExtensionMessageReceived.bind(this));
+          
      },
      resetAll:function(){
        this.pagedata.cachefieldvalues=[];
@@ -77,7 +93,7 @@
                return;
          }
          else if(message.messageType==='update-cache-time'){
-               this.updateClearCacheTime();
+               this.updateClearCacheTime(message.cacheTTL);
                replyBack({
                            messageType:message.messageType,
                            status:"success",
@@ -131,7 +147,7 @@
                         messageType:message.messageType,
                         host:window.location.host,
                         status:"success"
-                       });
+                       });            
          }
          else if(message.messageType==='set-all-cache-fields'){
             this.setCacheFields(message.content.cachefields);
@@ -158,7 +174,7 @@
                        content:{
                                 cachefields:this.getCacheFields()
                             }
-                      });
+                      });                                      
          }
          else{
             replyBack({

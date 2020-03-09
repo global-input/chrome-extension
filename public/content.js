@@ -1,10 +1,10 @@
 (function(){
 
- const sendMessageToExtension=(message,callback)=>{    
-      chrome.runtime.sendMessage(null,message, function(response) {
-        callback(response);      
-      });    
- } 
+//  const sendMessageToExtension=(message,callback)=>{    
+//       chrome.runtime.sendMessage(null,message, function(response) {
+//         callback(response);      
+//       });    
+//  } 
   
 
 
@@ -22,7 +22,7 @@
           },
           getCacheFields(){
                   var isEmpty=true;
-                  for(i=0;i<this.pagedata.cachefieldvalues.length;i++){
+                  for(let i=0;i<this.pagedata.cachefieldvalues.length;i++){
                     if(this.pagedata.cachefieldvalues[i].value.length){
                         isEmpty=false;
                         break;
@@ -71,7 +71,7 @@
 
     /* The entry function when this script file is loaded */
      init:function(){
-            chrome.runtime.onMessage.addListener(this.onExtensionMessageReceived.bind(this));
+            chrome.runtime.onMessage.addListener(this.onExtensionMessageReceived.bind(this));////listener////
           
      },
      resetAll:function(){
@@ -263,6 +263,7 @@
               },
 
               getItemValue:function(itemRule,itemElement){
+                let val=null;
                 if(typeof itemRule ==='string'){
                   return itemRule;
                 }

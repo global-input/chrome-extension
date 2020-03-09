@@ -114,7 +114,7 @@ const buildContentGlobalInputForm = message => {
 
 
 
-export const getPageControlConfig= async domain=>{
+const getPageControlConfig= async domain=>{
     
     var applicationSettings=getApplicationControlSettings(domain);
     if(!applicationSettings){
@@ -131,31 +131,30 @@ export const getPageControlConfig= async domain=>{
     }
     else{
         return null;
+    }    
+};
+
+
+export const startPageControl=async ({domain, globalInputApp,fieldGoBack})=>{
+    const initData={
+         action: "input",
+         dataType: "form",
+         form: {    
+              title:"Page Control",
+              fields:[fieldGoBack]
+         }   
+    };  
+    try{
+        const form= await getPageControlConfig(domain);   
+        if(form){
+            initData.form=form;                
+        }
+        console.log("********::::form:"+JSON.stringify(form));
+        globalInputApp.setInitData(initData)
     }
+    catch(error){
+        console.error(error+":::"+error.stack);
+    }  
+    return initData;
 
-
-    /*
-    var that=this;
-    this.sendMessageToContent("get-page-config",{applicationControlConfig},function(message){
-          if(!message){
-              that.whenEmptyReplyReceived();
-              return;
-          }
-          that.setHostName(message.host);
-          that.setCacheTTL(message.cacheTTL);
-
-          var globalInputSettings=that.getGlobalInputSettings();
-          var globalinputConfig=that.buildBasicGlobalInputConfig(globalInputSettings);
-          if(message.status==="success"){
-              globalinputConfig.initData.form=that.buildContentGlobalInputForm(message);
-              that.setAction('connect-to-content');
-          }
-          else{
-              that.setAction('connect-to-window');
-              that.buildWindowForm();
-              globalinputConfig.initData.form=that.pagedata.form;
-          }
-          that.connectToGlobalInputApp(globalinputConfig);
-    });
-   */
 }

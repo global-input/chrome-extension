@@ -3,20 +3,16 @@ import {DisplayInputCopyField,TextButton,FormContainer,P} from './app-layout';
 
 import * as pageControlUtil from './pageControlUtil'
 
-export default ({globalInputApp,goBackToHome,domain}) => {
+const fieldGoBack={
+    id:'goBackToTransfer',
+    type:"button",
+    label:"Back"
+};
 
-    const processPageControlConfig = async () => {
-        try{
-        const message= await pageControlUtil.getPageControlConfig(domain);
-        console.log("********::::message:"+JSON.stringify(message));
-        }
-        catch(error){
-            console.error(error+":::"+error.stack);
-        }
-    }
+export default ({globalInputApp,goBackToHome,domain}) => {
+    
     useEffect(()=>{        
-        globalInputApp.setInitData(getInitData(domain));    
-        processPageControlConfig();
+        pageControlUtil.startPageControl({globalInputApp,domain,fieldGoBack})        
     },[]);
 
     useEffect(()=>{
@@ -37,22 +33,6 @@ export default ({globalInputApp,goBackToHome,domain}) => {
     </FormContainer>)
 
 };
-const fieldGoBack={
-    id:'goBackToTransfer',
-    type:"button",
-    label:"Back"}
 
-const getInitData=domain=>{
-    const initData={
-         action: "input",
-         dataType: "form",
-         form: {    
-              title:"Page Control",
-              fields:[fieldGoBack]
-         }   
-    };    
-    return initData;
-
-}
 
 

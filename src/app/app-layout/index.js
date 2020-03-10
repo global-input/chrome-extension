@@ -16,16 +16,31 @@ export const AppTitle=({children})=>{
 };
 
 
-export const AppContainer = ({globalInputApp,children})=>{    
-    const {connectionMessage, WhenConnected,WhenWaiting, WhenDisconnected}=globalInputApp;  
+export const AppContainer = ({globalInputApp,children,onSettings})=>{    
+    const {connectionMessage, WhenConnected,WhenWaiting, WhenError,errorMessage,WhenDisconnected}=globalInputApp;  
+    
+    const displaySettings=()=>(<div style={styles.connectionSetting}>
+        <a href="#" onClick={evt=>{onSettings();return false;}}>Settings</a>
+    </div>);
+
     return (
         <div style={styles.appContainer}>                                
             <WhenWaiting>
                 <AppTitle>Global Input App</AppTitle> 
+                {displaySettings()}
                 <div style={styles.connectionMessage}>
                         {connectionMessage}                
                 </div>
-            </WhenWaiting>                   
+                
+            </WhenWaiting>
+            <WhenError>
+            <AppTitle>Global Input App</AppTitle> 
+            {displaySettings()}
+                <div style={styles.errorMessage}>
+                {errorMessage} 
+                </div>
+
+            </WhenError>
                 
             <WhenDisconnected>
                 <AppTitle>Global Input App</AppTitle>

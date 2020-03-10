@@ -23,6 +23,29 @@ export default {
         minWidth:100,
         minHeight:100,        
      },
+     connectionSetting:{
+        width:"100%",        
+        color:"#153E85",
+        display:"flex",
+        flexDirection:"row",
+        justifyContent:"flex-end",
+        fontFamily: "Avenir",
+        fontSize: 10,
+        fontWeight: 100,        
+        whiteSpace: 'nowrap',
+        padding: 5        
+     },
+     errorMessage:{
+        width:"100%",        
+        color:"red",
+        display:"flex",
+        flexDirection:"row",
+        justifyContent:"flex-start",
+        fontFamily: "Avenir",
+        fontSize: 15,
+        fontWeight: 100,                
+        padding: 10          
+     },
      domain:{
          width:"100%",
          fontFamily: "Avenir",

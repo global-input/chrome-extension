@@ -1,7 +1,7 @@
 import React, {useState, useEffect } from "react";
 import {useGlobalInputApp} from 'global-input-react';
 
-
+import * as appSettings from './appSettings';
 import {AppContainer,MessageContainer,P} from './app-layout';
 
 import FormDataTransfer from './FormDataTransfer';
@@ -11,17 +11,22 @@ import PageControl from './PageControl';
 const ACTIONS={
      HOME:'home', 
      FORM_DATA_TRANSFER:'form_data_transfer',
-     PAGE_CONTROL:'page_control'
+     PAGE_CONTROL:'page_control'     
  };
 
  
 
-export default ({domain})=>{        
-    const globalInputApp = useGlobalInputApp({initData:()=>getInitData(domain)});
+export default ({domain, gotoSettings})=>{  
+    const options=appSettings.getGlobalInputSettings();          
+    const globalInputApp = useGlobalInputApp({initData:()=>getInitData(domain), options});
     const [action, setAction]=useState(ACTIONS.HOME);
     const goBackToHome=()=>{
           setAction(ACTIONS.HOME);
           globalInputApp.setInitData(getInitData(domain));     
+    }
+    const onSettings=()=>{
+          globalInputApp.disconnect();
+          gotoSettings();          
     }
      const props={
           globalInputApp,
@@ -48,7 +53,7 @@ export default ({domain})=>{
           }
     }    
     return (
-    <AppContainer globalInputApp={globalInputApp}>
+    <AppContainer globalInputApp={globalInputApp} onSettings={onSettings}>
          {switchByAction()}
     </AppContainer>
     );

@@ -5,10 +5,12 @@ import { AppContainer, MessageContainer, P } from './app-layout';
 
 import MobileIntegration from './MobileIntegration';
 import DisplayCachedForm from './DisplayCachedForm';
+import EditConnectionSettings from './EditConnectionSettings';
 const ACTIONS = {
      LOADING: 1,
      MOBILE_INTEGRATION: 2,
-     DISPLAY_CACHED_FORM:3
+     DISPLAY_CACHED_FORM:3,
+     CONNECTION_SETTINGS:4
 }
 export default () => {
      const [action, setAction] = useState(ACTIONS.LOADING);
@@ -21,6 +23,9 @@ export default () => {
           chromeExtensionUtil.clearCacheFields();
           setAction(ACTIONS.MOBILE_INTEGRATION); 
      };
+     const gotoSettings=()=>{
+          setAction(ACTIONS.CONNECTION_SETTINGS); 
+     }
      const checkStatus = async () => {
           try {
                const message = await chromeExtensionUtil.checkPageStatus();               
@@ -50,7 +55,8 @@ export default () => {
           browserError,          
           cachedFieldValues,
           gotoMobileIntegration,
-          cachedFieldValues
+          cachedFieldValues,
+          gotoSettings
      }
      switch (action) {
           case ACTIONS.LOADING:
@@ -59,6 +65,9 @@ export default () => {
                return (<MobileIntegration {...props}/>);          
           case ACTIONS.DISPLAY_CACHED_FORM:
                return <DisplayCachedForm {...props}/>
+          case ACTIONS.CONNECTION_SETTINGS:
+               return <EditConnectionSettings {...props}/>
+
           default:
                return (<MessageContainer title="Global Input App">Unknown state</MessageContainer>);          
      }

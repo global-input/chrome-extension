@@ -91,6 +91,11 @@ export const DisplayInputCopyField = ({field,hideValue,onChange,onToggleSelectio
       );
 };
 
+export const FormFooter=({children})=>(
+    <div style={styles.form.footer}>
+        {children}
+    </div>
+);
 
 
 

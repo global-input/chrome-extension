@@ -1,5 +1,6 @@
 import * as chromeExtensionUtil from './chromeExtensionUtil';
 import applicationControlConfigs from './application-control/configs.json';
+import defaultApplicationConfig from './application-control/default.json';
 const getCustomApplicationControlConfig = () => {
     var applicationConfigString=localStorage.getItem("iterative.globaliputapp.controlConfigs");
     if(applicationConfigString){
@@ -37,6 +38,36 @@ const applicationConfigMatchHostName = (applicationControlConfig, hostname) => {
     return false;
 };
 
+export const updateCustomApplicationControlConfig =(newContent,domain)=>{    
+    var customApplicationControlConfig=getCustomApplicationControlConfig();
+    var newCustomApplicationControlConfig=[];
+    var notUpdated=true;
+    if(customApplicationControlConfig){
+        for(var i=0;i<customApplicationControlConfig.length;i++){
+            if(notUpdated && applicationConfigMatchHostName(customApplicationControlConfig[i], domain)){
+                   if(newContent){
+                      newCustomApplicationControlConfig.push(newContent);
+                   }
+                   notUpdated=false;
+            }
+            else{
+              newCustomApplicationControlConfig.push(customApplicationControlConfig[i]);
+            }
+        }
+    }
+    if(notUpdated && newContent){
+        newCustomApplicationControlConfig.push(newContent);
+    }
+    if(newCustomApplicationControlConfig.length){
+        var updateString=JSON.stringify(newCustomApplicationControlConfig);
+        localStorage.setItem("iterative.globaliputapp.controlConfigs",updateString);
+    }
+    else{
+        localStorage.removeItem("iterative.globaliputapp.controlConfigs");
+    }
+};
+
+
 
 const selectApplicationControlConfig = (hostname, applicationControlConfigs) => {
     for(var i=0;i<applicationControlConfigs.length;i++){
@@ -70,45 +101,52 @@ const getApplicationControlSettings =(domain) => {
         return null;
 };
 
+
+
+
+const buildFormField=field=>{
+    let id=field.id;
+
+    if(field.type==='list'||field.type==='info' || field.type==='picker' || field.type==='select'){
+        id=null;
+    }
+    let value=field.value;
+
+
+    if(field.type==='info' || field.type==='picker' || field.type==='select'){
+          value=field.value;
+          if(field.type==='picker'){
+              if(typeof field.value ==='undefined'){
+                  value=field.items[0].value;
+              }
+          }
+
+    };
+    return {
+        id,
+        label:field.label,
+        type:field.type,
+        items:field.items,
+        selectType:field.selectType,
+        value,
+        operations:{                    
+          onInput: newValue => {                       
+              chromeExtensionUtil.sendFormField(field.id,newValue);
+              if(field.matchingRule.nextUI){
+                  //displayNextUIOnMobile(field.matchingRule.nextUI)
+              }                        
+          }
+        }
+  };
+}
 const buildContentGlobalInputForm = message => {
-    var form={
+    return {
          id:message.content.form.id,
          title:message.content.form.title,
-         fields:[]
-    };    
-    for(var i=0;i<message.content.form.fields.length;i++){
-            var field=message.content.form.fields[i];
-            var fieldProperty={
-                  id:field.id,
-                  label:field.label,
-                  type:field.type,
-                  items:field.items,
-                  selectType:field.selectType,
-                  operations:{                    
-                    onInput: newValue => {                       
-                        chromeExtensionUtil.sendFormField(field.id,newValue);
-                        if(field.matchingRule.nextUI){
-                            //displayNextUIOnMobile(field.matchingRule.nextUI)
-                        }                        
-                    }
-                  }
-            };
-            if(field.type==='button'||field.type==='list'||field.type==='info' || field.type==='picker' || field.type==='select'){
-                fieldProperty.id=null;
-            }
-            if(field.type==='info' || field.type==='picker' || field.type==='select'){
-              fieldProperty.value=field.value;
-                  if(field.type==='picker'){
-                      if(typeof field.value ==='undefined'){
-                          fieldProperty.value=fieldProperty.items[0].value;
-                      }
-                  }
-
-            }
-
-            form.fields.push(fieldProperty);
-         }
-    return form;
+         fields:message.content.form.fields.map(f=>{
+             return buildFormField(f);
+         })
+    };     
 };
 
 
@@ -135,26 +173,51 @@ const getPageControlConfig= async domain=>{
 };
 
 
-export const startPageControl=async ({domain, globalInputApp,fieldGoBack})=>{
-    const initData={
-         action: "input",
-         dataType: "form",
-         form: {    
-              title:"Page Control",
-              fields:[fieldGoBack]
-         }   
-    };  
+export const startPageControl=async ({domain, globalInputApp,fieldGoBack,fieldEditApplicationControl})=>{    
+    let initData={
+        action: "input",
+        dataType: "form",
+        form: {    
+             title:"Mobile Input/Control",
+             fields:[fieldGoBack,fieldEditApplicationControl]
+        }   
+   };
+
     try{
         const form= await getPageControlConfig(domain);   
         if(form){
-            initData.form=form;                
-        }
-        console.log("********::::form:"+JSON.stringify(form));
-        globalInputApp.setInitData(initData)
+            form.fields.push(fieldGoBack);
+            form.fields.push(fieldEditApplicationControl);
+            initData.form=form;
+        }          
     }
     catch(error){
         console.error(error+":::"+error.stack);
     }  
-    return initData;
+    globalInputApp.setInitData(initData);
+};
+
+
+export const getApplicationControlSettingsForEdit=(domain)=>{
+    const hostnames={
+        type:"single",
+        value:domain
+    };
+    let applicationConfigs={...defaultApplicationConfig, hostnames};
+    let type='new';
+    
+    let applicationSettings=getApplicationControlSettings(domain); 
+    if(applicationSettings && applicationSettings.applicationConfigs){
+        type=applicationSettings.type;
+        applicationConfigs=applicationSettings.applicationConfigs;
+    }            
+    
+    return {
+        type,
+        content:JSON.stringify(applicationConfigs,null,2)
+    };
+
+
+
 
 }

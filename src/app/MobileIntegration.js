@@ -1,7 +1,7 @@
 import React, {useState, useEffect } from "react";
 import {useGlobalInputApp} from 'global-input-react';
 
-import * as chromeExtensionUtil from './chromeExtensionUtil'
+
 import {AppContainer,MessageContainer,P} from './app-layout';
 
 import FormDataTransfer from './FormDataTransfer';
@@ -23,27 +23,6 @@ export default ({domain})=>{
           setAction(ACTIONS.HOME);
           globalInputApp.setInitData(getInitData(domain));     
     }
-    
-
-     useEffect(()=>{
-          const {field}=globalInputApp;
-          if(!field || action!==ACTIONS.HOME){
-               return;
-          }
-          switch(field.id){
-                    case ACTIONS.FORM_DATA_TRANSFER:
-                              setAction(ACTIONS.FORM_DATA_TRANSFER);
-                              break;
-                    case ACTIONS.PAGE_CONTROL:
-                              setAction(ACTIONS.PAGE_CONTROL);
-                              break;
-                    default:
-
-
-          }
-
-     },[globalInputApp.field]);
-          
      const props={
           globalInputApp,
           domain,
@@ -51,16 +30,21 @@ export default ({domain})=>{
      };
      
     const switchByAction=()=>{
+         console.log("----action:"+action);
           switch(action){
                case ACTIONS.HOME:
-                    return (<MessageContainer title="Global Input App" {...props}>                              
-                                   Please operate on your mobile           
-                            </MessageContainer>
-                         );
+                    return (<Home globalInputApp={globalInputApp} setAction={setAction}/>);
                case ACTIONS.FORM_DATA_TRANSFER:
                     return (<FormDataTransfer {...props}/>);
                case ACTIONS.PAGE_CONTROL:
-                    return (<PageControl {...props}/>);
+                    if(domain){
+                         return (<PageControl {...props}/>);
+                    }
+                    else{
+                         //should not comere
+                         return null;
+                    }
+                    
           }
     }    
     return (
@@ -69,6 +53,33 @@ export default ({domain})=>{
     </AppContainer>
     );
 };
+
+const Home=({globalInputApp,setAction})=>{
+     
+     useEffect(()=>{
+          const {field}=globalInputApp;  
+          if(!field){
+               return;
+          }        
+          switch(field.id){
+                    case ACTIONS.FORM_DATA_TRANSFER:
+                              console.log("calling setAction");
+                              setAction(ACTIONS.FORM_DATA_TRANSFER);
+                              break;
+                    case ACTIONS.PAGE_CONTROL:
+                              setAction(ACTIONS.PAGE_CONTROL);
+                              break;
+                    default:
+          }
+
+     },[globalInputApp.field]);
+     
+     return (<MessageContainer title="Global Input App">                              
+                                   Please operate on your mobile           
+            </MessageContainer>
+     );
+}
+
 
 const getInitData=domain=>{
      const initData={
@@ -85,7 +96,7 @@ const getInitData=domain=>{
           initData.form.fields.push({
                id:ACTIONS.PAGE_CONTROL,
                type:'button',
-               label:'Page Control'
+               label:'Sign In/Control'
           });
      }
      return initData;

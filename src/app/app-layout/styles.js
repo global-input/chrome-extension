@@ -88,6 +88,14 @@ export default {
             alignItem:'start',
             width:"100%",
             padding:10
+        },
+        footer:{
+            display:'flex',
+            flexDirection:'row',
+            justifyContent:'space-between',
+            alignItem:'end',
+            width:"100%",
+            padding:10
         }
     }
 

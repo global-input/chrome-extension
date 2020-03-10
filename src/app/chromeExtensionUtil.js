@@ -39,8 +39,7 @@ export const registerContentListener = () =>{
 
 const sendMessageToContent = async (messageType, content) => {        
     return new Promise((resolve,reject)=>{
-        const callback=message=>{
-            console.log("--------****-----callback");
+        const callback=message=>{            
             if(!message){
                 resolve({status:'failure', content:'empty'});                    
             }
@@ -140,5 +139,5 @@ export const getPageControlConfig = async applicationControlConfig => {
 };
 
 export const sendFormField = async (fieldId, fieldValue)=>{
-    return sendMessageToContent('get-page-config',{fieldId,fieldValue});
+    return sendMessageToContent('set-form-field',{fieldId,fieldValue});
 }

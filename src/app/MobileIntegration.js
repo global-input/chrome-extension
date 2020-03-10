@@ -53,7 +53,7 @@ export default ({domain, gotoSettings})=>{
           }
     }    
     return (
-    <AppContainer globalInputApp={globalInputApp} onSettings={onSettings}>
+    <AppContainer globalInputApp={globalInputApp} onSettings={onSettings} reconnect={goBackToHome}>
          {switchByAction()}
     </AppContainer>
     );
@@ -80,7 +80,7 @@ const Home=({globalInputApp,setAction})=>{
      },[globalInputApp.field]);
      
      return (<MessageContainer title="Global Input App">                              
-                                   Please operate on your mobile           
+                    Please select from the operations displayed on your mobile
             </MessageContainer>
      );
 }

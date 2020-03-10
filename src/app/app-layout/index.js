@@ -16,35 +16,42 @@ export const AppTitle=({children})=>{
 };
 
 
-export const AppContainer = ({globalInputApp,children,onSettings})=>{    
+export const AppContainer = ({globalInputApp,children,onSettings,reconnect})=>{    
     const {connectionMessage, WhenConnected,WhenWaiting, WhenError,errorMessage,WhenDisconnected}=globalInputApp;  
     
-    const displaySettings=()=>(<div style={styles.connectionSetting}>
+    const displayFooter=()=>(
+    <div style={styles.appContainer.footer}>
+        
+        
         <a href="#" onClick={evt=>{onSettings();return false;}}>Settings</a>
+        <a href="https://github.com/global-input/chrome-extension" target="_blank">Source Code On GitHub</a>
+        
     </div>);
 
     return (
-        <div style={styles.appContainer}>                                
+        <div style={styles.appContainer.content}>                                
             <WhenWaiting>
-                <AppTitle>Global Input App</AppTitle> 
-                {displaySettings()}
-                <div style={styles.connectionMessage}>
-                        {connectionMessage}                
+                <AppTitle>Global Input App</AppTitle>                 
+                <div style={styles.appContainer.connectionMessage}>
+                        {connectionMessage}
                 </div>
-                
+                {displayFooter()}
             </WhenWaiting>
             <WhenError>
-            <AppTitle>Global Input App</AppTitle> 
-            {displaySettings()}
-                <div style={styles.errorMessage}>
-                {errorMessage} 
-                </div>
-
+                <AppTitle>Global Input App</AppTitle>             
+                    <div style={styles.appContainer.errorMessage}>
+                        {errorMessage} 
+                    </div>
+                    {displayFooter()}
             </WhenError>
                 
             <WhenDisconnected>
                 <AppTitle>Global Input App</AppTitle>
-                <P>Mobile Disconnected</P>                                
+                <div style={styles.appContainer.message}>Mobile Disconnected. <a href="#" onClick={evt=>{reconnect();return false;}}>Reconnect</a>.
+                
+                
+                </div> 
+                {displayFooter()}
             </WhenDisconnected>
             <WhenConnected>
                 {children}

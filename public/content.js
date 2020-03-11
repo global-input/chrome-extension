@@ -12,72 +12,20 @@
 
   var globalInputFormManager={
 
-          pagedata:{
-              cachefieldvalues:[],
-              clearachefieldvalues:{
-                    ttl:60000,
-                    timer:null,
-              },
+          pagedata:{              
+              encryptionKey:null,
               pageForm:null,
           },
-          getCacheFields(){
-                  var isEmpty=true;
-                  for(let i=0;i<this.pagedata.cachefieldvalues.length;i++){
-                    if(this.pagedata.cachefieldvalues[i].value.length){
-                        isEmpty=false;
-                        break;
-                    }
-                  }
-                  if(isEmpty){
-                      return null;
-                  }
-                  else{
-                      return this.pagedata.cachefieldvalues;
-                  }
-            },
-            clearClearCacheTimer:function(){
-              if(this.pagedata.clearachefieldvalues.timer){
-                   var timer=this.pagedata.clearachefieldvalues.timer;
-                   this.pagedata.clearachefieldvalues.timer=null;
-                   clearTimeout(timer);
-              }
-            },
-          updateClearCacheTime:function(cacheTTL){
-            if(cacheTTL && cacheTTL>1000){
-              this.pagedata.clearachefieldvalues.ttl=cacheTTL;
-            }
-            var that=this;
-            this.clearClearCacheTimer();
-            this.pagedata.clearachefieldvalues.timer=setTimeout(function(){
-                that.pagedata.clearachefieldvalues.timer=null;
-                that.resetAll();
-            },this.pagedata.clearachefieldvalues.ttl);
+     
+          /* The entry function when this script file is loaded */
+          init:function(){
+                  chrome.runtime.onMessage.addListener(this.onExtensionMessageReceived.bind(this));////listener////
+                
           },
-          setFieldCacheValue:function(fieldId, fieldValue){
-
-
-                for(var i=0;i<this.pagedata.cachefieldvalues.length;i++){
-                    if(this.pagedata.cachefieldvalues[i].id===fieldId){
-                        this.pagedata.cachefieldvalues[i].value=fieldValue;
-                        return;
-                    }
-                }
-                this.pagedata.cachefieldvalues.push({id:fieldId,value:fieldValue});
-          },
-          setCacheFields:function(cachefields){
-              this.pagedata.cachefieldvalues=cachefields;
-          },
-
-
-    /* The entry function when this script file is loaded */
-     init:function(){
-            chrome.runtime.onMessage.addListener(this.onExtensionMessageReceived.bind(this));////listener////
-          
-     },
-     resetAll:function(){
-       this.pagedata.cachefieldvalues=[];
-       this.pagedata.pageForm=null;
-       this.clearClearCacheTimer();
+     
+     resetAll:function(){       
+        this.pagedata.pageForm=null;
+        this.pagedata.key=null;
      },
      /*  message handler for message coming from extension */
      onExtensionMessageReceived:function(message, sender, replyBack){
@@ -92,8 +40,8 @@
                          );
                return;
          }
-         else if(message.messageType==='update-cache-time'){
-               this.updateClearCacheTime(message.cacheTTL);
+         else if(message.messageType==='set-key'){
+               this.pagedata.key=message.content.key;               
                replyBack({
                            messageType:message.messageType,
                            status:"success",
@@ -140,23 +88,7 @@
                             host:window.location.host,
                             status:"success"
                            });
-         }
-         else if(message.messageType==='set-cache-field'){
-            this.setFieldCacheValue(message.content.fieldId,message.content.fieldValue);
-            replyBack({
-                        messageType:message.messageType,
-                        host:window.location.host,
-                        status:"success"
-                       });            
-         }
-         else if(message.messageType==='set-all-cache-fields'){
-            this.setCacheFields(message.content.cachefields);
-            replyBack({
-                        messageType:message.messageType,
-                        host:window.location.host,
-                        status:"success"
-                       });
-         }
+         }         
          else if(message.messageType==='reset'){
             this.resetAll();
             replyBack({
@@ -168,12 +100,11 @@
          else if(message.messageType==='check-page-status'){
            replyBack({
                        messageType:message.messageType,
-                       host:window.location.host,
-                       cacheTTL:this.pagedata.clearachefieldvalues.ttl,
+                       host:window.location.host,                       
                        status:"success",
                        content:{
-                                cachefields:this.getCacheFields()
-                            }
+                              key:this.pagedata.key
+                        }
                       });                                      
          }
          else{
@@ -606,11 +537,5 @@
  };
 
 globalInputFormManager.init();
-
-
-
-
-
-
 
 })();

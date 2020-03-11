@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 
 import * as chromeExtensionUtil from './chromeExtensionUtil'
-import { AppContainer, MessageContainer, P } from './app-layout';
+import * as cacheFields from './cacheFields';
+import {MessageContainer} from './app-layout';
 
 import MobileIntegration from './MobileIntegration';
 import DisplayCachedForm from './DisplayCachedForm';
@@ -17,10 +18,8 @@ export default () => {
      const [domain, setDomain] = useState(null);
      const [browserError, setBrowserError] = useState(null)               
      const [cachedFieldValues, setCachedFieldValue] = useState(null);
-     
-     const gotoMobileIntegration=()=>{
-          chromeExtensionUtil.generatedEncryptionKey();
-          chromeExtensionUtil.clearCacheFields();
+     const gotoMobileIntegration=()=>{          
+          chromeExtensionUtil.resetStatus();
           setAction(ACTIONS.MOBILE_INTEGRATION); 
      };
      const gotoSettings=()=>{
@@ -28,23 +27,22 @@ export default () => {
      }
      const checkStatus = async () => {
           try {
-               const message = await chromeExtensionUtil.checkPageStatus();               
-               setDomain(message.host);                    
-               
-               if(message.content && message.content.cachefields && message.content.cachefields.length){                         
-                    setCachedFieldValue(message.content.cachefields);
-                    setAction(ACTIONS.DISPLAY_CACHED_FORM);
-               }
-               else{
-                    gotoMobileIntegration();
-               }
+               const message = await chromeExtensionUtil.checkPageStatus();
+               setDomain(message.host);  
+               if(message.content.key){
+                    const cachedFields=cacheFields.loadFormFields(message.content.key);
+                    if(cachedFields){
+                         setCachedFieldValue(cachedFields);
+                         setAction(ACTIONS.DISPLAY_CACHED_FORM);
+                         return;
+                    }
+               }                              
           }
           catch (error) {
                console.error('failed:' + JSON.stringify(error))                    
-               setBrowserError('failed:' + error && error.content);
-               gotoMobileIntegration();
-          }
-         chromeExtensionUtil.registerContentListener();
+               setBrowserError('failed:' + error && error.content);              
+          }         
+          gotoMobileIntegration();
      }
      useEffect(() => {          
           checkStatus();          

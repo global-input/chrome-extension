@@ -34,8 +34,7 @@ export default ({domain, gotoSettings})=>{
           goBackToHome          
      };
      
-    const switchByAction=()=>{
-         console.log("----action:"+action);
+    const switchByAction=()=>{         
           switch(action){
                case ACTIONS.HOME:
                     return (<Home globalInputApp={globalInputApp} setAction={setAction}/>);

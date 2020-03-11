@@ -94,7 +94,7 @@ export const FormContainer = ({children,domain,title})=>{
 };
 
 
-export const DisplayInputCopyField = ({field,hideValue,onChange,onToggleSelection})=>{
+export const DisplayInputCopyField = ({field,hideValue,onChange,onCopied})=>{
     var fieldType="text";
     if(field.nLines && field.nLines>1){
         fieldType="textarea";
@@ -108,7 +108,7 @@ export const DisplayInputCopyField = ({field,hideValue,onChange,onToggleSelectio
     }
     return(       
         <InputWithCopy label={field.label} id={field.id} type={fieldType}
-           value={value}  onSelected={onToggleSelection} secret={true}
+           value={value}  onCopied={onCopied} secret={true}
            onChange={onChange}/>    
       );
 };

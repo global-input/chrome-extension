@@ -2,14 +2,14 @@ import React, {useState, useEffect } from "react";
 
 
 import * as formUtil from './formUtil';
-import * as chromeExtensionUtil from './chromeExtensionUtil'
+import * as cacheFields from './cacheFields';
 import {DisplayInputCopyField,TextButton,FormContainer} from './app-layout';
 
 export default ({gotoMobileIntegration,cachedFieldValues, domain})=>{          
    useEffect(()=>{   
-      chromeExtensionUtil.updateCacheTimer();
+      
       return()=>{
-           chromeExtensionUtil.resetCache();               
+         cacheFields.clearFields();               
       }
    },[]);
 

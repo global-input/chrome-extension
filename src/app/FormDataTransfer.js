@@ -2,7 +2,8 @@ import React, {useState, useEffect, useRef} from "react";
 
 
 import * as formUtil from './formUtil';
-import * as chromeExtensionUtil from './chromeExtensionUtil'
+import * as cacheFields from './cacheFields';
+import * as chromeExtensionUtil from './chromeExtensionUtil';
 import {DisplayInputCopyField,TextButton,FormContainer} from './app-layout';
 import AddNewField from './AddNewField';
 import DeleteFields  from './DeleteFields';
@@ -49,13 +50,25 @@ export default ({globalInputApp, domain,goBackToHome})=>{
                gotoAddField();
           }
     };
-    
+    const onCopied=()=>{
+         console.log("*************");
+         
+        if(formFields.length<2){
+             return;
+        }
+        const numberOfNotEmptyFields=formFields.reduce((count,f)=>f.value?count+1:count,0);
+        if(numberOfNotEmptyFields<0){
+             return;
+        }
+        const key=cacheFields.cacheFields(formFields);
+        chromeExtensionUtil.sendKey(key);
+    }
     
     
     useEffect(()=>{          
           gotoHome();
           return()=>{
-               chromeExtensionUtil.resetCache();               
+               cacheFields.clearFields();               
           }
     },[]);
 
@@ -89,8 +102,6 @@ export default ({globalInputApp, domain,goBackToHome})=>{
 
     const onFieldChanged=(fieldId,value) => {
           setFormFields(formUtil.updateFields(formFields,fieldId, value));          
-          chromeExtensionUtil.sendFormFieldForCache(fieldId,value);                   
-          chromeExtensionUtil.updateCacheTimer();
     };
 const onToggleShowHide=()=>{
      const nextVisibility = formUtil.toggleOption(fieldVisibilityControl.options,visibility.value);                
@@ -105,6 +116,7 @@ switch(action){
                      {formFields.map((formField,index)=>(<DisplayInputCopyField 
                   field={formField} 
                   key={formField.id} 
+                  onCopied={onCopied}
                   hideValue={visibility.value===0} onChange={value=>{
                        onFieldChanged(formField.id,value);
                        globalInputApp.setFieldValueById(formField.id,value);

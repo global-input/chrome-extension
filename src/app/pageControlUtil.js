@@ -1,4 +1,3 @@
-import * as chromeExtensionUtil from './chromeExtensionUtil';
 import applicationControlConfigs from './application-control/configs.json';
 import defaultApplicationConfig from './application-control/default.json';
 const getCustomApplicationControlConfig = () => {
@@ -13,6 +12,41 @@ const getCustomApplicationControlConfig = () => {
     }
     return null;
 };
+
+export const getApplicationControlSettings=(domain)=>{
+        let applicationConfigs=null;
+        let type=null;    
+        let customApplicationConfigs=getCustomApplicationControlConfig();
+        if(customApplicationConfigs){
+                const selectedApplicationControlConfig=selectApplicationControlConfig(domain,customApplicationConfigs);
+                if(selectedApplicationControlConfig){                        
+                        type="custom";                    
+                        applicationConfigs=selectedApplicationControlConfig;
+                }
+        }        
+        if(!applicationConfigs){
+            const selectedApplicationControlConfig=selectApplicationControlConfig(domain,applicationControlConfigs);
+            if(selectedApplicationControlConfig){
+                    type="embedded";
+                    applicationConfigs=selectedApplicationControlConfig;
+            }
+        }
+        if(!applicationConfigs){                
+                const hostnames={
+                    type:"single",
+                    value:domain
+                };
+                applicationConfigs={...defaultApplicationConfig, hostnames};
+                type='new';
+        }    
+        return {
+            type,
+            applicationConfigs
+        };
+};
+
+
+
 
 
 
@@ -78,146 +112,5 @@ const selectApplicationControlConfig = (hostname, applicationControlConfigs) => 
     return null;
 };
 
-const getApplicationControlSettings =(domain) => {                
-        const customApplicationConfigString=getCustomApplicationControlConfig();
-        if(customApplicationConfigString){
-                const selectedApplicationControlConfig=selectApplicationControlConfig(domain,customApplicationConfigString);
-                if(selectedApplicationControlConfig){
-                            return {
-                                            type:"custom",
-                                            applicationConfigs:selectedApplicationControlConfig
-                            };
-                }
-        }        
-        if(applicationControlConfigs){
-             const selectedApplicationControlConfig=selectApplicationControlConfig(domain,applicationControlConfigs);
-            if(selectedApplicationControlConfig){
-                    return {
-                                          type:"default",
-                                          applicationConfigs:selectedApplicationControlConfig
-                    };
-            }
-        }
-        return null;
-};
 
 
-
-
-const buildFormField=field=>{
-    let id=field.id;
-
-    if(field.type==='list'||field.type==='info' || field.type==='picker' || field.type==='select'){
-        id=null;
-    }
-    let value=field.value;
-
-
-    if(field.type==='info' || field.type==='picker' || field.type==='select'){
-          value=field.value;
-          if(field.type==='picker'){
-              if(typeof field.value ==='undefined'){
-                  value=field.items[0].value;
-              }
-          }
-
-    };
-    return {
-        id,
-        label:field.label,
-        type:field.type,
-        items:field.items,
-        selectType:field.selectType,
-        value,
-        operations:{                    
-          onInput: newValue => {                       
-              chromeExtensionUtil.sendFormField(field.id,newValue);
-              if(field.matchingRule.nextUI){
-                  //displayNextUIOnMobile(field.matchingRule.nextUI)
-              }                        
-          }
-        }
-  };
-}
-const buildContentGlobalInputForm = message => {
-    return {
-         id:message.content.form.id,
-         title:message.content.form.title,
-         fields:message.content.form.fields.map(f=>{
-             return buildFormField(f);
-         })
-    };     
-};
-
-
-
-
-const getPageControlConfig= async domain=>{
-    
-    var applicationSettings=getApplicationControlSettings(domain);
-    if(!applicationSettings){
-        return null;
-    }
-    if(!applicationSettings.applicationConfigs){
-        return null;        
-    }
-    const applicationControlConfig=applicationSettings.applicationConfigs;
-    console.log("----:applicationControlConfig====:"+JSON.stringify(applicationControlConfig));
-    const message = await chromeExtensionUtil.getPageControlConfig(applicationControlConfig);
-    if(message.status==="success"){
-        return buildContentGlobalInputForm(message);        
-    }
-    else{
-        return null;
-    }    
-};
-
-
-export const startPageControl=async ({domain, globalInputApp,fieldGoBack,fieldEditApplicationControl})=>{    
-    let initData={
-        action: "input",
-        dataType: "form",
-        form: {    
-             title:"Mobile Input/Control",
-             fields:[fieldGoBack,fieldEditApplicationControl]
-        }   
-   };
-
-    try{
-        const form= await getPageControlConfig(domain);   
-        if(form){
-            form.fields.push(fieldGoBack);
-            form.fields.push(fieldEditApplicationControl);
-            initData.form=form;
-        }          
-    }
-    catch(error){
-        console.error(error+":::"+error.stack);
-    }  
-    globalInputApp.setInitData(initData);
-};
-
-
-export const getApplicationControlSettingsForEdit=(domain)=>{
-    const hostnames={
-        type:"single",
-        value:domain
-    };
-    let applicationConfigs={...defaultApplicationConfig, hostnames};
-    let type='new';
-    
-    let applicationSettings=getApplicationControlSettings(domain); 
-    if(applicationSettings && applicationSettings.applicationConfigs){
-        type=applicationSettings.type;
-        applicationConfigs=applicationSettings.applicationConfigs;
-    }            
-    
-    return {
-        type,
-        content:JSON.stringify(applicationConfigs,null,2)
-    };
-
-
-
-
-}

@@ -3,14 +3,14 @@ import React, {useState, useEffect, useRef} from "react";
 import {InputWithLabel,TextButton,P,FormContainer,FormFooter} from './app-layout';
 import * as pageControlUtil from './pageControlUtil';
 
-export default ({globalInputApp, domain,goHome})=>{
-    const [data,setData]=useState(()=>pageControlUtil.getApplicationControlSettingsForEdit(domain));
+export default ({globalInputApp,domain,toPageControlHome})=>{
+    const [data,setData]=useState(getDataForEdit);
     const onSave=()=>{
         if(data.type==='modified'){
             const pageControlConfig=JSON.parse(data.content);
             if(pageControlConfig){
                 pageControlUtil.updateCustomApplicationControlConfig(pageControlConfig, domain);                
-                goHome();                
+                toPageControlHome();                
             }                        
             
         }
@@ -25,8 +25,8 @@ export default ({globalInputApp, domain,goHome})=>{
         }
         switch(field.id){
             case fieldCancel.id:
-                goHome();
-                    break;
+                toPageControlHome();
+                break;
             case fieldSave.id:
                 onSave();
                 break;
@@ -47,7 +47,11 @@ export default ({globalInputApp, domain,goHome})=>{
                             type="textarea"
                             value={data.content}/>  
             <FormFooter>
-            <TextButton onClick={()=>goHome()} label='Cancel'/>
+            <TextButton onClick={()=>{
+                console.log("calling ********go Home-------");
+                toPageControlHome()
+            }
+            } label='Cancel'/>
             <TextButton onClick={()=>onSave()} label='Save'/>
 
             </FormFooter>            
@@ -87,6 +91,16 @@ const buildInitData = (domain,data)=>{
           fields:[fieldCancel,fieldSave,fieldEdit]
          }
       };    
+};
+
+
+const getDataForEdit = domain=>{
+    const {type,applicationConfigs} = pageControlUtil.getApplicationControlSettings(domain);
+    const content=JSON.stringify(applicationConfigs,null, ' ');
+    return {
+      type, content
+    }
+    
 }
 
 

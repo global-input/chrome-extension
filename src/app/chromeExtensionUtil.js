@@ -16,10 +16,7 @@ const sendMessageToContent = async (messageType, content) => {
         const callback=message=>{            
             if(!message){
                 resolve({status:'failure', content:'empty'});                    
-            }
-            else if(message.status!=='success'){
-                resolve(message);
-            }
+            }            
             else{
                 resolve(message);                
             }            

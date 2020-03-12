@@ -16,17 +16,15 @@ export const AppTitle=({children})=>{
 };
 
 
-export const AppContainer = ({globalInputApp,children,onSettings,reconnect})=>{    
+export const MobileIntegrationContainer = ({globalInputApp,children,toSettings,toMobileIntegrationHome})=>{    
     const {connectionMessage, WhenConnected,WhenWaiting, WhenError,errorMessage,WhenDisconnected}=globalInputApp;  
     
-    const displayFooter=()=>(
-    <div style={styles.appContainer.footer}>
-        
-        
-        <a href="#" onClick={evt=>{onSettings();return false;}}>Settings</a>
-        <a href="https://github.com/global-input/chrome-extension" target="_blank">Source Code On GitHub</a>
-        
-    </div>);
+    const displayFooter=()=>(        
+            <div style={styles.appContainer.footer}>
+                <a href="#" onClick={evt=>{toSettings();return false;}}>Settings</a>
+                <a href="https://github.com/global-input/chrome-extension" target="_blank">Source Code On GitHub</a>
+            </div>
+        );
 
     return (
         <div style={styles.appContainer.content}>                                
@@ -47,7 +45,7 @@ export const AppContainer = ({globalInputApp,children,onSettings,reconnect})=>{
                 
             <WhenDisconnected>
                 <AppTitle>Global Input App</AppTitle>
-                <div style={styles.appContainer.message}>Mobile Disconnected. <a href="#" onClick={evt=>{reconnect();return false;}}>Reconnect</a>.
+                <div style={styles.appContainer.message}>Mobile Disconnected. <a href="#" onClick={evt=>{toMobileIntegrationHome();return false;}}>Reconnect</a>.
                 
                 
                 </div> 
@@ -60,7 +58,7 @@ export const AppContainer = ({globalInputApp,children,onSettings,reconnect})=>{
     );
 };
 
-export const P=({children})=>(<div style={styles.paragraph}>{children}</div>);
+
 
 
 

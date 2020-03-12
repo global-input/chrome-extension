@@ -1,8 +1,8 @@
 import React, {useState, useEffect } from "react";
-import {InputWithLabel,FormContainer,P,CheckboxButton} from './app-layout';
+import {FormContainer,CheckboxButton} from './app-layout';
 import * as formUtil from './formUtil';
 
-export default ({globalInputApp,gotoHome,formFields,deleteFields})=>{  
+export default ({globalInputApp,toFormDataTransferHome,formFields,deleteFields})=>{  
     const [items,setItems]=useState(()=>createSelectableItems(formFields));    
 
     useEffect(()=>{        
@@ -16,7 +16,7 @@ export default ({globalInputApp,gotoHome,formFields,deleteFields})=>{
         }
         switch(field.id){
             case fieldCancelDelete.id:
-                gotoHome();
+                toFormDataTransferHome();
                 break;
             case fieldDeleteSelected.id:
                 deleteFields(items);

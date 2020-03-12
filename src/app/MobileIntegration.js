@@ -1,108 +1,112 @@
-import React, {useState, useEffect } from "react";
-import {useGlobalInputApp} from 'global-input-react';
+import React, { useState, useEffect } from "react";
+import { useGlobalInputApp } from 'global-input-react';
 
 import * as appSettings from './appSettings';
-import {AppContainer,MessageContainer,P} from './app-layout';
+import { MobileIntegrationContainer, MessageContainer} from './app-layout';
 
 import FormDataTransfer from './FormDataTransfer';
 import PageControl from './PageControl';
 
-
-const ACTIONS={
-     HOME:'home', 
-     FORM_DATA_TRANSFER:'form_data_transfer',
-     PAGE_CONTROL:'page_control'     
- };
-
- 
-
-export default ({domain, gotoSettings})=>{  
-    const options=appSettings.getGlobalInputSettings();          
-    const globalInputApp = useGlobalInputApp({initData:()=>getInitData(domain), options});
-    const [action, setAction]=useState(ACTIONS.HOME);
-    const goBackToHome=()=>{
-          setAction(ACTIONS.HOME);
-          globalInputApp.setInitData(getInitData(domain));     
-    }
-    const onSettings=()=>{
-          globalInputApp.disconnect();
-          gotoSettings();          
-    }
-     const props={
-          globalInputApp,
-          domain,
-          goBackToHome          
-     };
+export default ({ domain, toSettings }) => {
      
-    const switchByAction=()=>{         
-          switch(action){
-               case ACTIONS.HOME:
-                    return (<Home globalInputApp={globalInputApp} setAction={setAction}/>);
-               case ACTIONS.FORM_DATA_TRANSFER:
-                    return (<FormDataTransfer {...props}/>);
-               case ACTIONS.PAGE_CONTROL:
-                    if(domain){
-                         return (<PageControl {...props}/>);
-                    }
-                    else{
-                         //should not comere
-                         return null;
-                    }
-                    
+     const globalInputApp = useGlobalInputApp(()=>buildConfigData(domain));
+     
+     const [action, setAction] = useState(ACTIONS.MOBILE_INTEGRATION_HOME);
+          
+     useEffect(() => {
+          const { field } = globalInputApp;
+          if (!field || action !== ACTIONS.MOBILE_INTEGRATION_HOME) {
+               return;
           }
-    }    
-    return (
-    <AppContainer globalInputApp={globalInputApp} onSettings={onSettings} reconnect={goBackToHome}>
-         {switchByAction()}
-    </AppContainer>
-    );
+          switch (field.id) {
+               case ACTIONS.FORM_DATA_TRANSFER:
+                    console.log("calling setAction");
+                    setAction(ACTIONS.FORM_DATA_TRANSFER);
+                    break;
+               case ACTIONS.PAGE_CONTROL:
+                    setAction(ACTIONS.PAGE_CONTROL);
+                    break;
+               default:
+          }
+
+     }, [globalInputApp.field]);
+     
+     const toMobileIntegrationHome = () => {
+          setAction(ACTIONS.MOBILE_INTEGRATION_HOME);
+          const config = buildConfigData(domain);
+          globalInputApp.setInitData(config.initData);
+     };
+
+     
+     console.log("0-0000000:"+action);
+     return (
+          <MobileIntegrationContainer globalInputApp={globalInputApp} toSettings={() => {
+               globalInputApp.disconnect();
+               toSettings();
+          }} toMobileIntegrationHome={toMobileIntegrationHome}>               
+               <WhenAction action={action} value={ACTIONS.FORM_DATA_TRANSFER}>
+                         <FormDataTransfer globalInputApp={globalInputApp} 
+                         domain ={domain} toMobileIntegrationHome = {toMobileIntegrationHome}/>
+               </WhenAction>
+
+               <WhenAction action={action} value={ACTIONS.MOBILE_INTEGRATION_HOME}>
+                         <MessageContainer title="Global Input App">
+                                        Please select from the operations displayed on your mobile
+                         </MessageContainer>
+               </WhenAction>
+               <WhenAction action={action} value={ACTIONS.PAGE_CONTROL}>               
+               <PageControl globalInputApp={globalInputApp} domain={domain} toMobileIntegrationHome={toMobileIntegrationHome}/>
+               </WhenAction>
+          </MobileIntegrationContainer>
+     );
 };
 
-const Home=({globalInputApp,setAction})=>{
-     
-     useEffect(()=>{
-          const {field}=globalInputApp;  
-          if(!field){
-               return;
-          }        
-          switch(field.id){
-                    case ACTIONS.FORM_DATA_TRANSFER:
-                              console.log("calling setAction");
-                              setAction(ACTIONS.FORM_DATA_TRANSFER);
-                              break;
-                    case ACTIONS.PAGE_CONTROL:
-                              setAction(ACTIONS.PAGE_CONTROL);
-                              break;
-                    default:
-          }
-
-     },[globalInputApp.field]);
-     
-     return (<MessageContainer title="Global Input App">                              
-                    Please select from the operations displayed on your mobile
-            </MessageContainer>
-     );
-}
+const WhenAction =({action,value,children}) => {     
+     if(action===value){
+          return children;
+     }
+     else{
+          return null;          
+     }
+};
 
 
-const getInitData=domain=>{
-     const initData={
+const ACTIONS = {
+     MOBILE_INTEGRATION_HOME: 'mobile-integration-home',
+     FORM_DATA_TRANSFER: 'form-data-transfer',
+     PAGE_CONTROL: 'page-control'
+};
+
+
+
+
+
+
+const buildConfigData = domain => {
+     const initData = {
           action: "input",
           dataType: "form",
-          form: {    
-               title:"Please Select",
-               fields:[{id:ACTIONS.FORM_DATA_TRANSFER,
-                    type:"button",
-                    label:"Transfer Form Data"}]
-          }   
+          form: {
+               title: "Please Select",
+               fields: [{
+                    id: ACTIONS.FORM_DATA_TRANSFER,
+                    type: "button",
+                    label: "Transfer Form Data"
+               }]
+          }
      };
-     if(domain){
+     if (domain) {
           initData.form.fields.push({
-               id:ACTIONS.PAGE_CONTROL,
-               type:'button',
-               label:'Sign In/Control'
+               id: ACTIONS.PAGE_CONTROL,
+               type: 'button',
+               label: 'Sign In/Control'
           });
-     }
-     return initData;
+     };
+     const options = appSettings.getGlobalInputSettings();
+     console.log("::initData::*************::"+initData);
+     return {
+          initData,
+          options
+     };
 
 }

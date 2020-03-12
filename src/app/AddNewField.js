@@ -1,8 +1,9 @@
 import React, {useState, useEffect } from "react";
-import {InputWithLabel,FormContainer,P,RadioButton} from './app-layout';
+import {InputWithLabel,FormContainer,RadioButton} from './app-layout';
 import * as formUtil from './formUtil';
 
-export default ({globalInputApp,gotoHome,addNewField}) => {    
+export default ({globalInputApp,toFormDataTransferHome,addNewField}) => {    
+    
     
     const [label,setLabel]=useState('');
     const [multiLine,setMultiLine]=useState(fieldMultiLine.items[0].value);    
@@ -17,17 +18,18 @@ export default ({globalInputApp,gotoHome,addNewField}) => {
           return;
       }      
       addNewField(label,multiLine===fieldMultiLine.items[1].value);
-    }
+    };
+    
     useEffect(()=>{
         globalInputApp.setInitData(initData);    
-  },[globalInputApp]);
+  },[]);
+  
   useEffect(()=>{
       const {field}=globalInputApp;
       if(!field){
           return;
       }
       switch(field.id){
-
             case fieldName.id:
                 setLabel(field.value);
                 break;
@@ -40,18 +42,19 @@ export default ({globalInputApp,gotoHome,addNewField}) => {
                     break;    
             
             case fieldCancel.id:
-                gotoHome();
+                toFormDataTransferHome();
                 break;
 
             case fieldAddNew.id:
                 onAddNewField();
                 break;
       }
-  },[globalInputApp,globalInputApp.field]);
+      
+  },[globalInputApp.field]);
 
       return(
           <FormContainer title="Adding New Field">              
-              <P>Enter the name of the new field </P>                            
+              Enter the name of the new field                          
               <InputWithLabel label="Name of the field" id="newFieldLabel"
                             onChange={setFormLabel}
                             value={label}/>              
@@ -68,6 +71,7 @@ export default ({globalInputApp,gotoHome,addNewField}) => {
               
           </FormContainer>            
       );
+      
 };
 
 

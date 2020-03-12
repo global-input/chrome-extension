@@ -12,8 +12,8 @@
 
   var globalInputFormManager={
 
-          pagedata:{              
-              encryptionKey:null,
+          pageData:{              
+              key:null,
               pageForm:null,
           },
      
@@ -24,8 +24,8 @@
           },
      
      resetAll:function(){       
-        this.pagedata.pageForm=null;
-        this.pagedata.key=null;
+        this.pageData.pageForm=null;
+        this.pageData.key=null;
      },
      /*  message handler for message coming from extension */
      onExtensionMessageReceived:function(message, sender, replyBack){
@@ -41,7 +41,7 @@
                return;
          }
          else if(message.messageType==='set-key'){
-               this.pagedata.key=message.content.key;               
+               this.pageData.key=message.content.key;               
                replyBack({
                            messageType:message.messageType,
                            status:"success",
@@ -57,15 +57,13 @@
                   messageType:message.messageType,
                   host:window.location.host,
                   status:"failed",
-                  content:"no recognized form",
-                  cacheTTL:this.pagedata.clearachefieldvalues.ttl
+                  content:"no recognized form",                  
                 });
               }
               else{
                 replyBack({
                   messageType:message.messageType,
-                  host:window.location.host,
-                  cacheTTL:this.pagedata.clearachefieldvalues.ttl,
+                  host:window.location.host,                  
                   status:"success",
                   content:pageConfig
                 });
@@ -73,7 +71,7 @@
 
          }
          else if(message.messageType==='set-form-field'){
-                if(!this.pagedata.pageForm){
+                if(!this.pageData.pageForm){
                       replyBack({
                         messageType:message.messageType,
                         host:window.location.host,
@@ -82,7 +80,7 @@
                       });
                       return;
                 }
-                this.pagedata.pageForm.form.setFormFieldValue(message.content.fieldId,message.content.fieldValue);
+                this.pageData.pageForm.form.setFormFieldValue(message.content.fieldId,message.content.fieldValue);
                 replyBack({
                             messageType:message.messageType,
                             host:window.location.host,
@@ -103,7 +101,7 @@
                        host:window.location.host,                       
                        status:"success",
                        content:{
-                              key:this.pagedata.key
+                              key:this.pageData.key
                         }
                       });                                      
          }
@@ -120,7 +118,7 @@
      to display a similar form on the mobile screen */
      getPageConfig:function(message){
         var pageForm=this.findFormWithDomainSpecificRule(message);
-        this.pagedata.pageForm=pageForm; //save it to use to set the value in the form when received input evens from mobile
+        this.pageData.pageForm=pageForm; //save it to use to set the value in the form when received input evens from mobile
         if(!pageForm){
               return null;
         }
@@ -482,19 +480,7 @@
                                         }
                                   }
 
-                              }
-                              // else if(this.fields[i].type==='select'){
-                              //         for(var k=0;k<this.fields[i].items.length;k++){
-                              //               var vitem=this.fields[i].items[k];
-                              //               if(vitem.value===newValue){
-                              //                    vitem.selected=true;
-                              //               }
-                              //               else{
-                              //                   vitem.selected=false;
-                              //               }
-                              //         }
-                              //
-                              // }
+                              }                              
                               else{
                                   this.fields[i].formElement.value=newValue;
                                   this.fileInputEvent(this.fields[i].formElement);

@@ -9,14 +9,19 @@ const keyNames={
 };
 const cacheTTL=60000;
 
-export const cacheFields = (formFields) => {
+export const cacheIfMultipleFields = formFields=>{    
+        const numberOfNotEmptyFields=formFields.reduce((count,f)=>f.value?count+1:count,0);
+        if(numberOfNotEmptyFields<0){
+                return null;
+        }
         const key=generateEncryptionKey();        
         const contentBlob=JSON.stringify(formFields);
         const encryptedContent=encrypt(contentBlob,key);
         localStorage.setItem(keyNames.cachedTimes,(new Date()).getTime());
         localStorage.setItem(keyNames.cacheFields,encryptedContent);        
         return key;    
-};
+
+}
 export const clearFields= ()=>{
     localStorage.removeItem(keyNames.cacheFields);
     localStorage.removeItem(keyNames.cachedTimes);    
@@ -54,6 +59,3 @@ export const loadFormFields = key=>{
 
 
 
-// const getEncryptionKey=()=>{    
-//     //return localStorage.getItem('extension.content.tmpKey');
-// }

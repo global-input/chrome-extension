@@ -86,18 +86,7 @@ export default {
          justifyContent:"center",
         
         
-     },
-    
-     paragraph:{
-            fontSize: 16,      
-            marginBottom: 20,
-            marginTop: 20,
-            color: "#5291CD",
-            width:"100%",
-            display:"flex",
-            justifyContent:'center'
-    },
-    
+     },    
     message:{
         container:{
             minWidth:300,
@@ -143,4 +132,4 @@ export default {
         }
     }
 
-}
+};

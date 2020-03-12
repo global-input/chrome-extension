@@ -9,131 +9,125 @@ import AddNewField from './AddNewField';
 import DeleteFields  from './DeleteFields';
 
 
-const ACTIONS={
-     HOME:'transfer_home', 
-     ADD_NEW_FIELD:'add_new_field',
-     DELETE_FIELDS:'delete_fields'     
- };
-export default ({globalInputApp, domain,goBackToHome})=>{
-     const [action, setAction]=useState(ACTIONS.HOME);
+
+export default ({globalInputApp, domain,toMobileIntegrationHome})=>{
+     const [action, setAction]=useState(ACTIONS.FORM_DATA_TRANSFER_HOME);
      const [visibility, setVisibility]=useState(fieldVisibilityControl.options[0]); 
      const [formFields,setFormFields]=useState(()=>getFormFields(domain));
-     
-     
-
-     
-    const gotoAddField=()=>{
-         setAction(ACTIONS.ADD_NEW_FIELD);
-    };
-    const gotDeleteFields=()=>{
-     setAction(ACTIONS.DELETE_FIELDS);
-    };
-    const gotoHome= (fields=formFields)=>{
-          setAction(ACTIONS.HOME);
-          globalInputApp.setInitData(buildInitData(fields,domain));
-    }
-    const addNewField=(label,multiLine)=>{                    
+      
+     const toFormDataTransferHome= (fields=formFields)=>{
+               setAction(ACTIONS.FORM_DATA_TRANSFER_HOME);
+               globalInputApp.setInitData(buildInitData(fields,domain));
+     }
+    
+     const addNewField=(label,multiLine)=>{                    
           const newFields=formUtil.createNewFormNewField({formFields,label, multiLine});
-          onFormFieldsModified(newFields)
-    }
-    const deleteFields=items=>{
-     const newFields=formUtil.deleteSelectedFields(formFields,items);                
-     onFormFieldsModified(newFields);
-    };
-    const onFormFieldsModified=newFields=>{
+           onFormFieldsModified(newFields)
+     }
+    
+     const deleteFields=items=>{
+          const newFields=formUtil.deleteSelectedFields(formFields,items);                
+          onFormFieldsModified(newFields);
+     };
+    
+      const onFormFieldsModified=newFields=>{
           setFormFields(newFields);          
           if(newFields.length){
-               gotoHome(newFields); 
+               toFormDataTransferHome(newFields); 
                formUtil.saveFormFields(domain, newFields);            
           }
           else{
-               gotoAddField();
+               setAction(ACTIONS.ADD_NEW_FIELD);
           }
-    };
-    const onCopied=()=>{
-         console.log("*************");
-         
-        if(formFields.length<2){
-             return;
-        }
-        const numberOfNotEmptyFields=formFields.reduce((count,f)=>f.value?count+1:count,0);
-        if(numberOfNotEmptyFields<0){
-             return;
-        }
-        const key=cacheFields.cacheFields(formFields);
-        chromeExtensionUtil.sendKey(key);
-    }
-    
-    
-    useEffect(()=>{          
-          gotoHome();
+      };    
+     const onToggleShowHide=()=>{
+          const nextVisibility = formUtil.toggleOption(fieldVisibilityControl.options,visibility.value);                
+          setVisibility(nextVisibility);
+          globalInputApp.setFieldValueById(fieldVisibilityControl.id,nextVisibility.value);
+     };
+
+     const toAddField=()=>{
+          setAction(ACTIONS.ADD_NEW_FIELD);
+     };   
+
+     const toDeleteFields=()=>{
+          setAction(ACTIONS.DELETE_FIELDS);
+     };  
+     const onFieldChanged=(fieldId,value) => {
+          setFormFields(formUtil.updateFields(formFields,fieldId, value));          
+     };
+     const onCopied=()=>{                       
+          const key=cacheFields.cacheIfMultipleFields(formFields);
+          if(key){
+               chromeExtensionUtil.sendKey(key);
+          }     
+      };
+
+      useEffect(()=>{          
+          globalInputApp.setInitData(buildInitData(formFields,domain));
           return()=>{
                cacheFields.clearFields();               
           }
-    },[]);
-
-
-    useEffect(()=>{
-         const {field}=globalInputApp;
-          if(!field || action!==ACTIONS.HOME){
-               return;
+      },[]);    
+     useEffect(()=>{
+          const {field}=globalInputApp;
+          if(!field || action !== ACTIONS.FORM_DATA_TRANSFER_HOME){
+                    return;
           }
           switch(field.id){
-               case backToHomeControl.id:
-                    goBackToHome();
-                    break;
-               case fieldVisibilityControl.id:
-                    onToggleShowHide();
-                    break;
-               case  addNewFieldControl.id:
-                    gotoAddField(); 
-                    break;
-               case deleteFieldsControl.id:
-                    gotDeleteFields();
-                    break;
-               default:                    
-                    const matchedFields=formFields.filter(f=>f.id===field.id);
-                    if(matchedFields.length){
-                         onFieldChanged(field.id,field.value);                         
-                    }
-          }             
-          
-    },[globalInputApp.field]);
+                    case backToHomeControl.id:
+                         toMobileIntegrationHome();
+                         break;
+                    case fieldVisibilityControl.id:
+                         onToggleShowHide();
+                         break;
+                    case  addNewFieldControl.id:
+                         toAddField(); 
+                         break;
+                    case deleteFieldsControl.id:
+                         toDeleteFields();
+                         break;
+                    default:                    
+                         const matchedFields=formFields.filter(f=>f.id===field.id);
+                         if(matchedFields.length){
+                              onFieldChanged(field.id,field.value);                         
+                         }
+               }             
+      
+     },[globalInputApp.field]);
 
-    const onFieldChanged=(fieldId,value) => {
-          setFormFields(formUtil.updateFields(formFields,fieldId, value));          
-    };
-const onToggleShowHide=()=>{
-     const nextVisibility = formUtil.toggleOption(fieldVisibilityControl.options,visibility.value);                
-     setVisibility(nextVisibility);
-     globalInputApp.setFieldValueById(fieldVisibilityControl.id,nextVisibility.value);
-}
 
-switch(action){
-     case ACTIONS.HOME:
-          return (
+  switch(action){
+     case ACTIONS.FORM_DATA_TRANSFER_HOME:
+          return(
                <FormContainer title="Form Data Transfer" domain={domain}>              
-                     {formFields.map((formField,index)=>(<DisplayInputCopyField 
-                  field={formField} 
-                  key={formField.id} 
-                  onCopied={onCopied}
-                  hideValue={visibility.value===0} onChange={value=>{
-                       onFieldChanged(formField.id,value);
-                       globalInputApp.setFieldValueById(formField.id,value);
-                    }
-                    }/>))}
-                  <TextButton onClick={onToggleShowHide} label={visibility.label}/>
-               </FormContainer>
-          );
+                               {formFields.map(formField=>(<DisplayInputCopyField 
+                            field={formField} 
+                            key={formField.id} 
+                            onCopied={onCopied}
+                            hideValue={visibility.value===0} onChange={value=>{
+                                 onFieldChanged(formField.id,value);
+                                 globalInputApp.setFieldValueById(formField.id,value);
+                              }
+                              }/>))}
+                            <TextButton onClick={onToggleShowHide} label={visibility.label}/>
+                         </FormContainer>
+                );
      case ACTIONS.ADD_NEW_FIELD:
-          return (<AddNewField globalInputApp={globalInputApp} gotoHome={gotoHome} addNewField={addNewField}/>);
+          return (<AddNewField globalInputApp={globalInputApp} toFormDataTransferHome={toFormDataTransferHome} addNewField={addNewField}/>);
      
      case ACTIONS.DELETE_FIELDS:
-               return (<DeleteFields globalInputApp={globalInputApp} gotoHome={gotoHome} formFields={formFields} deleteFields={deleteFields}/>);
-                              
-  }
+          return (<DeleteFields globalInputApp={globalInputApp} toFormDataTransferHome={toFormDataTransferHome} formFields={formFields} deleteFields={deleteFields}/>);                              
+    }
     
 };
+
+
+const ACTIONS={
+     FORM_DATA_TRANSFER_HOME:'form_data_transfer_home', 
+     ADD_NEW_FIELD:'add_new_field',
+     DELETE_FIELDS:'delete_fields'     
+ };
 
 
 

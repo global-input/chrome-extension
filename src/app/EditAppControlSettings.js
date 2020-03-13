@@ -2,24 +2,30 @@ import React, {useState, useEffect, useRef} from "react";
 
 import {InputWithLabel,TextButton,P,FormContainer,FormFooter} from './app-layout';
 import * as pageControlUtil from './pageControlUtil';
-
+import defaultApplicationConfig from './application-control/default.json';
 export default ({globalInputApp,domain,toPageControlHome})=>{
-    const [data,setData]=useState(getDataForEdit);
+    const [data,setData]=useState(()=>getDataForEdit(domain));    
     const onSave=()=>{
-        if(data.type==='modified'){
-            const pageControlConfig=JSON.parse(data.content);
-            if(pageControlConfig){
-                pageControlUtil.updateCustomApplicationControlConfig(pageControlConfig, domain);                
-                toPageControlHome();                
-            }                        
-            
+        if(data.type==='modified'){            
+            try{            
+                const userAppControl=JSON.parse(data.content);                
+                pageControlUtil.saveUserApplicationControlConfig(userAppControl, domain);                
+                toPageControlHome();                            
+            }
+            catch(error){
+                console.error(error+":"+error.stack);
+            }                                    
         }
+        else{
+            toPageControlHome();                             
+        }
+
     };
     useEffect(()=>{
         globalInputApp.setInitData(buildInitData(domain,data));
     },[]);
     useEffect(()=>{
-        const {field}=globalInputApp;
+        const {field}=globalInputApp;        
         if(!field){
             return;
         }
@@ -47,12 +53,11 @@ export default ({globalInputApp,domain,toPageControlHome})=>{
                             type="textarea"
                             value={data.content}/>  
             <FormFooter>
-            <TextButton onClick={()=>{
-                console.log("calling ********go Home-------");
+            <TextButton onClick={()=>{                
                 toPageControlHome()
             }
             } label='Cancel'/>
-            <TextButton onClick={()=>onSave()} label='Save'/>
+            <TextButton onClick={onSave} label='Save'/>
 
             </FormFooter>            
             
@@ -95,12 +100,24 @@ const buildInitData = (domain,data)=>{
 
 
 const getDataForEdit = domain=>{
-    const {type,applicationConfigs} = pageControlUtil.getApplicationControlSettings(domain);
-    const content=JSON.stringify(applicationConfigs,null, ' ');
-    return {
-      type, content
+    const userAppControlSettings = pageControlUtil.getUserApplicationControlConfig(domain);
+    if(userAppControlSettings){
+        return {
+                type:'user',
+                content:JSON.stringify(userAppControlSettings,null,2)
+        };
+    };
+    const embeddedAppControlSettings=pageControlUtil.getEmbeddedApplicationControlConfig(domain);
+    if(embeddedAppControlSettings){
+        return {
+            type:'embedded',
+            content:JSON.stringify(embeddedAppControlSettings,null,2)
+        };
     }
-    
+    return {
+            type:'new',
+            content:JSON.stringify(defaultApplicationConfig,null,2)
+    };    
 }
 
 

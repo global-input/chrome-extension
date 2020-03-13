@@ -57,7 +57,7 @@ export default ({globalInputApp, domain,toMobileIntegrationHome})=>{
           setFormFields(formUtil.updateFields(formFields,fieldId, value));          
      };
      const onCopied=()=>{                       
-          const key=cacheFields.cacheIfMultipleFields(formFields);
+          const key=cacheFields.cacheIfMultipleFields(domain,formFields);
           if(key){
                chromeExtensionUtil.sendKey(key);
           }     
@@ -66,7 +66,7 @@ export default ({globalInputApp, domain,toMobileIntegrationHome})=>{
       useEffect(()=>{          
           globalInputApp.setInitData(buildInitData(formFields,domain));
           return()=>{
-               cacheFields.clearFields();               
+               cacheFields.clearFields(domain);               
           }
       },[]);    
      useEffect(()=>{

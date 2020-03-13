@@ -25,7 +25,7 @@ export default () => {
           if (message && message.status === 'success' && message.host) {
                setDomain(message.host);
                if (message.content.key) {
-                    const cachedFields = cacheFields.loadFormFields(message.content.key);
+                    const cachedFields = cacheFields.loadFormFields(message.host,message.content.key);
                     if (cachedFields) {
                          setCachedFieldValue(cachedFields);
                          setAction(ACTIONS.DISPLAY_CACHED_FORM);

@@ -7,10 +7,10 @@ import {DisplayInputCopyField,TextButton,FormContainer} from './app-layout';
 
 export default ({toMobileIntegration,cachedFieldValues, domain})=>{          
    
-   useEffect(()=>()=>cacheFields.clearFields(),[]); 
+   useEffect(()=>()=>cacheFields.clearFields(domain),[]); 
    
    const onCopied=()=>{                       
-      const key=cacheFields.cacheIfMultipleFields(cacheFields);
+      const key=cacheFields.cacheIfMultipleFields(domain,cacheFields);
       if(key){
               chromeExtensionUtil.sendKey(key);
       }     

@@ -8,9 +8,12 @@ import EditAppControlSettings from './EditAppControlSettings';
 export default ({globalInputApp,domain,toMobileIntegrationHome}) => {
     const [action,setAction]=useState(ACTIONS.HOME);
     const toPageControlHome=async () =>{
-        const initData=await buildInitData(domain);        
-        globalInputApp.setInitData(initData);               
         setAction(ACTIONS.PAGE_CONTROL_HOME);
+        let initData=await initDataPageControl(domain);        
+        if(!initData){
+            initData=initDataWitNoPageControl(domain);
+        }
+        globalInputApp.setInitData(initData);        
     };
     useEffect(()=>{
         toPageControlHome();        
@@ -66,12 +69,6 @@ const ACTIONS={
 }
 
 
-const getFormWithoutControl = ()=>{
-    return {    
-                title:"Mobile Input/Control",
-                fields: [fieldGoBack,fieldEditApplicationControl]
-    }    
-}
 
 
 
@@ -114,31 +111,41 @@ const buildFormField=field=>{
 
 
 
-const buildInitData= async (domain)=>{        
-        var applicationSettings=pageControlUtil.getApplicationControlSettings(domain);    
-        const applicationControlConfig=applicationSettings.applicationConfigs;
-        console.log("----:applicationControlConfig====:"+JSON.stringify(applicationControlConfig));
-        let form=null;    
-        const message = await chromeExtensionUtil.getPageControlConfig(applicationControlConfig);
+const initDataPageControl= async (domain)=>{        
+        
+        let applicationSettings=pageControlUtil.getUserApplicationControlConfig(domain);    
+        if(!applicationSettings){
+            applicationSettings=pageControlUtil.getEmbeddedApplicationControlConfig(domain);
+        }        
+        const message = await chromeExtensionUtil.getPageControlConfig(applicationSettings);
         if(message.status==="success"){
                 const fields=message.content.form.fields.map(f=>buildFormField(f));
                 fields.push(fieldGoBack);
                 fields.push(fieldEditApplicationControl);
-                form= {
-                    id:message.content.form.id,
-                    title:message.content.form.title,
-                    fields
-                };     
+                return {
+                    action: "input",
+                    dataType: "form",
+                    form:{
+                        id:message.content.form.id,
+                        title:message.content.form.title,
+                        fields
+                    }          
+                };                
         }
-        else{
-            form=getFormWithoutControl();
-        }
-        return {
-            action: "input",
-            dataType: "form",
-            form           
-        };
-        
+        return null;        
 };
+
+
+const initDataWitNoPageControl = domain=>{
+    
+    return {
+        action: "input",
+        dataType: "form",
+        form:{            
+            title:"Mobile Input/Control",
+            fields: [fieldGoBack,fieldEditApplicationControl]
+        }          
+    };  
+}
 
 

@@ -3,54 +3,69 @@ import {generateRandomString, encrypt, decrypt} from 'global-input-react';
 export const generateEncryptionKey=()=>{
     return generateRandomString(20);    
 }
-const keyNames={
-    cacheFields:'extension.content.cacheFields',
-    cachedTimes:'extension.content.cachedTime'
-};
+
+const getVariableNames=domain=>{    
+    return {
+        cacheFields:'extension.content.cacheFields.'+domain,
+        cachedTime:'extension.content.cachedTime.'+domain
+    }
+
+}
+
+
 const cacheTTL=60000;
 
-export const cacheIfMultipleFields = formFields=>{    
+export const cacheIfMultipleFields = (domain,formFields)=>{    
+        if(!domain){
+            return null;
+        }
         const numberOfNotEmptyFields=formFields.reduce((count,f)=>f.value?count+1:count,0);
-        if(numberOfNotEmptyFields<0){
+        if(numberOfNotEmptyFields<2){
                 return null;
         }
         const key=generateEncryptionKey();        
         const contentBlob=JSON.stringify(formFields);
-        const encryptedContent=encrypt(contentBlob,key);
-        localStorage.setItem(keyNames.cachedTimes,(new Date()).getTime());
-        localStorage.setItem(keyNames.cacheFields,encryptedContent);        
+        const encryptedContent=encrypt(contentBlob,key+'Tjg0MfNGYr');
+        const variableNames=getVariableNames(domain);
+        localStorage.setItem(variableNames.cachedTime,(new Date()).getTime());
+        localStorage.setItem(variableNames.cacheFields,encryptedContent);        
         return key;    
 
 }
-export const clearFields= ()=>{
-    localStorage.removeItem(keyNames.cacheFields);
-    localStorage.removeItem(keyNames.cachedTimes);    
+export const clearFields= domain=>{
+    if(!domain){
+        return;
+    }
+    const variableNames=getVariableNames(domain);
+    localStorage.removeItem(variableNames.cacheFields);
+    localStorage.removeItem(variableNames.cachedTime);    
 }
-export const loadFormFields = key=>{
-    const cachedTime=localStorage.getItem(keyNames.cachedTimes);
+export const loadFormFields = (domain, key)=>{
+    const variableNames=getVariableNames(domain);
+    const cachedTime=localStorage.getItem(variableNames.cachedTime);
     if(!cachedTime){
         return null;
     }
     const now=(new Date()).getTime();
     if((now-cachedTime)>cacheTTL){
-        clearFields();
+        clearFields(domain);
         return null;
     }
-    const encryptedContent=localStorage.getItem(keyNames.cacheFields);
+    const encryptedContent=localStorage.getItem(variableNames.cacheFields);
     if(!encryptedContent){
-        clearFields();
+        clearFields(domain);
         return null;        
     }
     try{
-        const contentBlob=decrypt(encryptedContent,key);
+        const contentBlob=decrypt(encryptedContent,key+'Tjg0MfNGYr');
         if(!contentBlob){
-            clearFields();
+            clearFields(domain);
             return null;
         }
         return JSON.parse(contentBlob);        
     }
     catch(error){
-        clearFields();
+        clearFields(domain);
         return null;
     }
 };

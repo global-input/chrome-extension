@@ -1,22 +1,17 @@
 {
-    "hostnames":{
-       "type":"single",
-       "value":"yourdomain"
-    },
-    "forms":[
-       {
+    "forms":[{
           "title":"Sign In",
           "fields":[{
                 "id":"username",
                 "type":"text",
-                "selector":"input[name=\"login_email\"]",
+                "selector":"input[name=\"email\"]",
                 "data":{
                    "label":"Email"
                 }
              },{
                 "id":"password",
                 "type":"secret",
-                "selector":"input[name=\"login_password\"][type=\"password\"]",
+                "selector":"input[name=\"password\"][type=\"password\"]",
                 "data":{
                    "label":"Password"
                 }
@@ -28,6 +23,5 @@
                    "label":"Sign in"
                 }               
              }]
-       }
-    ]
+       }]
  }

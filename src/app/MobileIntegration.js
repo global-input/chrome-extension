@@ -36,9 +36,7 @@ export default ({ domain, toSettings }) => {
           const config = buildConfigData(domain);
           globalInputApp.setInitData(config.initData);
      };
-
      
-     console.log("0-0000000:"+action);
      return (
           <MobileIntegrationContainer globalInputApp={globalInputApp} toSettings={() => {
                globalInputApp.disconnect();

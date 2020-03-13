@@ -1,6 +1,6 @@
 const getFormFieldsPrefix= domain => {
-    const formprefix="extension."+domain?domain:'default';
-    return formprefix+".forms.fields";
+    const domainPart=domain?domain:'default';    
+    return "extension.forms.fields."+domainPart;
 };
 
 export const loadSavedFormFields= domain => {

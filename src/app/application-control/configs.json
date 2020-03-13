@@ -1,7 +1,6 @@
 [
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"accounts.google.com"
        },
        "forms":[
@@ -454,8 +453,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "adobeid-na1.services.adobe.com"
           ]
@@ -496,8 +494,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "signin.aws.amazon.com",
              "www.amazon.com",
@@ -674,8 +671,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"c9.io"
        },
        "forms":[
@@ -714,8 +710,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"www.camscanner.com"
        },
        "forms":[
@@ -754,8 +749,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "www.digitalocean.com",
              "cloud.digitalocean.com"
@@ -797,8 +791,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"id.docker.com"
        },
        "forms":[
@@ -837,8 +830,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"www.dropbox.com"
        },
        "forms":[
@@ -877,8 +869,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "evernote.com",
              "www.evernote.com"
@@ -920,8 +911,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "en-gb.facebook.com",
              "www.facebook.com"
@@ -963,8 +953,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"github.com"
        },
        "forms":[
@@ -1027,8 +1016,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"gitlab.com"
        },
        "forms":[
@@ -1067,8 +1055,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"id.heroku.com"
        },
        "forms":[
@@ -1107,8 +1094,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"home.bt.com"
        },
        "forms":[
@@ -1147,8 +1133,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"id.atlassian.com"
        },
        "forms":[
@@ -1222,8 +1207,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"idmsa.apple.com"
        },
        "forms":[
@@ -1306,8 +1290,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "www.iterativesolution.co.uk",
              "iterativesolution.co.uk"
@@ -1386,8 +1369,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"www.join.me"
        },
        "forms":[
@@ -1426,8 +1408,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"jsbin.com"
        },
        "forms":[
@@ -1466,8 +1447,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"jsfiddle.net"
        },
        "forms":[
@@ -1506,8 +1486,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "www.linkedin.com",
              "uk.linkedin.com",
@@ -1550,8 +1529,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"login.live.com"
        },
        "forms":[
@@ -1590,8 +1568,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"login.wordpress.org"
        },
        "forms":[
@@ -1630,8 +1607,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "www.lucidchart.com",
              "store.logmein.com"
@@ -1896,8 +1872,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"secure.meetup.com"
        },
        "forms":[
@@ -1936,8 +1911,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"anypoint.mulesoft.com"
        },
        "forms":[
@@ -1976,8 +1950,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"www.npmjs.com"
        },
        "forms":[
@@ -2019,8 +1992,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"www.papajohns.co.uk"
        },
        "forms":[
@@ -2059,8 +2031,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "www.pexels.com"
           ]
@@ -2149,8 +2120,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"mail.protonmail.com"
        },
        "forms":[
@@ -2235,8 +2205,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"auth.apply-for-innovation-funding.service.gov.uk"
        },
        "forms":[
@@ -2275,8 +2244,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"www.sololearn.com"
        },
        "forms":[
@@ -2315,8 +2283,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "secure.tesco.com",
              "www.tesco.com"
@@ -2364,8 +2331,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"array",
+       "hostnames":{          
           "value":[
              "twitter.com"
           ]
@@ -2409,8 +2375,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"my.vultr.com"
        },
        "forms":[
@@ -2449,8 +2414,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"wable.com"
        },
        "forms":[
@@ -2492,8 +2456,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"www.wisepay.co.uk"
        },
        "forms":[
@@ -2535,8 +2498,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"wordpress.com"
        },
        "forms":[
@@ -2570,8 +2532,7 @@
        ]
     },
     {
-       "hostnames":{
-          "type":"single",
+       "hostnames":{          
           "value":"www.123-reg.co.uk"
        },
        "forms":[

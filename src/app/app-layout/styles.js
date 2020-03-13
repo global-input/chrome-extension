@@ -102,9 +102,15 @@ export default {
             fontFamily: "Avenir",
             fontSize: 14,
             fontWeight: 100,
-            padding: 20            
-        }
+            padding: 20,
+            display:'block'            
+        },
+        alink:{
+            paddingLeft:5,
+            paddingRight:5
+        },
     },
+    
     form:{
         container:{
             display:'flex',

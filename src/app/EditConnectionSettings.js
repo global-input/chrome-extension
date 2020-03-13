@@ -1,8 +1,9 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, {useState} from "react";
 
-import {InputWithLabel,TextButton,P,FormContainer,FormFooter} from './app-layout';
+import {InputWithLabel,TextButton,MessageContainer,MessageLink,FormContainer,FormFooter} from './app-layout';
 
 import * as appSettings from './appSettings';
+import styles from "./app-layout/styles";
 
 export default ({toMobileIntegration})=>{
     const [settings,setSettings]=useState(()=>appSettings.getGlobalInputSettings());
@@ -28,8 +29,16 @@ export default ({toMobileIntegration})=>{
                 <FormFooter>
                 <TextButton onClick={toMobileIntegration} label='Cancel'/>
                 <TextButton onClick={onSave} label='Save'/>
-
             </FormFooter>            
+            <MessageContainer>
+    The proxy url points to a WebSocket server that relays encrypted messages between your browser and your mobile app.
+    The end-to-end encryption that uses a dynamically generated encryption key for each session ensures that only your mobile app and your browser extension can decrypt the messages.
+
+    You may also install your own proxy server by downloading the source code from 
+    <MessageLink href="https://github.com/global-input/global-input-node">GitHub</MessageLink>
+
+</MessageContainer>
+
             
     </FormContainer>)
     

@@ -8,8 +8,8 @@ export default ({globalInputApp,domain,toPageControlHome})=>{
     const onSave=()=>{
         if(data.type==='modified'){            
             try{            
-                const userAppControl=JSON.parse(data.content);                
-                pageControlUtil.saveUserApplicationControlConfig(userAppControl, domain);                
+                const userAppControl=JSON.parse(data.content);
+                pageControlUtil.saveUserApplicationControlConfig(userAppControl, domain);
                 toPageControlHome();                            
             }
             catch(error){

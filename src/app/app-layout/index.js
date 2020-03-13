@@ -12,8 +12,13 @@ export {TextButton,InputWithLabel};
 
 
 export const AppTitle=({children})=>{
+    if(!children){
+        return null;
+    }
     return (<div style={styles.title}>{children}</div>);
-};
+}
+    
+
 
 
 export const MobileIntegrationContainer = ({globalInputApp,children,toSettings,toMobileIntegrationHome})=>{    
@@ -75,6 +80,11 @@ export const MessageContainer = ({children,title})=>{
         </div>);
 
 };
+export const MessageLink=({children, href})=>{
+    return (<a href={href} style={styles.message.alink} rel='noreferrer noopener' target='_blank'>{children}</a>);
+
+}
+
 
 
 export const FormContainer = ({children,domain,title})=>{

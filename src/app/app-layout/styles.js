@@ -106,8 +106,8 @@ export default {
             display:'block'            
         },
         alink:{
-            paddingLeft:5,
-            paddingRight:5
+            paddingLeft:4,
+            paddingRight:4
         },
     },
     

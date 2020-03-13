@@ -42,6 +42,10 @@ export const saveUserApplicationControlConfig =(userApplicationControlConfig,dom
     localStorage.setItem(getVariableName(domain), JSON.stringify(userApplicationControlConfig));   
 };
 
+export const removeUserApplicationControlConfig = (domain) => {
+    localStorage.removeItem(getVariableName(domain));   
+};
+
 
 
 

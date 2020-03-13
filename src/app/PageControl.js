@@ -1,18 +1,15 @@
 import React, {useEffect,useState} from 'react';
-import {FormContainer} from './app-layout';
+import {FormContainer,MessageContainer} from './app-layout';
 
 import * as pageControlUtil from './pageControlUtil';
 import * as chromeExtensionUtil from './chromeExtensionUtil';
 
-import EditAppControlSettings from './EditAppControlSettings';
+import EditPageControlConfiguration from './EditPageControlConfiguration';
 export default ({globalInputApp,domain,toMobileIntegrationHome}) => {
     const [action,setAction]=useState(ACTIONS.HOME);
     const toPageControlHome=async () =>{
         setAction(ACTIONS.PAGE_CONTROL_HOME);
-        let initData=await initDataPageControl(domain);        
-        if(!initData){
-            initData=initDataWitNoPageControl(domain);
-        }
+        let initData=await buildInitData(domain);                
         globalInputApp.setInitData(initData);        
     };
     useEffect(()=>{
@@ -36,13 +33,16 @@ export default ({globalInputApp,domain,toMobileIntegrationHome}) => {
         
     switch(action){        
         case ACTIONS.EDIT_APP_CONTROL_SETTINGS:
-           return(<EditAppControlSettings globalInputApp={globalInputApp} domain={domain} toPageControlHome={toPageControlHome}/>);
+           return(<EditPageControlConfiguration globalInputApp={globalInputApp} domain={domain} toPageControlHome={toPageControlHome}/>);
         
         case ACTIONS.PAGE_CONTROL_HOME:
         default:
             return (
-                <FormContainer title="Mobile Input/Control On Page">
-                Please operate on your mobile
+                <FormContainer title="Sign In/Page Control">
+                    <MessageContainer>
+                         You may now operate on the page using your mobile. 
+                    </MessageContainer>
+                
                 </FormContainer>
                 );
     }  
@@ -111,12 +111,16 @@ const buildFormField=field=>{
 
 
 
-const initDataPageControl= async (domain)=>{        
+const buildInitData= async (domain)=>{        
+        
         
         let applicationSettings=pageControlUtil.getUserApplicationControlConfig(domain);    
         if(!applicationSettings){
             applicationSettings=pageControlUtil.getEmbeddedApplicationControlConfig(domain);
-        }        
+            if(!applicationSettings){
+                return initDataWitNoPageControl(['Configuration for "'+domain+'" does not exist. ','you may create one by pressing the "Create Configuration" button below.'], 'Create Configuration');
+            }
+        }       
         const message = await chromeExtensionUtil.getPageControlConfig(applicationSettings);
         if(message.status==="success"){
                 const fields=message.content.form.fields.map(f=>buildFormField(f));
@@ -132,18 +136,23 @@ const initDataPageControl= async (domain)=>{
                     }          
                 };                
         }
-        return null;        
+        else{
+            return initDataWitNoPageControl('The loaded page does not contain the matching HTML elements defined in the configuration for "'+domain+'". You may click on the "Edit Config" button and define the HTML elements that actually exist in the page', "Edit Config");
+        }  
 };
 
 
-const initDataWitNoPageControl = domain=>{
-    
+const initDataWitNoPageControl = (message, label)=>{
+    const fieldInfo={
+            type:'info',
+            value:message
+    };
     return {
         action: "input",
         dataType: "form",
         form:{            
             title:"Mobile Input/Control",
-            fields: [fieldGoBack,fieldEditApplicationControl]
+            fields: [fieldInfo,fieldGoBack,{...fieldEditApplicationControl,label}]
         }          
     };  
 }

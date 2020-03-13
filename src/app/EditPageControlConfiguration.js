@@ -1,15 +1,21 @@
 import React, {useState, useEffect, useRef} from "react";
 
-import {InputWithLabel,TextButton,P,FormContainer,FormFooter} from './app-layout';
+import {InputWithLabel,TextButton,MessageContainer,MessageLink,FormContainer,FormFooter} from './app-layout';
 import * as pageControlUtil from './pageControlUtil';
 import defaultApplicationConfig from './application-control/default.json';
 export default ({globalInputApp,domain,toPageControlHome})=>{
     const [data,setData]=useState(()=>getDataForEdit(domain));    
     const onSave=()=>{
-        if(data.type==='modified'){            
-            try{            
-                const userAppControl=JSON.parse(data.content);
-                pageControlUtil.saveUserApplicationControlConfig(userAppControl, domain);
+        if(data.type==='modified' || data.type==='new'){                        
+            try{  
+                if(data.content){
+                    const userAppControl=JSON.parse(data.content);
+                    pageControlUtil.saveUserApplicationControlConfig(userAppControl, domain);
+                }
+                else{
+                    pageControlUtil.removeUserApplicationControlConfig(domain);
+                }
+                
                 toPageControlHome();                            
             }
             catch(error){
@@ -46,9 +52,9 @@ export default ({globalInputApp,domain,toPageControlHome})=>{
             globalInputApp.setFieldValueById(fieldEdit.id,content);           
     };
     
-    return (<FormContainer title="Application Control Settings">
+    return (<FormContainer title="Page Control Configuration">
             
-            <InputWithLabel label="Control Config" id="config"
+            <InputWithLabel label="Configuration" id="config"
                             onChange={setConfig}
                             type="textarea"
                             value={data.content}/>  
@@ -59,8 +65,12 @@ export default ({globalInputApp,domain,toPageControlHome})=>{
             } label='Cancel'/>
             <TextButton onClick={onSave} label='Save'/>
 
-            </FormFooter>            
-            
+            </FormFooter>   
+<MessageContainer>
+{getHelpText(data)}
+The extension is already preloaded with <MessageLink href="https://github.com/global-input/chrome-extension/blob/master/src/app/application-control/configs.json"> configurations for some common websites.</MessageLink>   
+</MessageContainer>
+          
     </FormContainer>)
     
 };
@@ -85,15 +95,32 @@ const fieldEdit={
     value:''
 }
 
+const getHelpText=(data)=>{
+    if(data.type==='new'){
+        return "Please modify the example configuration in the text box above to match the HTML elements in the page.";
+    }
+    else{
+     return "The configuration identifies HTML elements in the page that your mobile app can control.";     
+    }
+};
 const buildInitData = (domain,data)=>{    
     fieldEdit.value=data.content;
+    let message=[getHelpText(data),"You may also edit the configuration on your computer."];    
+    const fieldInfo={
+        type:'info',
+        value:message
+    };
+    const fieldDomainInfo={
+        type:'info',
+        value:domain
+    }
 
      return {
           action: "input",
           dataType: "form",
           form: {              
-          title:'Application Control Settings',          
-          fields:[fieldCancel,fieldSave,fieldEdit]
+          title:'Page Control Configuration',          
+          fields:[fieldDomainInfo,fieldCancel,fieldSave,fieldEdit,fieldInfo]
          }
       };    
 };

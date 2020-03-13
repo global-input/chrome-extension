@@ -97,7 +97,7 @@ const buildConfigData = domain => {
           initData.form.fields.push({
                id: ACTIONS.PAGE_CONTROL,
                type: 'button',
-               label: 'Sign In/Control'
+               label: 'Sign In/Page Control'
           });
      };
      const options = appSettings.getGlobalInputSettings();

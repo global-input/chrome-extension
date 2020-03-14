@@ -147,8 +147,7 @@ const deleteFieldsControl={
 };
 const backToHomeControl={
      id:"backToHome",
-     type:"button",
-     icon:"back",
+     type:"button",     
      label:"Back",
      viewId:"row2"
 };

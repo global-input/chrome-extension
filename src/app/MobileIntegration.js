@@ -6,7 +6,8 @@ import { MobileIntegrationContainer, MessageContainer} from './app-layout';
 
 import FormDataTransfer from './FormDataTransfer';
 import PageControl from './PageControl';
-import MobileEncryption from './MobileEncryption';
+import MobileEncryption from './mobile-encryption';
+import MobileDecryption from './mobile-decryption';
 
 export default ({ domain, toSettings }) => {
      
@@ -29,6 +30,9 @@ export default ({ domain, toSettings }) => {
                     break;
                case ACTIONS.MOBILE_ENCRYPTION:
                     setAction(ACTIONS.MOBILE_ENCRYPTION);                    
+                    break;
+               case ACTIONS.MOBILE_DECRYPTION:
+                    setAction(ACTIONS.MOBILE_DECRYPTION);                    
                     break;
                default:
           }
@@ -63,6 +67,12 @@ export default ({ domain, toSettings }) => {
                <WhenAction action={action} value={ACTIONS.MOBILE_ENCRYPTION}>               
                <MobileEncryption globalInputApp={globalInputApp} toMobileIntegrationHome={toMobileIntegrationHome}/>
                </WhenAction>
+
+               <WhenAction action={action} value={ACTIONS.MOBILE_DECRYPTION}>               
+               <MobileDecryption globalInputApp={globalInputApp} toMobileIntegrationHome={toMobileIntegrationHome}/>
+               </WhenAction>
+
+               
 
           </MobileIntegrationContainer>
      );

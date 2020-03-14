@@ -1,11 +1,11 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import InputWithCopy from './input-with-copy';
 import InputWithLabel from './input-with-label';
 import TextButton from './text-button';
 import {SelectionContainer, RadioButton,CheckboxButton} from './selectable';
 import styles from './styles';
 
-export {SelectionContainer, RadioButton,CheckboxButton};
+export {SelectionContainer, RadioButton,CheckboxButton,InputWithCopy};
 
 export {TextButton,InputWithLabel};
 
@@ -19,12 +19,24 @@ export const AppTitle=({children})=>{
 }
     
 
-
+export const DisplayErrorMessage=({errorMessage})=>{    
+    if(!errorMessage){
+        return null;
+    }
+    else{
+        const message=JSON.stringify(errorMessage);
+        return(
+        <div style={styles.appContainer.errorMessage}>
+                        {message} 
+        </div>
+        );
+    }
+}
 
 export const MobileIntegrationContainer = ({globalInputApp,children,toSettings,toMobileIntegrationHome})=>{    
     const {connectionMessage, WhenConnected,WhenWaiting, WhenError,errorMessage,WhenDisconnected}=globalInputApp;  
     
-    const displayFooter=()=>(        
+    const ExtensionFooter=()=>(        
             <div style={styles.appContainer.footer}>
                 <a href="#" onClick={evt=>{toSettings();return false;}}>Settings</a>
                 <a href="https://github.com/global-input/chrome-extension" target="_blank">Source Code On GitHub</a>
@@ -38,23 +50,19 @@ export const MobileIntegrationContainer = ({globalInputApp,children,toSettings,t
                 <div style={styles.appContainer.connectionMessage}>
                         {connectionMessage}
                 </div>
-                {displayFooter()}
+                <ExtensionFooter/>                
             </WhenWaiting>
             <WhenError>
-                <AppTitle>Global Input App</AppTitle>             
-                    <div style={styles.appContainer.errorMessage}>
-                        {errorMessage} 
-                    </div>
-                    {displayFooter()}
+                <AppTitle>Global Input App</AppTitle> 
+                <DisplayErrorMessage    errorMessage={errorMessage}/>                
+                <ExtensionFooter/>
             </WhenError>
                 
             <WhenDisconnected>
                 <AppTitle>Global Input App</AppTitle>
                 <div style={styles.appContainer.message}>Mobile Disconnected. <a href="#" onClick={evt=>{toMobileIntegrationHome();return false;}}>Reconnect</a>.
-                
-                
                 </div> 
-                {displayFooter()}
+                <ExtensionFooter/>
             </WhenDisconnected>
             <WhenConnected>
                 {children}

@@ -6,6 +6,7 @@ import { MobileIntegrationContainer, MessageContainer} from './app-layout';
 
 import FormDataTransfer from './FormDataTransfer';
 import PageControl from './PageControl';
+import MobileEncryption from './MobileEncryption';
 
 export default ({ domain, toSettings }) => {
      
@@ -24,7 +25,10 @@ export default ({ domain, toSettings }) => {
                     setAction(ACTIONS.FORM_DATA_TRANSFER);
                     break;
                case ACTIONS.PAGE_CONTROL:
-                    setAction(ACTIONS.PAGE_CONTROL);
+                    setAction(ACTIONS.PAGE_CONTROL);                    
+                    break;
+               case ACTIONS.MOBILE_ENCRYPTION:
+                    setAction(ACTIONS.MOBILE_ENCRYPTION);                    
                     break;
                default:
           }
@@ -55,6 +59,11 @@ export default ({ domain, toSettings }) => {
                <WhenAction action={action} value={ACTIONS.PAGE_CONTROL}>               
                <PageControl globalInputApp={globalInputApp} domain={domain} toMobileIntegrationHome={toMobileIntegrationHome}/>
                </WhenAction>
+
+               <WhenAction action={action} value={ACTIONS.MOBILE_ENCRYPTION}>               
+               <MobileEncryption globalInputApp={globalInputApp} toMobileIntegrationHome={toMobileIntegrationHome}/>
+               </WhenAction>
+
           </MobileIntegrationContainer>
      );
 };
@@ -72,7 +81,9 @@ const WhenAction =({action,value,children}) => {
 const ACTIONS = {
      MOBILE_INTEGRATION_HOME: 'mobile-integration-home',
      FORM_DATA_TRANSFER: 'form-data-transfer',
-     PAGE_CONTROL: 'page-control'
+     PAGE_CONTROL: 'page-control',
+     MOBILE_ENCRYPTION:'mobile-encryption',
+     MOBILE_DECRYPTION:'mobile-decryption'
 };
 
 
@@ -89,19 +100,35 @@ const buildConfigData = domain => {
                fields: [{
                     id: ACTIONS.FORM_DATA_TRANSFER,
                     type: "button",
-                    label: "Transfer Form Data"
+                    label: "Transfer Form Data",
+                    viewId:"row1"
                }]
           }
      };
+     initData.form.fields.push({
+          id: ACTIONS.MOBILE_ENCRYPTION,
+          type: 'button',
+          label: 'Encryption',
+          viewId:"row2"
+     });
+     initData.form.fields.push({
+          id: ACTIONS.MOBILE_DECRYPTION,
+          type: 'button',
+          label: 'Decryption',
+          viewId:"row2"
+     });
+
+
+     
      if (domain) {
           initData.form.fields.push({
                id: ACTIONS.PAGE_CONTROL,
                type: 'button',
-               label: 'Sign In/Page Control'
+               label: 'Sign In/Page Control',
+               viewId:"row3"
           });
      };
-     const options = appSettings.getGlobalInputSettings();
-     console.log("::initData::*************::"+initData);
+     const options = appSettings.getGlobalInputSettings();     
      return {
           initData,
           options

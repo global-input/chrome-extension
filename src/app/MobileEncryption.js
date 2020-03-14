@@ -19,7 +19,7 @@ const fields={
         computer:{
             info:{
                 type:'info',
-                value: 'Please operate on the browser extension to enter the content you would like to encrypt.',
+                value: 'Please operate on the extension window (on your computer) to provide the content you would like to encrypt.',
             },
             toMobile:{
                 id:"ComposeOnMobile",
@@ -89,7 +89,7 @@ const fields={
         },
         info:{            
             type:"info",
-            value:'The text box above contains the encrypted content, this content can only decrypted with the encryption key that you have used to encrypt the content.'
+            value:'The text box above contains the encrypted content, this content can only decrypted with the encryption key that you have used when encrypting the content.'
         },
 
     }
@@ -116,13 +116,13 @@ const initDataForMobileCompose= value=>{
     
 };
 
-
+const defaultEncryptionKeyName="general";
 const initDataForSendToMobile= value=> {
     const fContent={...fields.encrypt.content,value};    
     return{        
         action:"input",
         dataType:"form",
-        key:"general",
+        key:defaultEncryptionKeyName,
         form:{
             title:"Content Encryption",
             fields:[fContent,fields.encrypt.info,fields.encrypt.loadOnMobile,fields.encrypt.finish]
@@ -175,7 +175,13 @@ export default ({globalInputApp,toMobileIntegrationHome})=>{
     }
 };
 
-
+const ComposeContentHelp=()=>{
+    return (<MessageContainer>
+    Please provide the content you would like to encrypt in the text box above. 
+    Then, press the "Send To Mobile" button to send it to your mobile for encryption.
+            </MessageContainer>
+    );
+}
 
 const ComputerComposeContentContent= ({content, setContent,globalInputApp,toMobileIntegrationHome,setAction})=>{
     const [errorMessage, setErrorMessage]=useState(null);
@@ -205,7 +211,7 @@ const ComputerComposeContentContent= ({content, setContent,globalInputApp,toMobi
             setAction(ACTIONS.SEND_TO_MOBILE);
        }
        else{
-           setErrorMessage('Please provide content in the text box above. The content will be send to your mobile for encryption.');
+           setErrorMessage('Content missing!');
        }
        
    }
@@ -227,6 +233,8 @@ const ComputerComposeContentContent= ({content, setContent,globalInputApp,toMobi
             <TextButton onClick={onSendToMobile} label='Send To Mobile'/>
 
             </FormFooter>
+            <ComposeContentHelp/>            
+            
                   </FormContainer>
          );
 
@@ -242,7 +250,7 @@ const ComposeContentOnMobile= ({content, setContent,globalInputApp,toMobileInteg
              setAction(ACTIONS.SEND_TO_MOBILE);
         }
         else{
-            setErrorMessage('Please provide content in the text box above. The content will be send to your mobile for encryption.');
+            setErrorMessage('Content missing!');
         }
         
     }   
@@ -289,7 +297,8 @@ const ComposeContentOnMobile= ({content, setContent,globalInputApp,toMobileInteg
             <TextButton onClick={onSendToMobile} label='Send To Mobile'/>
 
             </FormFooter>
-                  </FormContainer>
+            <ComposeContentHelp/>                        
+        </FormContainer>
          );
 
 };
@@ -329,6 +338,16 @@ const SendToMobile=({setAction,content,globalInputApp,encryptedContent, setEncry
                             label="Encrypted Content"
                             type={"textarea"}
                             value={encryptedContent}/>
+                        <TextButton onClick={()=>{                
+                            toMobileIntegrationHome()
+                            }
+            } label='Finsih'/>   
+            <MessageContainer>
+                The text box contains the encrypted content. This content can only 
+                be decrypted with the encryption key you have used when encrypting the content.
+                You can press the "Copy" button to copy the content into your clipboard.                
+            </MessageContainer>
+
          </FormContainer>
       );
 
@@ -337,7 +356,9 @@ const SendToMobile=({setAction,content,globalInputApp,encryptedContent, setEncry
     return(<MessageContainer title="Encrypting Content">
     Please follow the instruction on your mobile to encrypt the content. 
     On your mobile, you can press the "Show" button to view the content it has received.
-    Then, press the "Encrypt" button there to encrypt the content and so on.
+    Select the encryption key that you would like to use with the encryption. You can create and manage keys within the mobile app.
+    If you have multiple encryption keys, the key with the name "{defaultEncryptionKeyName}" will be selected automatically. 
+    Finally, press the "Encrypt" button there to encrypt the content.
 
   </MessageContainer>);
   }    
@@ -369,6 +390,10 @@ const LoadResultOnMobile=({globalInputApp,
                            label="Encrypted Content"
                            type={"textarea"}
                            value={encryptedContent}/>
+            <TextButton onClick={()=>{                
+                            toMobileIntegrationHome()
+                            }
+            } label='Finsih'/>
         </FormContainer>
      );
 

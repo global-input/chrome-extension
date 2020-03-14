@@ -24,7 +24,11 @@ export const DisplayErrorMessage=({errorMessage})=>{
         return null;
     }
     else{
-        const message=JSON.stringify(errorMessage);
+        let message=errorMessage;
+        if(typeof message === 'object'){
+            message=JSON.stringify(errorMessage);
+        }
+        
         return(
         <div style={styles.appContainer.errorMessage}>
                         {message} 

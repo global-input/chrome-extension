@@ -1,4 +1,4 @@
-import applicationControlConfigs from './application-control/configs.json';
+import applicationControlConfigs from './page-configs/configs.json';
 
 
 export const getEmbeddedApplicationControlConfig = domain => {

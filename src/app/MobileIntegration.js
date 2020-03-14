@@ -4,10 +4,80 @@ import { useGlobalInputApp } from 'global-input-react';
 import * as appSettings from './appSettings';
 import { MobileIntegrationContainer, MessageContainer} from './app-layout';
 
-import FormDataTransfer from './FormDataTransfer';
-import PageControl from './PageControl';
+import FormDataTransfer from './form-data-transfer';
+import PageControl from './page-control';
 import MobileEncryption from './mobile-encryption';
 import MobileDecryption from './mobile-decryption';
+
+
+const ACTIONS = {
+     MOBILE_INTEGRATION_HOME: 'mobile-integration-home',
+     FORM_DATA_TRANSFER: 'form-data-transfer',
+     PAGE_CONTROL: 'page-control',
+     MOBILE_ENCRYPTION:'mobile-encryption',
+     MOBILE_DECRYPTION:'mobile-decryption'
+};
+
+
+
+
+
+
+const buildConfigData = domain => {
+     const initData = {
+          action: "input",
+          dataType: "form",
+          form: {
+               title: "Please Select",
+               fields: [{
+                    id: ACTIONS.FORM_DATA_TRANSFER,
+                    type: "button",
+                    label: "Transfer Form Data",
+                    viewId:"row1"
+               }]
+          }
+     };
+     initData.form.fields.push({
+          id: ACTIONS.MOBILE_ENCRYPTION,
+          type: 'button',
+          label: 'Encryption',
+          viewId:"row2"
+     });
+     initData.form.fields.push({
+          id: ACTIONS.MOBILE_DECRYPTION,
+          type: 'button',
+          label: 'Decryption',
+          viewId:"row2"
+     });
+
+
+     
+     if (domain) {
+          initData.form.fields.push({
+               id: ACTIONS.PAGE_CONTROL,
+               type: 'button',
+               label: 'Sign In/Page Control',
+               viewId:"row3"
+          });
+     };
+     const options = appSettings.getGlobalInputSettings();     
+     return {
+          initData,
+          options
+     };
+
+};
+
+const WhenAction =({action,value,children}) => {     
+     if(action===value){
+          return children;
+     }
+     else{
+          return null;          
+     }
+};
+
+
 
 export default ({ domain, toSettings }) => {
      
@@ -78,70 +148,5 @@ export default ({ domain, toSettings }) => {
      );
 };
 
-const WhenAction =({action,value,children}) => {     
-     if(action===value){
-          return children;
-     }
-     else{
-          return null;          
-     }
-};
 
 
-const ACTIONS = {
-     MOBILE_INTEGRATION_HOME: 'mobile-integration-home',
-     FORM_DATA_TRANSFER: 'form-data-transfer',
-     PAGE_CONTROL: 'page-control',
-     MOBILE_ENCRYPTION:'mobile-encryption',
-     MOBILE_DECRYPTION:'mobile-decryption'
-};
-
-
-
-
-
-
-const buildConfigData = domain => {
-     const initData = {
-          action: "input",
-          dataType: "form",
-          form: {
-               title: "Please Select",
-               fields: [{
-                    id: ACTIONS.FORM_DATA_TRANSFER,
-                    type: "button",
-                    label: "Transfer Form Data",
-                    viewId:"row1"
-               }]
-          }
-     };
-     initData.form.fields.push({
-          id: ACTIONS.MOBILE_ENCRYPTION,
-          type: 'button',
-          label: 'Encryption',
-          viewId:"row2"
-     });
-     initData.form.fields.push({
-          id: ACTIONS.MOBILE_DECRYPTION,
-          type: 'button',
-          label: 'Decryption',
-          viewId:"row2"
-     });
-
-
-     
-     if (domain) {
-          initData.form.fields.push({
-               id: ACTIONS.PAGE_CONTROL,
-               type: 'button',
-               label: 'Sign In/Page Control',
-               viewId:"row3"
-          });
-     };
-     const options = appSettings.getGlobalInputSettings();     
-     return {
-          initData,
-          options
-     };
-
-}

@@ -1,5 +1,5 @@
 import React, {useState, useEffect } from "react";
-import {InputWithLabel,FormContainer,RadioButton} from './app-layout';
+import {InputWithLabel,FormContainer,RadioButton} from '../app-layout';
 import * as formUtil from './formUtil';
 
 export default ({globalInputApp,toFormDataTransferHome,addNewField}) => {    

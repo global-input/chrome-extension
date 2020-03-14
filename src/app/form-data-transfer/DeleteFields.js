@@ -1,5 +1,5 @@
 import React, {useState, useEffect } from "react";
-import {FormContainer,CheckboxButton} from './app-layout';
+import {FormContainer,CheckboxButton} from '../app-layout';
 import * as formUtil from './formUtil';
 
 export default ({globalInputApp,toFormDataTransferHome,formFields,deleteFields})=>{  

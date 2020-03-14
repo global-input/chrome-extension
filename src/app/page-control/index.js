@@ -1,8 +1,8 @@
 import React, {useEffect,useState} from 'react';
-import {FormContainer,MessageContainer} from './app-layout';
+import {FormContainer,MessageContainer} from '../app-layout';
 
 import * as pageControlUtil from './pageControlUtil';
-import * as chromeExtensionUtil from './chromeExtensionUtil';
+import * as chromeExtensionUtil from '../chromeExtensionUtil';
 
 import EditPageControlConfiguration from './EditPageControlConfiguration';
 export default ({globalInputApp,domain,toMobileIntegrationHome}) => {

@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useRef} from "react";
 
-import {InputWithLabel,TextButton,MessageContainer,MessageLink,FormContainer,FormFooter} from './app-layout';
+import {InputWithLabel,TextButton,MessageContainer,MessageLink,FormContainer,FormFooter} from '../app-layout';
 import * as pageControlUtil from './pageControlUtil';
-import defaultApplicationConfig from './application-control/default.json';
+import defaultApplicationConfig from './page-configs/default.json';
 export default ({globalInputApp,domain,toPageControlHome})=>{
     const [data,setData]=useState(()=>getDataForEdit(domain));    
     const onSave=()=>{

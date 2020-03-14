@@ -1,9 +1,9 @@
 import React, {useEffect } from "react";
 
-import * as chromeExtensionUtil from './chromeExtensionUtil'
+import * as chromeExtensionUtil from '../chromeExtensionUtil'
 import * as cacheFields from './cacheFields';
 
-import {DisplayInputCopyField,TextButton,FormContainer} from './app-layout';
+import {DisplayInputCopyField,TextButton,FormContainer} from '../app-layout';
 
 export default ({toMobileIntegration,cachedFieldValues, domain})=>{          
    

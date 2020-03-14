@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 
 import * as chromeExtensionUtil from './chromeExtensionUtil'
-import * as cacheFields from './cacheFields';
+import * as cacheFields from './form-data-transfer/cacheFields';
 import { MessageContainer } from './app-layout';
 
 import MobileIntegration from './MobileIntegration';
-import DisplayCachedForm from './DisplayCachedForm';
+import DisplayCachedForm from './form-data-transfer/DisplayCachedForm';
 import EditConnectionSettings from './EditConnectionSettings';
 
 

@@ -3,8 +3,8 @@ import React, {useState, useEffect, useRef} from "react";
 
 import * as formUtil from './formUtil';
 import * as cacheFields from './cacheFields';
-import * as chromeExtensionUtil from './chromeExtensionUtil';
-import {DisplayInputCopyField,TextButton,FormContainer} from './app-layout';
+import * as chromeExtensionUtil from '../chromeExtensionUtil';
+import {DisplayInputCopyField,TextButton,FormContainer} from '../app-layout';
 import AddNewField from './AddNewField';
 import DeleteFields  from './DeleteFields';
 

@@ -68,7 +68,7 @@ export default ({globalInputApp,domain,toPageControlHome})=>{
             </FormFooter>   
 <MessageContainer>
 {getHelpText(data)}
-The extension is already preloaded with <MessageLink href="https://github.com/global-input/chrome-extension/blob/master/src/app/application-control/configs.json"> configurations for some common websites.</MessageLink>   
+ The extension comes preloaded with <MessageLink href="https://github.com/global-input/chrome-extension/blob/master/src/app/page-control/page-configs/configs.json"> configuration </MessageLink> for some common websites 
 </MessageContainer>
           
     </FormContainer>)
@@ -97,10 +97,10 @@ const fieldEdit={
 
 const getHelpText=(data)=>{
     if(data.type==='new'){
-        return "Please modify the example configuration in the text box above to match the HTML elements in the page.";
+        return "Please modify the example configuration in the text box above to match the HTML elements in the page. ";
     }
     else{
-     return "The configuration identifies HTML elements in the page that your mobile app can control.";     
+     return "The configuration identifies HTML elements in the page that your mobile app can control. ";     
     }
 };
 const buildInitData = (domain,data)=>{    

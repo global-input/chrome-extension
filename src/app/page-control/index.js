@@ -9,7 +9,7 @@ export default ({globalInputApp,domain,toMobileIntegrationHome}) => {
     const [action,setAction]=useState(ACTIONS.HOME);
     const toPageControlHome=async () =>{
         setAction(ACTIONS.PAGE_CONTROL_HOME);
-        let initData=await buildInitData(domain);                
+        let initData=await buildInitData({domain,toMobileIntegrationHome});                
         globalInputApp.setInitData(initData);        
     };
     useEffect(()=>{
@@ -72,7 +72,7 @@ const ACTIONS={
 
 
 
-const buildFormField=field=>{
+const buildFormField=(field,toMobileIntegrationHome)=>{
     let id=field.id;
 
     if(field.type==='list'||field.type==='info' || field.type==='picker' || field.type==='select'){
@@ -101,7 +101,7 @@ const buildFormField=field=>{
           onInput: newValue => {                       
               chromeExtensionUtil.sendFormField(field.id,newValue);
               if(field.matchingRule.nextUI){
-                  //displayNextUIOnMobile(field.matchingRule.nextUI)
+                toMobileIntegrationHome();                
               }                        
           }
         }
@@ -111,7 +111,7 @@ const buildFormField=field=>{
 
 
 
-const buildInitData= async (domain)=>{        
+const buildInitData= async ({domain,toMobileIntegrationHome})=>{        
         
         
         let applicationSettings=pageControlUtil.getUserApplicationControlConfig(domain);    
@@ -123,7 +123,7 @@ const buildInitData= async (domain)=>{
         }       
         const message = await chromeExtensionUtil.getPageControlConfig(applicationSettings);
         if(message.status==="success"){
-                const fields=message.content.form.fields.map(f=>buildFormField(f));
+                const fields=message.content.form.fields.map(f=>buildFormField(f,toMobileIntegrationHome));
                 fields.push(fieldGoBack);
                 fields.push(fieldEditApplicationControl);
                 return {

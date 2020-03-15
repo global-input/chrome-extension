@@ -3,7 +3,7 @@ import React, {useState} from "react";
 import {InputWithLabel,TextButton,MessageContainer,MessageLink,FormContainer,FormFooter} from './app-layout';
 
 import * as appSettings from './appSettings';
-import styles from "./app-layout/styles";
+
 
 export default ({toMobileIntegration})=>{
     const [settings,setSettings]=useState(()=>appSettings.getGlobalInputSettings());

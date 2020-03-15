@@ -56,13 +56,13 @@ const getDomainFromEmbeddedConfig=pageConfig=>{
     }
     return null;
 }
-const getExampleItems =()=>{
+export const getExampleItems =()=>{
     const items=[]
     for(let [i,pageConfig] of pageControlConfigs.entries()){
         let domain=getDomainFromEmbeddedConfig(pageConfig);        
         items.push({
-                index:i,
-                domain
+                value:i,
+                label:domain
         });
     }
     return items;
@@ -80,11 +80,15 @@ const getDefaultExampleItem=()=>{
 }
 
 const buildEditDataItem=(type,pageConfig,index,domain)=>{
+    let forms=null;
+    if(pageConfig){
+        forms=pageConfig.forms
+    }    
     return {
         type,
         index,
         domain,
-        content:JSON.stringify(pageConfig,null,2)
+        content:JSON.stringify({forms},null,2)
     };
 };
 
@@ -94,13 +98,16 @@ export const getDataItemForEdit = domain=>{
         return buildEditDataItem('user',userPageControlConfig,-1,domain);
     };
     const embeddedConfigItem=getEmbeddedPageControlConfigItem(domain);
-    if(embeddedConfigItem){
-        return buildEditDataItem('embedded',embeddedConfigItem.pageConfig,embeddedConfigItem.index,domain);        
-    }
-    
-    const defaultExampleItem=getDefaultExampleItem();
+    if(embeddedConfigItem){        
+        return buildEditDataItem('embedded',embeddedConfigItem.pageConfig,embeddedConfigItem.index,domain);
+    }    
+    const defaultExampleItem=getDefaultExampleItem();    
     return buildEditDataItem('new',defaultExampleItem.pageConfig,defaultExampleItem.index,domain);            
 };
+export const getExampleForEditByIndex=index=>{    
+    const domain=getDomainFromEmbeddedConfig(pageControlConfigs[index]);
+    return buildEditDataItem('new',pageControlConfigs[index],index,domain);                
+}
 
 export const getPageControlConfig = domain=>{
     const userPageControlConfig=getUserPageControlConfig(domain);    

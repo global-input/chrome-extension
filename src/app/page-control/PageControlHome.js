@@ -5,7 +5,7 @@ import * as pageControlUtil from './pageControlUtil';
 import * as chromeExtensionUtil from '../chromeExtensionUtil';
 import ACTIONS from './ACTIONS';
 
-const fields={
+const formFields={
     back:{
       id:'giaMobileIntegration',
       type:"button",
@@ -37,10 +37,10 @@ export default ({globalInputApp,domain,setAction, toMobileIntegrationHome}) => {
             return;
         }        
         switch(field.id){
-            case fields.back.id:
+            case formFields.back.id:
                 toMobileIntegrationHome();
                 break;
-            case fields.editPageConfig.id:                
+            case formFields.editPageConfig.id:                
                  setAction(ACTIONS.EDIT_APP_CONTROL_SETTINGS);
                 break;
             default:            
@@ -105,12 +105,13 @@ const buildInitData= async ({domain,toMobileIntegrationHome})=>{
         const  pageControlConfig=pageControlUtil.getPageControlConfig(domain);    
         if(!pageControlConfig){
                 return initDataWitNoPageControl(['Configuration for "'+domain+'" does not exist. ','you may create one by pressing the "Create Configuration" button below.'], 'Create Configuration');
-        }        
+        }
+        
         const message = await chromeExtensionUtil.getPageControlConfig(pageControlConfig);
         if(message.status==="success"){
                 const fields=message.content.form.fields.map(f=>buildFormField(f,toMobileIntegrationHome));
-                fields.push(fields.back);
-                fields.push(fields.editPageConfig);
+                fields.push(formFields.back);
+                fields.push(formFields.editPageConfig);
                 return {
                     action: "input",
                     dataType: "form",
@@ -137,7 +138,7 @@ const initDataWitNoPageControl = (message, label)=>{
         dataType: "form",
         form:{            
             title:"Mobile Input/Control",
-            fields: [fieldInfo,fields.back,{...fields.editPageConfig,label}]
+            fields: [fieldInfo,formFields.back,{...formFields.editPageConfig,label}]
         }          
     };  
 }

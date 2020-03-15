@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from "react";
 
 import {InputWithLabel,TextButton,MessageContainer,MessageLink,FormContainer,FormFooter} from '../app-layout';
 import * as pageControlUtil from './pageControlUtil';
-
+import SelectExample from './SelectExample';
 export default ({globalInputApp,domain,toPageControlHome})=>{
     const [data,setData]=useState(()=>pageControlUtil.getDataItemForEdit(domain));    
     const onSave=()=>{
@@ -47,15 +47,17 @@ export default ({globalInputApp,domain,toPageControlHome})=>{
 
         }
     },[globalInputApp.field]);
-    const setConfig=content=>{
-            setData({type:'modified',content}); 
-            globalInputApp.setFieldValueById(fields.edit.id,content);           
-    };
     
+    const onChangeData=data=>{
+        setData(data);
+        globalInputApp.setFieldValueById(fields.edit.id,data.content);           
+     }    
     return (<FormContainer title="Page Control Configuration">
             
             <InputWithLabel label="Configuration" id="config"
-                            onChange={setConfig}
+                            onChange={content=>{
+                                onChangeData({type:'modified',content});
+                            }}
                             type="textarea"
                             value={data.content}/>  
             <FormFooter>
@@ -65,11 +67,12 @@ export default ({globalInputApp,domain,toPageControlHome})=>{
             } label='Cancel'/>
             <TextButton onClick={onSave} label='Save'/>
 
-            </FormFooter>   
-<MessageContainer>
-{getHelpText(data)}
- The extension comes preloaded with <MessageLink href="https://github.com/global-input/chrome-extension/blob/master/src/app/page-control/page-configs/configs.json"> configuration </MessageLink> for some common websites 
-</MessageContainer>
+            </FormFooter>  
+            <MessageContainer>
+            {getHelpText(data)}
+            </MessageContainer>
+
+             <SelectExample data={data} onChangeData={onChangeData}/>
           
     </FormContainer>)
     
@@ -109,7 +112,7 @@ const fields={
 
 const getHelpText=(data)=>{
     if(data.type==='new'){
-        return "Please modify the example configuration in the text box above to match the HTML elements in the page. ";
+        return "An example configuration in loaded into the text box above. You may load a different example by selecting from selection below. Then, please modify it to match the HTML elements in the page load on the active tab.";
     }
     else{
      return "The configuration identifies HTML elements in the page that your mobile app can control. ";     

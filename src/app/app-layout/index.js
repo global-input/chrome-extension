@@ -2,10 +2,10 @@ import React, {useEffect, useRef} from "react";
 import InputWithCopy from './input-with-copy';
 import InputWithLabel from './input-with-label';
 import TextButton from './text-button';
-import {SelectionContainer, RadioButton,CheckboxButton} from './selectable';
+import {SelectionContainer, RadioButton,CheckboxButton,SelectItems} from './selectable';
 import styles from './styles';
 
-export {SelectionContainer, RadioButton,CheckboxButton,InputWithCopy};
+export {SelectionContainer, SelectItems,RadioButton,CheckboxButton,InputWithCopy};
 
 export {TextButton,InputWithLabel};
 

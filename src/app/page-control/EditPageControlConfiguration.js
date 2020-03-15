@@ -2,18 +2,18 @@ import React, {useState, useEffect, useRef} from "react";
 
 import {InputWithLabel,TextButton,MessageContainer,MessageLink,FormContainer,FormFooter} from '../app-layout';
 import * as pageControlUtil from './pageControlUtil';
-import defaultApplicationConfig from './page-configs/default.json';
+
 export default ({globalInputApp,domain,toPageControlHome})=>{
-    const [data,setData]=useState(()=>getDataForEdit(domain));    
+    const [data,setData]=useState(()=>pageControlUtil.getDataItemForEdit(domain));    
     const onSave=()=>{
         if(data.type==='modified' || data.type==='new'){                        
             try{  
                 if(data.content){
                     const userAppControl=JSON.parse(data.content);
-                    pageControlUtil.saveUserApplicationControlConfig(userAppControl, domain);
+                    pageControlUtil.saveUserPageControlConfig(userAppControl, domain);
                 }
                 else{
-                    pageControlUtil.removeUserApplicationControlConfig(domain);
+                    pageControlUtil.removeUserPageControlConfig(domain);
                 }
                 
                 toPageControlHome();                            
@@ -36,20 +36,20 @@ export default ({globalInputApp,domain,toPageControlHome})=>{
             return;
         }
         switch(field.id){
-            case fieldCancel.id:
+            case fields.cancel.id:
                 toPageControlHome();
                 break;
-            case fieldSave.id:
+            case fields.save.id:
                 onSave();
                 break;
-            case fieldEdit.id:
+            case fields.edit.id:
                 setData({type:'modified',content:field.value});                
 
         }
     },[globalInputApp.field]);
     const setConfig=content=>{
             setData({type:'modified',content}); 
-            globalInputApp.setFieldValueById(fieldEdit.id,content);           
+            globalInputApp.setFieldValueById(fields.edit.id,content);           
     };
     
     return (<FormContainer title="Page Control Configuration">
@@ -75,25 +75,37 @@ export default ({globalInputApp,domain,toPageControlHome})=>{
     
 };
 
-const fieldCancel={
-     id:"cancelEdit",
-     type:"button",
-     label:"Cancel",
-     viewId:"row1"
+const fields={
+     domain:{
+        type:'info',
+        value:'',
+        
+    },    
+    edit:{
+        id:'editor',
+        type:'text',
+        nLines:5,
+        value:'',
+        viewId:"row3" 
+    },
+    cancel:{
+        id:"cancelEdit",
+        type:"button",
+        label:"Cancel",
+        viewId:"row4"
+   },   
+   save:{
+        id:"saveEdit",
+        type:"button",
+        label:"Save",
+        viewId:"row4" 
+   },
+   description:{
+    type:'info',
+    value:'',
+    viewId:"row5"         
+},
 };
-
-const fieldSave={
-     id:"saveEdit",
-     type:"button",
-     label:"Save",
-     viewId:"row1" 
-};
-const fieldEdit={
-    id:'editor',
-    type:'text',
-    nLines:5,
-    value:''
-}
 
 const getHelpText=(data)=>{
     if(data.type==='new'){
@@ -104,47 +116,21 @@ const getHelpText=(data)=>{
     }
 };
 const buildInitData = (domain,data)=>{    
-    fieldEdit.value=data.content;
-    let message=[getHelpText(data),"You may also edit the configuration on your computer."];    
-    const fieldInfo={
-        type:'info',
-        value:message
-    };
-    const fieldDomainInfo={
-        type:'info',
-        value:domain
-    }
-
+    const domainField={...fields.domain,value:domain};    
+    const description={...fields.description,value:[getHelpText(data),"You may also edit the configuration on your computer."]}
+    const edit={...fields.edit,value:data.content};
+    
      return {
           action: "input",
           dataType: "form",
           form: {              
           title:'Page Control Configuration',          
-          fields:[fieldDomainInfo,fieldCancel,fieldSave,fieldEdit,fieldInfo]
+          fields:[domainField,edit,fields.cancel,fields.save,description]
          }
       };    
 };
 
 
-const getDataForEdit = domain=>{
-    const userAppControlSettings = pageControlUtil.getUserApplicationControlConfig(domain);
-    if(userAppControlSettings){
-        return {
-                type:'user',
-                content:JSON.stringify(userAppControlSettings,null,2)
-        };
-    };
-    const embeddedAppControlSettings=pageControlUtil.getEmbeddedApplicationControlConfig(domain);
-    if(embeddedAppControlSettings){
-        return {
-            type:'embedded',
-            content:JSON.stringify(embeddedAppControlSettings,null,2)
-        };
-    }
-    return {
-            type:'new',
-            content:JSON.stringify(defaultApplicationConfig,null,2)
-    };    
-}
+
 
 

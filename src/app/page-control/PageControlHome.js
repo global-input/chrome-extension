@@ -5,7 +5,20 @@ import * as pageControlUtil from './pageControlUtil';
 import * as chromeExtensionUtil from '../chromeExtensionUtil';
 import ACTIONS from './ACTIONS';
 
-
+const fields={
+    back:{
+      id:'giaMobileIntegration',
+      type:"button",
+      label:"Back",
+      viewId:"row1"
+    },
+    editPageConfig:{
+          id:'editPageConfigCpnfig',
+          type:"button",
+          label:"Edit Control Config",
+          viewId:"row1"
+    }
+};
 
 export default ({globalInputApp,domain,setAction, toMobileIntegrationHome}) => {    
     
@@ -24,10 +37,10 @@ export default ({globalInputApp,domain,setAction, toMobileIntegrationHome}) => {
             return;
         }        
         switch(field.id){
-            case fieldGoBack.id:
+            case fields.back.id:
                 toMobileIntegrationHome();
                 break;
-            case fieldEditApplicationControl.id:                
+            case fields.editPageConfig.id:                
                  setAction(ACTIONS.EDIT_APP_CONTROL_SETTINGS);
                 break;
             default:            
@@ -43,23 +56,6 @@ export default ({globalInputApp,domain,setAction, toMobileIntegrationHome}) => {
                 </FormContainer>
                 );
 };
-
-
-
-const fieldGoBack={
-    id:'giaMobileIntegration',
-    type:"button",
-    label:"Back",
-    viewId:"row1"
-};
-const fieldEditApplicationControl={
-    id:'giaAppControlSettings',
-    type:"button",
-    label:"Edit Control Settings",
-    viewId:"row1"
-}
-
-
 
 
 
@@ -106,18 +102,15 @@ const buildFormField=(field,toMobileIntegrationHome)=>{
 const buildInitData= async ({domain,toMobileIntegrationHome})=>{        
         
         
-        let applicationSettings=pageControlUtil.getUserApplicationControlConfig(domain);    
-        if(!applicationSettings){
-            applicationSettings=pageControlUtil.getEmbeddedApplicationControlConfig(domain);
-            if(!applicationSettings){
+        const  pageControlConfig=pageControlUtil.getPageControlConfig(domain);    
+        if(!pageControlConfig){
                 return initDataWitNoPageControl(['Configuration for "'+domain+'" does not exist. ','you may create one by pressing the "Create Configuration" button below.'], 'Create Configuration');
-            }
-        }       
-        const message = await chromeExtensionUtil.getPageControlConfig(applicationSettings);
+        }        
+        const message = await chromeExtensionUtil.getPageControlConfig(pageControlConfig);
         if(message.status==="success"){
                 const fields=message.content.form.fields.map(f=>buildFormField(f,toMobileIntegrationHome));
-                fields.push(fieldGoBack);
-                fields.push(fieldEditApplicationControl);
+                fields.push(fields.back);
+                fields.push(fields.editPageConfig);
                 return {
                     action: "input",
                     dataType: "form",
@@ -144,7 +137,7 @@ const initDataWitNoPageControl = (message, label)=>{
         dataType: "form",
         form:{            
             title:"Mobile Input/Control",
-            fields: [fieldInfo,fieldGoBack,{...fieldEditApplicationControl,label}]
+            fields: [fieldInfo,fields.back,{...fields.editPageConfig,label}]
         }          
     };  
 }

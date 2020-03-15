@@ -7,7 +7,7 @@ import {DisplayInputCopyField,TextButton,FormContainer} from '../app-layout';
 
 export default ({toMobileIntegration,cachedFieldValues, domain})=>{          
    
-   useEffect(()=>()=>cacheFields.clearFields(domain),[]); 
+   useEffect(()=>()=>cacheFields.clearFields(),[]); 
    
    const onCopied=()=>{                       
       const key=cacheFields.cacheIfMultipleFields(domain,cacheFields);

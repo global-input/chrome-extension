@@ -66,7 +66,7 @@ export default ({globalInputApp, domain,toMobileIntegrationHome})=>{
       useEffect(()=>{          
           globalInputApp.setInitData(buildInitData(formFields,domain));
           return()=>{
-               cacheFields.clearFields(domain);               
+               cacheFields.clearFields();               
           }
       },[]);    
      useEffect(()=>{

@@ -21,6 +21,7 @@ export default () => {
           setAction(ACTIONS.CONNECTION_SETTINGS);
      }
      const checkPageStatus = async () => {
+          
           const message = await chromeExtensionUtil.checkPageStatus();
           if (message && message.status === 'success' && message.host) {
                setDomain(message.host);
@@ -32,10 +33,14 @@ export default () => {
                          return;
                     }
                }
+               else{
+                    cacheFields.clearFields();                     
+               }
           }
           else {
                setDomain(null);
                console.error('failed:' + JSON.stringify(message));
+               cacheFields.clearFields();
           }
           toMobileIntegration();
      };

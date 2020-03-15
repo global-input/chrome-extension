@@ -34,36 +34,27 @@ const buildConfigData = domain => {
                     type: "button",
                     label: "Transfer Form Data",
                     viewId:"row1"
+               },{
+                    id: ACTIONS.MOBILE_ENCRYPTION,
+                    type: 'button',
+                    label: 'Encryption',
+                    viewId:"row2"
+               },{
+                    id: ACTIONS.MOBILE_DECRYPTION,
+                    type: 'button',
+                    label: 'Decryption',
+                    viewId:"row2"
+               },{
+                    id: ACTIONS.PAGE_CONTROL,
+                    type: 'button',
+                    label: 'Sign In/Page Control',
+                    viewId:"row3"
                }]
           }
-     };
-     initData.form.fields.push({
-          id: ACTIONS.MOBILE_ENCRYPTION,
-          type: 'button',
-          label: 'Encryption',
-          viewId:"row2"
-     });
-     initData.form.fields.push({
-          id: ACTIONS.MOBILE_DECRYPTION,
-          type: 'button',
-          label: 'Decryption',
-          viewId:"row2"
-     });
-
-
-     
-     if (domain) {
-          initData.form.fields.push({
-               id: ACTIONS.PAGE_CONTROL,
-               type: 'button',
-               label: 'Sign In/Page Control',
-               viewId:"row3"
-          });
-     };
-     const options = appSettings.getGlobalInputSettings();     
+     };     
      return {
           initData,
-          options
+          options:appSettings.getGlobalInputSettings()
      };
 
 };

@@ -8,7 +8,7 @@
       "24":"images/globalInput24.png",
       "16":"images/globalInput16.png"
   },
-  "version": "2.0.8",
+  "version": "3.0.0",
   "manifest_version": 2,
   "description": "Mobile authentication, mobile input & control, transfer content securely between your mobile and your computer.",
   "homepage_url": "https://globalinput.co.uk/",

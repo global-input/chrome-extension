@@ -6,7 +6,7 @@
 //       });    
 //  } 
   
-
+////___CONTENT___SCRIPT___////
 
 
 
@@ -385,7 +385,7 @@
                     let data={
                       label:fieldRule.id
                     };
-                    
+
                     if(fieldRule.data){
                       data=this.getData(fieldRule.data,element);
                     }
@@ -417,7 +417,7 @@
                 if(formRule.type==='iframe'){
                     var iframe=document.querySelector('iframe');
                     if((!iframe)|| (!iframe.contentWindow) || (!iframe.contentWindow.document)){
-                        return null;
+                        return null;////iframeNotFound
                     }
                     formContainer=iframe.contentWindow.document;
                 }

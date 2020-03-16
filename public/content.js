@@ -382,7 +382,17 @@
                       return null;
                   }
                   else{
-                    var data=this.getData(fieldRule.data,element);
+                    let data={
+                      label:fieldRule.id
+                    };
+                    
+                    if(fieldRule.data){
+                      data=this.getData(fieldRule.data,element);
+                    }
+                    else{
+                      console.warn("missing data attribute, which is used for label:"+JSON.stringify(fieldRule));
+                    }
+                    
                     var fieldProperty={
                       id:fieldRule.id,
                       label:data.label,

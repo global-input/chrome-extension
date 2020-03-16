@@ -720,7 +720,7 @@
                 {
                    "id":"username",
                    "type":"text",
-                   "selector":"input[id=\"id_input_username\"]",
+                   "selector":"input[id=\"id_email_username\"]",
                    "data":{
                       "label":"Username"
                    }

@@ -669,47 +669,7 @@
              ]
           }
        ]
-    },
-    {
-       "hostnames":{          
-          "value":"c9.io"
-       },
-       "forms":[
-          {
-             "title":"Cloud9",
-             "fields":[
-                {
-                   "id":"username",
-                   "type":"text",
-                   "selector":"input[id=\"id-username\"]",
-                   "data":{
-                      "label":"Username or email"
-                   }
-                },
-                {
-                   "id":"password",
-                   "type":"secret",
-                   "selector":"input[id=\"id-password\"][type=\"password\"]",
-                   "data":{
-                      "label":"Password"
-                   }
-                },
-                {
-                   "id":"login",
-                   "type":"button",
-                   "selector":"button[label=\"Sign in\"][type=\"submit\"]",
-                   "data":{
-                      "label":"Sign In"
-                   },
-                   "nextUI":{
-                      "type":"refresh"
-                   }
-                }
-             ]
-          }
-       ]
-    },
-    {
+    },{
        "hostnames":{          
           "value":"www.camscanner.com"
        },
@@ -722,13 +682,13 @@
                    "type":"text",
                    "selector":"input[id=\"id_email_username\"]",
                    "data":{
-                      "label":"Username"
+                      "label":"Email"
                    }
                 },
                 {
                    "id":"password",
                    "type":"secret",
-                   "selector":"input[id=\"id_input_pwd\"][type=\"password\"]",
+                   "selector":"input[id=\"id_email_pwd\"][type=\"password\"]",
                    "data":{
                       "label":"Password"
                    }
@@ -736,7 +696,7 @@
                 {
                    "id":"login",
                    "type":"button",
-                   "selector":"form a[id=\"id_btn_login\"]",
+                   "selector":"a[id=\"id_email_login\"]",
                    "data":{
                       "label":"Sign In"
                    },
@@ -752,6 +712,7 @@
        "hostnames":{          
           "value":[
              "www.digitalocean.com",
+             "digitalocean.com",
              "cloud.digitalocean.com"
           ]
        },
@@ -762,7 +723,7 @@
                 {
                    "id":"username",
                    "type":"text",
-                   "selector":"input[id=\"user_email\"]",
+                   "selector":"input[id=\"email\"]",
                    "data":{
                       "label":"Email Address"
                    }
@@ -770,7 +731,7 @@
                 {
                    "id":"password",
                    "type":"secret",
-                   "selector":"input[id=\"user_password\"][type=\"password\"]",
+                   "selector":"input[id=\"password\"][type=\"password\"]",
                    "data":{
                       "label":"Password"
                    }
@@ -778,9 +739,9 @@
                 {
                    "id":"login",
                    "type":"button",
-                   "selector":"input[value=\"Log In\"][type=\"submit\"]",
+                   "selector":"button[type=\"submit\"]",
                    "data":{
-                      "label":"Log In"
+                      "label":"Sign In"
                    },
                    "nextUI":{
                       "type":"refresh"
@@ -1112,7 +1073,7 @@
                 {
                    "id":"password",
                    "type":"secret",
-                   "selector":"form input[name=\"PASSWORD\"][type=\"password\"]",
+                   "selector":"form input[id=\"nafmpwd\"][type=\"password\"]",
                    "data":{
                       "label":"Password"
                    }
@@ -1120,7 +1081,7 @@
                 {
                    "id":"login",
                    "type":"button",
-                   "selector":"form input[type=\"submit\"][value=\"Log in to My BT\"]",
+                   "selector":"form input[id=\"btsignin\"]",
                    "data":{
                       "label":"Log in to My BT"
                    },
@@ -1288,87 +1249,7 @@
              ]
           }
        ]
-    },
-    {
-       "hostnames":{          
-          "value":[
-             "www.iterativesolution.co.uk",
-             "iterativesolution.co.uk"
-          ]
-       },
-       "forms":[
-          {
-             "title":"Welcome to JIRA",
-             "fields":[
-                {
-                   "id":"username",
-                   "type":"text",
-                   "selector":"input[id=\"login-form-username\"]",
-                   "data":{
-                      "label":"Username"
-                   }
-                },
-                {
-                   "id":"password",
-                   "type":"secret",
-                   "selector":"input[id=\"login-form-password\"][type=\"password\"]",
-                   "data":{
-                      "label":"Password"
-                   }
-                },
-                {
-                   "id":"submit",
-                   "type":"button",
-                   "selector":{
-                      "element":[
-                         "input[id=\"login-form-submit\"]",
-                         "input[id=\"login\"]"
-                      ]
-                   },
-                   "data":{
-                      "label":"Log In"
-                   },
-                   "nextUI":{
-                      "type":"refresh"
-                   }
-                }
-             ]
-          },
-          {
-             "title":"Confluence",
-             "fields":[
-                {
-                   "id":"username",
-                   "type":"text",
-                   "selector":"input[id=\"os_username\"]",
-                   "data":{
-                      "label":"Username"
-                   }
-                },
-                {
-                   "id":"password",
-                   "type":"secret",
-                   "selector":"input[id=\"os_password\"][type=\"password\"]",
-                   "data":{
-                      "label":"Password"
-                   }
-                },
-                {
-                   "id":"submit",
-                   "type":"button",
-                   "selector":"input[id=\"loginButton\"]",
-                   "data":{
-                      "label":"Log In"
-                   },
-                   "nextUI":{
-                      "type":"refresh"
-                   }
-                }
-             ]
-          }
-       ]
-    },
-    {
+    },{
        "hostnames":{          
           "value":"www.join.me"
        },
@@ -1490,7 +1371,7 @@
           "value":[
              "www.linkedin.com",
              "uk.linkedin.com",
-             "fr.linkedin.com"
+             "fr.linkedin.com"             
           ]
        },
        "forms":[
@@ -1525,7 +1406,40 @@
                    }
                 }
              ]
-          }
+          },{
+            "title":"Linked In",
+            "fields":[
+               {
+                  "id":"username",
+                  "type":"text",
+                  "selector":"input[name=\"session_key\"]",
+                  "data":{
+                     "label":"Email or phone"
+                  }
+               },
+               {
+                  "id":"password",
+                  "type":"secret",
+                  "selector":"input[name=\"session_password\"][type=\"password\"]",
+                  "data":{
+                     "label":"Password"
+                  }
+               },
+               {
+                  "id":"login",
+                  "type":"button",
+                  "selector":{
+                     "element":["button[data-control-urn=\"login-submit\"][type=\"submit\"]","button[class=\"sign-in-form__submit-btn\"][type=\"submit\"]"]
+                  },
+                  "data":{
+                     "label":"Sign In"
+                  },
+                  "nextUI":{
+                     "type":"refresh"
+                  }
+               }
+            ]
+         }
        ]
     },
     {
@@ -1978,7 +1892,7 @@
                    "type":"button",
                    "selector":{
                       "element":"form button[type=\"submit\"]",
-                      "textContent":"Login"
+                      "textContent":"Sign In"
                    },
                    "data":{
                       "label":"Sign In"
@@ -2105,9 +2019,12 @@
                    }
                 },
                 {
-                   "id":"Sign Up",
+                   "id":"Login",
                    "type":"button",
-                   "selector":"input[type=\"submit\"][name=\"commit\"][value=\"Login\"]",
+                   "selector":{
+                      "element": "button[type=\"submit\"]",
+                      "textContent":"Login"
+                  },
                    "data":{
                       "label":"Login"
                    },
@@ -2343,7 +2260,7 @@
                 {
                    "id":"username",
                    "type":"text",
-                   "selector":"div[id=\"page-container\"] input[name=\"session[username_or_email]\"]",
+                   "selector":"input[name=\"session[username_or_email]\"]",
                    "data":{
                       "label":"Email address"
                    }
@@ -2351,7 +2268,7 @@
                 {
                    "id":"password",
                    "type":"secret",
-                   "selector":"div[id=\"page-container\"]  input[name=\"session[password]\"][type=\"password\"]",
+                   "selector":"input[name=\"session[password]\"][type=\"password\"]",
                    "data":{
                       "label":"Password"
                    }
@@ -2359,10 +2276,7 @@
                 {
                    "id":"login",
                    "type":"button",
-                   "selector":{
-                      "element":"div[id=\"page-container\"] button[type=\"submit\"]",
-                      "textContent":"Log In"
-                   },
+                   "selector":"div[role=\"button\"][data-testid=\"LoginForm_Login_Button\"]",
                    "data":{
                       "label":"Log In"
                    },
@@ -2401,7 +2315,10 @@
                 {
                    "id":"login",
                    "type":"button",
-                   "selector":"form input[type=\"submit\"][value=\"Login\"]",
+                   "selector":{
+                     "element":"button[type=\"submit\"] span[class=\"btn__text\"]",
+                     "textContent":"Log In"
+                   },
                    "data":{
                       "label":"Login"
                    },

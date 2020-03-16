@@ -130,6 +130,13 @@ const ACTIONS={
  };
 
 
+ const fieldVisibilityControl={
+     id:"fieldValueVisibility",
+     type:'button',  
+     viewId: "row0",            
+     options: [{ value: 0, label: 'Show' }, { value: 1, label: 'Hide'}],        
+     value:0
+};
 
 
 const addNewFieldControl={
@@ -150,13 +157,6 @@ const backToHomeControl={
      type:"button",     
      label:"Back",
      viewId:"row2"
-};
-const fieldVisibilityControl={
-     id:"fieldValueVisibility",
-     type:'button',  
-     viewId: "row2",            
-     options: [{ value: 0, label: 'Show' }, { value: 1, label: 'Hide'}],        
-     value:0
 };
 
 const defaultFormFields=[{
@@ -192,10 +192,10 @@ const buildInitData = (formFields,domain)=>{
           title:domain,
           label:"web",
           domain,
-          fields:[addNewFieldControl,
+          fields:[fieldVisibilityControl,
+                  addNewFieldControl,
                   deleteFieldsControl,
-                  backToHomeControl,
-                  fieldVisibilityControl,
+                  backToHomeControl,                  
                   ...formFields]
          }
       };     

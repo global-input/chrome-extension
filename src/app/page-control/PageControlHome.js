@@ -23,9 +23,13 @@ const formFields={
 export default ({globalInputApp,domain,setAction, toMobileIntegrationHome}) => {    
     
     useEffect(()=>{
+        const nextUI= async ()=>{
+            let initData=await buildInitData({domain,nextUI});                
+            globalInputApp.setInitData(initData);        
+        };
         const toPageControlHome=async () =>{
             setAction(ACTIONS.PAGE_CONTROL_HOME);
-            let initData=await buildInitData({domain,toMobileIntegrationHome});                
+            let initData=await buildInitData({domain,nextUI});                
             globalInputApp.setInitData(initData);        
         };        
         toPageControlHome();        
@@ -60,7 +64,7 @@ export default ({globalInputApp,domain,setAction, toMobileIntegrationHome}) => {
 
 
 
-const buildFormField=(field,toMobileIntegrationHome)=>{
+const buildFormField=(field,nextUI)=>{
     let id=field.id;
 
     if(field.type==='list'||field.type==='info' || field.type==='picker' || field.type==='select'){
@@ -89,7 +93,10 @@ const buildFormField=(field,toMobileIntegrationHome)=>{
           onInput: newValue => {                       
               chromeExtensionUtil.sendFormField(field.id,newValue);
               if(field.matchingRule.nextUI){
-                toMobileIntegrationHome();                
+                  if(nextUI){
+                    nextUI(field.matchingRule.nextUI);                   
+                  }
+                   
               }                        
           }
         }
@@ -99,7 +106,7 @@ const buildFormField=(field,toMobileIntegrationHome)=>{
 
 
 
-const buildInitData= async ({domain,toMobileIntegrationHome})=>{        
+const buildInitData= async ({domain,nextUI})=>{        
         
         
         const  pageControlConfig=pageControlUtil.getPageControlConfig(domain);    
@@ -109,7 +116,7 @@ const buildInitData= async ({domain,toMobileIntegrationHome})=>{
         
         const message = await chromeExtensionUtil.getPageControlConfig(pageControlConfig);
         if(message.status==="success"){
-                const fields=message.content.form.fields.map(f=>buildFormField(f,toMobileIntegrationHome));
+                const fields=message.content.form.fields.map(f=>buildFormField(f,nextUI));
                 fields.push(formFields.back);
                 fields.push(formFields.editPageConfig);
                 return {

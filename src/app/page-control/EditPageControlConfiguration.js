@@ -105,7 +105,7 @@ const fields={
    },
    description:{
     type:'info',
-    value:'',
+    value:'It is more convenient to edit the configuration on your computer.',
     viewId:"row5"         
 },
 };
@@ -119,8 +119,7 @@ const getHelpText=(data)=>{
     }
 };
 const buildInitData = (domain,data)=>{    
-    const domainField={...fields.domain,value:domain};    
-    const description={...fields.description,value:[getHelpText(data),"You may also edit the configuration on your computer."]}
+    const domainField={...fields.domain,value:domain};        
     const edit={...fields.edit,value:data.content};
     
      return {
@@ -128,7 +127,7 @@ const buildInitData = (domain,data)=>{
           dataType: "form",
           form: {              
           title:'Page Control Configuration',          
-          fields:[domainField,edit,fields.cancel,fields.save,description]
+          fields:[domainField,edit,fields.cancel,fields.save,fields.description]
          }
       };    
 };

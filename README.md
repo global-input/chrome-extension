@@ -1,17 +1,18 @@
 # Global Input App Chrome Extension
-This Chrome Extension that provides [Mobile Integration](https://globalinput.co.uk/) that allows you to use your mobiles to operate on websites and web applications to carry out various operation like [Mobile Authentication](https://globalinput.co.uk/global-input-app/mobile-authentication), [Mobile Content Transfer](https://globalinput.co.uk/global-input-app/mobile-content-transfer), [Mobile Input & Control](https://globalinput.co.uk/global-input-app/mobile-input-control), and [Mobile Encryption](https://globalinput.co.uk/global-input-app/mobile-content-encryption) 
+This Chrome Extension allows you to use your mobile device to operate on websites and web applications that are loaded on your computer. You can carry out various mobile-to-computer operations like [Mobile Authentication](https://globalinput.co.uk/global-input-app/mobile-authentication), [Mobile Content Transfer](https://globalinput.co.uk/global-input-app/mobile-content-transfer), [Mobile Input & Control](https://globalinput.co.uk/global-input-app/mobile-input-control), and [Mobile Encryption](https://globalinput.co.uk/global-input-app/mobile-content-encryption). 
 
-Many common configurations are pre-loaded to allow you to operate on populate websites such as Google, GitHub, GitLab, Amazon+AWS, Dropbox, Apple, Twitter, Facebook, C9, Digital Ocean, Evernote, Heroku, Atlassian, join. me, JS BIN, JSFiddle, LinkedIn, Microsoft, Wordpress, Lucidchart, NpmJS, ProtonMail, Vultr, Wable, Wisepay, 123-reg etc. You may add any website with easy just specifying the HTML elements you would like to operate with your mobile.
+This extension comes preloaded with configurations for operating on some common websites including Google, GitHub, GitLab, Amazon+AWS, Dropbox, Apple, Twitter, Facebook, Digital Ocean, LinkedIn, Wordpress, Lucidchart, ProtonMail, to name a few. Creating a new configuration for a new website is a straight-forward process. You just need to specify how to locate the HTML elements that you would like to operate on using your mobile. 
+
+Also, instead of using direct web page control, you can also transfer data between your mobile and the browser extension window using your clipboard as a go-between medium.
+
+Furthermore, you can also encrypt/decrypt content using your mobile and transfer the resulting text back to your computer. 
 
 ## How to Install
-Having download the source into a folder, run the following command in the folder:
+This extension is developed using React JS.  You can run the following command in the project folder to create the necessary extension files in the ```build``` folder:
 
 ```
 npm run build
 ```
-Then type the following on the the address bar of your browser:
-```
-chrome://extensions
-```
+Then, go to the Chrome Extensions window (load ```chrome://extensions``` on your browser), and click on the "Load unpacked" button there, which should pop up a File dialogue box. Please navigate to the ```build``` folder in the project folder and press the ```Select``` button.
 
-Then, click on the "Load unpacked" button, which is located on the top of the "Extensions" window.  A File dialogue box should pop up, allowing you to choose the folder. You need to choose the ```build``` folder in the project folder.
+This extension is also available in the [Chrome Web Store](https://chrome.google.com/webstore/detail/global-input-app/hcklienddlealndjnakkagefaelhnjkp?hl=en).

@@ -1,6 +1,6 @@
 # Global Input App Chrome Extension
 
-# This repository is now moved to [browser extension](https://github.com/global-input/browser-extension)
+# This repository is now moved to the [browser extension](https://github.com/global-input/browser-extension)
 
 For the latest versions, please visit this [repository](https://github.com/global-input/browser-extension).
 

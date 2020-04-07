@@ -1,4 +1,9 @@
 # Global Input App Chrome Extension
+
+# This repository is now moved to [browser extension](https://github.com/global-input/browser-extension)
+
+For the latest versions, please visit this [repository](https://github.com/global-input/browser-extension).
+
 This Chrome Extension allows you to use your mobile device to operate on websites and web applications that are loaded on your computer. You can carry out various mobile-to-computer operations like [Mobile Authentication](https://globalinput.co.uk/global-input-app/mobile-authentication), [Mobile Content Transfer](https://globalinput.co.uk/global-input-app/mobile-content-transfer), [Mobile Input & Control](https://globalinput.co.uk/global-input-app/mobile-input-control), and [Mobile Encryption](https://globalinput.co.uk/global-input-app/mobile-content-encryption). 
 
 This extension comes preloaded with configurations for operating on some common websites including Google, GitHub, GitLab, Amazon+AWS, Dropbox, Apple, Twitter, Facebook, Digital Ocean, LinkedIn, Wordpress, Lucidchart, ProtonMail, to name a few. Creating a new configuration for a new website is a straight-forward process. You just need to specify how to locate the HTML elements that you would like to operate on using your mobile. 
